@@ -1,5 +1,6 @@
 'use client';
 
+import { useRestrictedNavigation } from "./MembershipAccessGate";
 import { useEffect, useState } from "react";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
@@ -40,24 +41,34 @@ interface DashboardShellProps {
 export default function DashboardShell({ fullName, userId, initialProfilePhotoUrl, onboardingRequired = false, children }: DashboardShellProps) {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { restricted, blockNavigation } = useRestrictedNavigation();
     const pathname = usePathname();
+    const sidebarStorageKey = `dashboard-sidebar-collapsed:${userId}`;
 
     useEffect(() => {
-        if (onboardingRequired) return;
+        if (onboardingRequired && !restricted) return;
 
-        // Paint the collapsed state before expanding after hydration, including on F5.
-        let expandFrame: number;
-        const paintFrame = requestAnimationFrame(() => {
-            expandFrame = requestAnimationFrame(() => setIsSidebarCollapsed(false));
+        const frame = requestAnimationFrame(() => {
+            try {
+                setIsSidebarCollapsed(localStorage.getItem(sidebarStorageKey) === "true");
+            } catch {
+                setIsSidebarCollapsed(false);
+            }
         });
+        return () => cancelAnimationFrame(frame);
+    }, [onboardingRequired, restricted, sidebarStorageKey]);
 
-        return () => {
-            cancelAnimationFrame(paintFrame);
-            cancelAnimationFrame(expandFrame);
-        };
-    }, [onboardingRequired]);
+    function toggleSidebar() {
+        const collapsed = !isSidebarCollapsed;
+        setIsSidebarCollapsed(collapsed);
+        try {
+            localStorage.setItem(sidebarStorageKey, String(collapsed));
+        } catch {
+            // The sidebar still toggles if browser storage is unavailable.
+        }
+    }
 
-    if (onboardingRequired) return <FirstAccessOnboarding />;
+    if (onboardingRequired && !restricted) return <FirstAccessOnboarding />;
 
     return (
         <GuidedTour setMobileMenuOpen={setIsMobileMenuOpen}>
@@ -74,7 +85,7 @@ export default function DashboardShell({ fullName, userId, initialProfilePhotoUr
                 <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
                     <Topbar
                         isSidebarCollapsed={isSidebarCollapsed}
-                        onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+                        onToggleSidebar={toggleSidebar}
                         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
                         fullName={fullName}
                         initialProfilePhotoUrl={initialProfilePhotoUrl}
@@ -94,9 +105,11 @@ export default function DashboardShell({ fullName, userId, initialProfilePhotoUr
                                 <Link
                                     key={href}
                                     href={href}
+                                    prefetch={restricted ? false : undefined}
+                                    onClick={blockNavigation}
                                     aria-label={label}
                                     aria-current={isActive ? "page" : undefined}
-                                    className={`relative flex min-h-14 flex-1 cursor-pointer items-center justify-center transition-[color,transform] duration-200 active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-j-blue-800 motion-reduce:transform-none ${isActive ? "text-j-blue-800" : "text-j-gray-500 hover:text-j-blue-800"}`}
+                                    className={`relative flex min-h-14 flex-1 cursor-pointer items-center justify-center transition-[color,transform] duration-200 active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-j-blue-800 motion-reduce:transform-none ${restricted ? "opacity-50" : ""} ${isActive ? "text-j-blue-800" : "text-j-gray-500 hover:text-j-blue-800"}`}
                                 >
                                     <Icon size={21} aria-hidden="true" />
                                     <MobileTabProgress />

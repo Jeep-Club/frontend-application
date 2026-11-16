@@ -1,5 +1,6 @@
 "use client";
 
+import { useRestrictedNavigation } from "./MembershipAccessGate";
 import { Avatar } from "@/components/common/avatar";
 import { getUserProfileAction } from "@/server/actions/profile/get";
 import Link from "next/link";
@@ -18,6 +19,7 @@ interface TopbarProps {
 }
 
 export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobileMenu, fullName, initialProfilePhotoUrl }: TopbarProps) {
+    const { restricted, blockNavigation } = useRestrictedNavigation();
     const { theme, setTheme } = useTheme();
     const { data: profile } = useQuery({
         queryKey: ["profile", "me"],
@@ -25,6 +27,7 @@ export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobi
         staleTime: 5 * 60_000,
         refetchOnWindowFocus: false,
         retry: false,
+        enabled: !restricted,
     });
     const displayName = profile?.name ?? fullName;
     const profilePhotoUrl = profile ? profile.profilePhotoUrl : initialProfilePhotoUrl;
@@ -56,7 +59,7 @@ export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobi
                 </span>
             </button>
 
-            <div id="tour-avatar-menu" className="flex items-center gap-3">
+            <div id="tour-avatar-menu" onClickCapture={blockNavigation} className={`flex items-center gap-3 ${restricted ? "opacity-60" : ""}`}>
                 <NotificationBell />
                 <button type="button" aria-label="Alternar tema" title="Alternar tema" onClick={() => {
                     const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
@@ -68,7 +71,7 @@ export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobi
                 <span aria-hidden="true" className="h-8 w-px shrink-0 bg-j-transparent-white" />
                 <span className="hidden text-sm font-bold text-j-white md:inline">{displayName}</span>
                 <Link
-                    href="/profile"
+                    href="/profile" prefetch={restricted ? false : undefined}
                     id="tour-avatar-container"
                     aria-label="Conta"
                     title="Conta"

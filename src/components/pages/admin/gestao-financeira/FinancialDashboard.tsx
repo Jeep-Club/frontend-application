@@ -78,7 +78,7 @@ export function FinancialDashboard({ onNavigate }: { onNavigate: (destination: D
         }];
         if ("memberPaymentId" in record) return [{
             id: record.id, title: `${activeQueue.id === "returns" ? "Devolução" : "Reembolso"} #${record.id}`,
-            description: `Associado #${record.userId} · Cobrança #${record.memberChargeId}`, amount: record.amount,
+            description: `Cobrança #${record.memberChargeId}`, amount: record.amount,
             date: activeQueue.id === "returns" ? record.approvedAt : record.requestedAt, destination: activeQueue.destination,
         }];
         return [];

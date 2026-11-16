@@ -1,5 +1,6 @@
 "use client";
 
+import { useRestrictedNavigation } from "./MembershipAccessGate";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { CalendarRange, HelpCircle, LoaderCircle, LogOut, Megaphone, Newspaper, Settings, ShieldCheck, Store, UserRound, WalletCards, X } from "lucide-react";
@@ -37,6 +38,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile, userId }: SidebarProps) {
+    const { restricted, blockNavigation } = useRestrictedNavigation();
     const pathname = usePathname();
     const router = useRouter();
     const { setContent, setOpen } = useModal();
@@ -66,23 +68,23 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile, user
             </header>
             <nav aria-label="Menu principal" className={styles.navigation}>
                 {navItems.map(({ href, label, icon: Icon, desktopOnly }) => <Link
-                    key={href} href={href} title={label} aria-label={label}
+                    key={href} href={href} prefetch={restricted ? false : undefined} title={label} aria-label={label}
                     aria-current={pathname.startsWith(href) ? "page" : undefined}
                     id={href === "/feed" ? "tour-nav-feed" : href === "/profile" ? "tour-manage-account-btn" : undefined}
-                    onClick={href === "/profile" ? openBranchTour : onCloseMobile}
-                    className={twMerge(itemClass(pathname.startsWith(href)), desktopOnly && styles.desktopOnly)}
+                    onClick={restricted && href !== "/financeiro" ? blockNavigation : href === "/profile" ? openBranchTour : onCloseMobile}
+                    className={twMerge(itemClass(pathname.startsWith(href)), desktopOnly && styles.desktopOnly, restricted && href !== "/financeiro" && "opacity-50")}
                 >
                     <Icon size={18} aria-hidden="true" /><span className={styles.label}>{label}</span><NavigationProgress />
                 </Link>)}
                 {canAccessAdmin && <>
-                    <Link href="/admin" id="tour-admin-link" title="Gestão" aria-label="Gestão" aria-current={pathname.startsWith("/admin") ? "page" : undefined} onClick={openBranchTour} className={itemClass(pathname.startsWith("/admin"))}>
+                    <Link prefetch={restricted ? false : undefined} href="/admin" id="tour-admin-link" title="Gestão" aria-label="Gestão" aria-current={pathname.startsWith("/admin") ? "page" : undefined} onClick={restricted ? blockNavigation : openBranchTour} className={twMerge(itemClass(pathname.startsWith("/admin")), restricted && "opacity-50")}>
                         <ShieldCheck size={18} aria-hidden="true" /><span className={styles.label}>Gestão</span><NavigationProgress />
                     </Link>
-                    {favoriteModules.length > 0 && <div className="mt-3 border-t border-j-blue-700 pt-2">
+                    {favoriteModules.length > 0 && <div className={twMerge("mt-3 border-t border-j-blue-700 pt-2", restricted && "opacity-50")}>
                         <p className={twMerge(styles.favoritesHeading, "text-[11px] font-bold uppercase tracking-wider text-j-transparent-white")}>Favoritos de gestão</p>
                         {favoriteModules.map(({ key, title, href, icon: Icon }) => {
                             const favoriteTitle = key === "medical-profiles" ? "Dados Médicos" : title.replace(/^Gestão de\s+/i, "").replace(/^./u, character => character.toLocaleUpperCase("pt-BR"));
-                            return <Link key={key} href={href} title={favoriteTitle} aria-label={favoriteTitle} aria-current={pathname === href.split("?")[0] ? "page" : undefined} onClick={onCloseMobile} className={twMerge(styles.item, "mb-0.5 text-j-white/80 hover:bg-j-blue-700 hover:text-j-white", pathname === href.split("?")[0] && "bg-j-blue-700 text-j-yellow-300")}>
+                            return <Link key={key} href={href} prefetch={restricted ? false : undefined} title={favoriteTitle} aria-label={favoriteTitle} aria-current={pathname === href.split("?")[0] ? "page" : undefined} onClick={restricted ? blockNavigation : onCloseMobile} className={twMerge(styles.item, "mb-0.5 text-j-white/80 hover:bg-j-blue-700 hover:text-j-white", pathname === href.split("?")[0] && "bg-j-blue-700 text-j-yellow-300")}>
                                 <Icon size={18} aria-hidden="true" /><span className={styles.label}>{favoriteTitle}</span><NavigationProgress />
                             </Link>;
                         })}
