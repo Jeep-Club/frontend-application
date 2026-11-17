@@ -3,7 +3,9 @@ import { CalendarDays,CircleAlert,ReceiptText,WalletCards } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { listMyMemberChargesAction } from "@/server/actions/billing/memberCharges/listMine";
 import Link from "next/link";
+
 import { FinanceiroFilters, FinanceiroTourHelpButton } from "./FinanceiroFilters";
+
 
 type FinanceiroSearchParams = {
     status?: string;
@@ -70,9 +72,10 @@ export default async function Financeiro({
                 <PageHeader
                     id="tour-member-financial-header"
                     title="Histórico financeiro"
+
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
-                        { label: "Histórico financeiro" },
+                        { label: "Gestão de débitos" },
                     ]}
                     actions={<FinanceiroTourHelpButton />}
                 />
@@ -97,7 +100,7 @@ export default async function Financeiro({
                         {loadError ? (
                             <div className="flex min-h-52 flex-col items-center justify-center rounded-xl border border-dashed border-j-red-200 p-6 text-center">
                                 <CircleAlert size={30} className="text-j-red-400" />
-                                <p className="mt-3 text-sm font-bold text-j-gray-700">Não foi possível carregar o histórico</p>
+                                <p className="mt-3 text-sm font-bold text-j-gray-700">Não foi possível carregar os débitos</p>
                                 <p className="mt-1 max-w-sm text-xs leading-relaxed text-j-gray-400">
                                     Tente acessar novamente em alguns instantes.
                                 </p>
@@ -107,7 +110,7 @@ export default async function Financeiro({
                                 <ReceiptText size={30} className="text-j-gray-400" />
                                 <p className="mt-3 text-sm font-bold text-j-gray-700">Nenhum lançamento encontrado</p>
                                 <p className="mt-1 max-w-sm text-xs leading-relaxed text-j-gray-400">
-                                    Você ainda não possui cobranças em seu histórico.
+                                    Você ainda não possui cobranças em sua conta.
                                 </p>
                             </div>
                         ) : (
@@ -136,13 +139,14 @@ export default async function Financeiro({
                                                 {STATUS_LABEL[charge.effectiveStatus]}
                                             </span>
                                         </div>
+                                        <PaymentReceiptSubmission charge={charge} submitAction={submitMemberPaymentAction} />
                                     </article>
                                 ))}
                             </div>
                         )}
                         </div>
                         {!loadError && totalPages > 1 && (
-                            <nav aria-label="Paginação do histórico financeiro" className="mt-5 flex items-center justify-between border-t border-j-gray-200 pt-4">
+                            <nav aria-label="Paginação da gestão de débitos" className="mt-5 flex items-center justify-between border-t border-j-gray-200 pt-4">
                                 <Link
                                     aria-disabled={pageNumber === 0}
                                     href={pageNumber === 0 ? "#" : `?${new URLSearchParams({ ...(status ? { status } : {}), sort, page: String(pageNumber - 1) })}`}
