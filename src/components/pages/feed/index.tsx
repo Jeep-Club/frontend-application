@@ -485,6 +485,7 @@ export default function Feed() {
                                                     {publication.type === "EVENT" && (
                                                         <EventParticipation
                                                             eventId={publication.id}
+                                                            eventTitle={publication.title}
                                                             eventStatus={
                                                                 publication.details
                                                                     .status
