@@ -1,7 +1,8 @@
 "use client";
 
-import { useFormContext, useWatch } from "react-hook-form";
+import { useController, useFormContext, useWatch } from "react-hook-form";
 
+import { Input } from "@/components/common/input/input";
 import { InputRegister } from "@/components/common/input/input-register";
 import { InputCheckbox } from "@/components/common/input/input-checkbox";
 import { Select } from "@/components/common/select";
@@ -11,7 +12,8 @@ import {
     PAYMENT_ACCEPTANCE_POLICY_LABEL,
 } from "./chargeDefinitionDisplay";
 
-const LIGHT_FIELD_CLASS = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
+// Keep the focused surface theme-aware so dark text tokens never sit on a forced white background.
+const LIGHT_FIELD_CLASS = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400";
 
 const RECURRENCE_OPTIONS: ChargeRecurrenceType[] = ["ONE_TIME", "MONTHLY", "YEARLY"];
 const PAYMENT_POLICY_OPTIONS: PaymentAcceptancePolicy[] = [
@@ -47,17 +49,7 @@ export function ChargeDefinitionFormFields() {
             />
 
             <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 [&>*]:min-w-0">
-                <InputRegister
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    label="Valor padrão (R$)"
-                    name="defaultAmount"
-                    placeholder="250.00"
-                    required
-                    labelClassName="text-j-gray-700"
-                    className={LIGHT_FIELD_CLASS}
-                />
+                <CurrencyInputRegister />
 
                 <Select
                     label="Tipo de recorrência"
@@ -110,6 +102,47 @@ export function ChargeDefinitionFormFields() {
                 className="rounded-xl border border-j-gray-200 bg-j-gray-100/60 p-3 [&>span:last-child]:!text-j-gray-700 [&>span:first-of-type]:!border-j-gray-300 [&>span:first-of-type]:!bg-j-white"
             />
         </>
+    );
+}
+
+function formatCurrencyInput(value: number): string {
+    return new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+}
+
+function parseCurrencyInput(value: string): number | undefined {
+    // Digits represent cents, including when editing an already formatted amount.
+    const digits = value.replace(/\D/g, "");
+    if (!digits) return undefined;
+    const parsed = Number(digits) / 100;
+    return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function CurrencyInputRegister() {
+    const { control } = useFormContext<ChargeDefinitionFormData>();
+    const { field, fieldState } = useController({ name: "defaultAmount", control });
+    const { ref, name, onBlur, onChange, value: amount } = field;
+    const value = typeof amount === "number" && Number.isFinite(amount) ? formatCurrencyInput(amount) : "";
+
+    return (
+        <Input
+            ref={ref}
+            label="Valor padrão (R$)"
+            name={name}
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="250,00"
+            required
+            value={value}
+            onChange={event => {
+                const parsed = parseCurrencyInput(event.target.value);
+                onChange(parsed);
+            }}
+            onBlur={onBlur}
+            error={fieldState.error?.message}
+            labelClassName="text-j-gray-700"
+            className={LIGHT_FIELD_CLASS}
+        />
     );
 }
 
