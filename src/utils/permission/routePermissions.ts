@@ -79,8 +79,26 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
     "/admin/gestao-financeira": {
         match: "any",
         permissions: [
+            { module: "MEMBERSHIP", actions: ["BILLING_CONFIGURATION_READ"] },
             { module: "BILLING", actions: ["CHARGE_DEFINITION_READ"] },
             { module: "BILLING", actions: ["CHARGE_CYCLE_READ"] },
+            { module: "BILLING", actions: ["MEMBER_CHARGE_READ"] },
+            { module: "BILLING", actions: ["PAYMENT_READ"] },
+            { module: "BILLING", actions: ["REFUND_READ"] },
+        ],
+    },
+
+    "/admin/gestao-financeira/cobrancas": {
+        match: "any",
+        permissions: [
+            { module: "BILLING", actions: ["CHARGE_DEFINITION_READ"] },
+            { module: "BILLING", actions: ["CHARGE_CYCLE_READ"] },
+        ],
+    },
+
+    "/admin/gestao-financeira/movimentacoes": {
+        match: "any",
+        permissions: [
             { module: "BILLING", actions: ["MEMBER_CHARGE_READ"] },
             { module: "BILLING", actions: ["PAYMENT_READ"] },
             { module: "BILLING", actions: ["REFUND_READ"] },
@@ -112,11 +130,23 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
             actions: ["TOOL_READ"],
         },
     ],
-    "/admin/dados-medicos": [{ module: "HEALTH", actions: ["MEDICAL_PROFILE_READ"] }],
+    "/admin/dados-medicos": { match: "any", permissions: [{ module: "HEALTH", actions: ["MEDICAL_PROFILE_READ"] }, { module: "HEALTH", actions: ["MEDICAL_PROFILE_EXPORT"] }] },
     "/admin/tools": [
         {
             module: "TOOLS",
             actions: ["TOOL_READ"],
+        },
+    ],
+    "/admin/dependentes": [
+        {
+            module: "DEPENDENTS",
+            actions: ["DEPENDENT_READ"],
+        },
+    ],
+    "/admin/dependents": [
+        {
+            module: "DEPENDENTS",
+            actions: ["DEPENDENT_READ"],
         },
     ],
 };

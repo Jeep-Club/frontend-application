@@ -7,7 +7,7 @@ jest.mock("@/services/fetchWrapper/actionFetchWrapper", () => ({ __esModule: tru
 jest.mock("@/utils/permission/actionPermissions", () => ({ haveActionPermission: jest.fn() }));
 const base = { title: "Publicação", content: "Conteúdo", images: [{ storageKey: "images/2026/10/30/550e8400-e29b-41d4-a716-446655440000.jpg", position: 0, primary: true }] };
 const event = { ...base, type: "EVENT" as const, startsAt: "2099-11-15T11:00:00Z", endsAt: null };
-const eventForm = { type: "EVENT", title: "Evento", content: "Conteúdo", photos: [new File(["image"], "event.png", { type: "image/png" })], primaryIndex: "0", startDate: "2099-11-15", startTime: "11:00", endDate: "", endTime: "", amount: "", chargeName: "Entrada", chargeDescription: "", contactPhone: "" };
+const eventForm = { type: "EVENT", title: "Evento", content: "Conteúdo", photos: [new File(["image"], "event.png", { type: "image/png" })], primaryIndex: "0", startsAt: "2099-11-15T11:00", endsAt: "", amount: "", chargeName: "Entrada", chargeDescription: "", contactPhone: "" };
 
 describe("Criação de publicações", () => {
     beforeEach(() => { jest.resetAllMocks(); });
@@ -31,13 +31,11 @@ describe("Criação de publicações", () => {
     });
     it("exige data e horário de início e aceita término opcional completo", () => {
         expect(publicationFormSchema.safeParse(eventForm).success).toBe(true);
-        expect(publicationFormSchema.safeParse({ ...eventForm, startTime: "" }).error?.issues).toEqual(expect.arrayContaining([expect.objectContaining({ path: ["startTime"] })]));
-        expect(publicationFormSchema.safeParse({ ...eventForm, startDate: "" }).error?.issues).toEqual(expect.arrayContaining([expect.objectContaining({ path: ["startDate"] })]));
-        expect(publicationFormSchema.safeParse({ ...eventForm, endDate: "2099-11-16" }).error?.issues).toEqual(expect.arrayContaining([expect.objectContaining({ path: ["endTime"] })]));
-        expect(publicationFormSchema.safeParse({ ...eventForm, endTime: "12:00" }).error?.issues).toEqual(expect.arrayContaining([expect.objectContaining({ path: ["endDate"] })]));
-        expect(publicationFormSchema.safeParse({ ...eventForm, endDate: "2099-11-14", endTime: "12:00" }).success).toBe(false);
-        expect(publicationFormSchema.safeParse({ ...eventForm, endDate: "2099-11-16", endTime: "12:00" }).success).toBe(true);
-        expect(eventLocalDateTime(eventForm.startDate, eventForm.startTime)?.toISOString()).toBe(new Date("2099-11-15T11:00").toISOString());
+        for (const startsAt of ['', '2099-11-15', 'T11:00']) expect(publicationFormSchema.safeParse({ ...eventForm, startsAt }).error?.issues).toEqual(expect.arrayContaining([expect.objectContaining({ path: ['startsAt'] })]));
+        for (const endsAt of ['2099-11-16', 'T12:00']) expect(publicationFormSchema.safeParse({ ...eventForm, endsAt }).error?.issues).toEqual(expect.arrayContaining([expect.objectContaining({ path: ['endsAt'] })]));
+        expect(publicationFormSchema.safeParse({ ...eventForm, endsAt: '2099-11-14T12:00' }).success).toBe(false);
+        expect(publicationFormSchema.safeParse({ ...eventForm, endsAt: '2099-11-16T12:00' }).success).toBe(true);
+        expect(eventLocalDateTime('2099-11-15', '11:00')?.toISOString()).toBe(new Date("2099-11-15T11:00").toISOString());
     });
     it("rejeita serviço sem telefone ou com valor inválido", () => {
         expect(createPublicationSchema.safeParse({ ...base, type: "SERVICE", amount: 0, contactPhone: "" }).success).toBe(false);

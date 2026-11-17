@@ -27,11 +27,17 @@ it("uses the API CSV export with the requested type and editorial status", async
     expect(Buffer.from(file.base64, "base64").toString()).toBe("Title,Content");
 });
 
-it("does not request a file without both export and type-read permission", async () => {
+it("does not request a file without export permission", async () => {
     jest.mocked(actionFetchWrapper).mockClear();
-    jest.mocked(haveActionPermission).mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+    jest.mocked(haveActionPermission).mockResolvedValue(false);
     await expect(exportAdminPublicationsAction({ type: "EVENT", status: "ALL" })).rejects.toThrow("permissão");
     expect(actionFetchWrapper).not.toHaveBeenCalled();
+});
+
+it("allows dedicated export without granting type-read permission", async () => {
+    jest.mocked(haveActionPermission).mockImplementation(async (_, action) => action === 'EXPORT');
+    jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 200, data: new Blob(['ID;Título'], { type: 'text/csv' }) });
+    await expect(exportAdminPublicationsAction({ type: 'EVENT', status: 'ALL' })).resolves.toHaveProperty('base64');
 });
 
 it("formats publication PDF from the authorized CSV with club branding", async () => {

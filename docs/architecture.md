@@ -31,6 +31,16 @@ O alias `@/*` aponta para `src/*` em [tsconfig.json](../tsconfig.json), com `str
 
 ## App Router e fronteiras servidor/cliente
 
+### Bloqueio por cobrança de referência
+
+A configuração distingue a cobrança de referência de `enforcementEnabled`: selecionar uma anuidade não ativa o bloqueio. O formulário oferece a opção explícita “Ativar bloqueio por falta de pagamento”. Alterar somente essa opção usa `PATCH admin/membership-billing-configuration/enforcement`; trocar a referência usa PUT com o estado escolhido. Chamadores antigos que omitem a opção preservam o valor atual. Após salvar, as consultas de configuração e de acesso à membritude são invalidadas.
+
+O layout autenticado consulta a regra de membritude do backend antes de liberar uma página. Como ainda não existe endpoint público de consulta de acesso, `server/membershipAccess.ts` faz um GET mínimo em `publications/feed?page=0&size=1`, protegido por `@RequiresMembership`. Apenas HTTP 402 com código `MEMBERSHIP_PAYMENT_REQUIRED` significa pendência financeira. Falhas de rede e `MEMBERSHIP_CHARGE_UNAVAILABLE` indicam verificação indisponível, sem afirmar inadimplência. A resposta não é persistida em cookies nem em cache entre requisições.
+
+`MembershipAccessGate` revalida no cliente ao navegar, ao retornar à janela, a cada minuto e por ação explícita. Durante o bloqueio ou indisponibilidade, somente `/financeiro` fica disponível no painel, com opção de sair; menus, onboarding e demais conteúdos não são montados. A regularização depende de nova confirmação do backend. O bloqueio de operações continua sendo responsabilidade da API; ocultar navegação não substitui `@RequiresMembership`.
+
+No histórico, `PaymentReceiptSubmission` envia comprovantes próprios por `submitMemberPaymentAction` para `POST billing/member-charges/{id}/payments`, em multipart autenticado. O arquivo aceita PDF/JPEG/PNG/WebP de até 10 MiB; o valor é o total da cobrança e a data local é convertida em ISO com fuso antes do envio. O servidor valida novamente os campos e a API decide propriedade, prazo e duplicidade. O resultado `PENDING_VALIDATION` encaminha à gestão e não libera acesso por si só. Cobranças pagas, canceladas ou expiradas exibem a razão de indisponibilidade. O contrato atual da lista própria não fornece o ID de um pagamento já enviado; submissões duplicadas recebem o conflito da API, sem criar outro pagamento nem tentar atualizar um ID desconhecido.
+
 [src/app](../src/app) contém `page.tsx`, `layout.tsx`, `error.tsx` e `not-found.tsx`. Grupos `(auth)`, `(noAuth)` e `(dashboard)` organizam layouts sem acrescentar segmentos à URL. O layout raiz importa o CSS global, configura fontes/metadata e envolve `children` em Suspense e [Providers](../src/providers/index.tsx).
 
 Os arquivos de rota/layout inspecionados sem `use client` compõem a árvore de Server Components. Componentes interativos declaram a fronteira cliente; componentes importados dentro desse grafo também podem executar no cliente sem repetir a diretiva. O wrapper cliente de providers recebe `children`: isso não transforma automaticamente as páginas de servidor em componentes cliente.
@@ -70,6 +80,21 @@ Uploads, downloads e imagens têm operações próprias, por exemplo [upload-ima
 **Limitações do tratamento de erros:** Actions de definições financeiras capturam falhas e lançam `new Error(mensagem, { cause })`; [apiError](../src/utils/http/apiError.ts) reconhece ApiProblem e preserva a mensagem de expiração. Isso não constitui contrato serializável definitivo de erro cliente/servidor, nem garante que message/cause mantenham o mesmo conteúdo no transporte em produção. O catch do refresh também envolve a chamada repetida: erro desta segunda chamada pode virar mensagem de sessão expirada. Não copiar esse comportamento como regra desejada.
 
 ## Autenticação, sessão e permissões
+
+O catálogo `GET /authorization/permissions` mantém o DTO
+`id/code/description/module`; `/authorization/me` fornece `authorities`.
+Os gates usam essas authorities, nunca o nome de uma role. O prefixo do código
+de catálogo deve corresponder ao módulo informado antes de virar uma ação local.
+Membership e permission são verificações independentes; nenhuma substitui a
+autorização final do endpoint.
+
+Exportação de publicações usa `PUBLICATIONS_EXPORT`, sem exigir leitura editorial.
+HEALTH export-only pode abrir a área para exportar, mas não consulta nem renderiza
+a listagem clínica. `PUBLICATIONS_EVENT_HEALTH_EMERGENCY_READ` não concede leitura
+geral ou exportação HEALTH. O relatório filtrado de veículos usa endpoints de
+lista/detalhe, portanto exige `VEHICLES_VEHICLE_READ` e `VEHICLES_VEHICLE_EXPORT`.
+O formulário de configuração Membership exige READ para abrir e UPDATE para salvar;
+a action de PUT com flag explícito não faz uma consulta READ adicional.
 
 [loginAction](../src/actions/auth/login.ts) normaliza CPF, chama autenticação e trata tanto tokens de sessão quanto exigência de troca de senha. Na sessão normal, grava tokens e consulta contextos de autenticação, identidade e autorização; [me](../src/utils/auth/me.ts) prepara cookies assinados. Se a composição falha, a Action limpa a sessão.
 
