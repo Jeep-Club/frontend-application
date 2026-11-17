@@ -36,9 +36,24 @@ test('participação existente recebe foco e Escape retorna ao detalhe', async (
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
     await page.getByRole('dialog').getByRole('button', { name: 'Participar do evento' }).click();
     await expect(page.getByRole('heading', { name: 'Como você vai participar?' })).toBeVisible();
+    await expect(page.getByText(/Após confirmar, se houver cobrança configurada para este evento/)).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
     await expect(page).toHaveURL(/publication=2/);
+});
+
+test('inscrição pendente leva ao histórico pessoal de cobranças', async ({ page, api }) => {
+    api.eventOpen = true;
+    await api.grant(['PUBLICATION_READ', 'EVENT_REGISTER', 'EVENT_REGISTRATION_READ']);
+    await page.goto('/feed?publication=2');
+    await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
+    await page.getByRole('dialog').getByRole('button', { name: 'Participar do evento' }).click();
+    await expect(page.getByRole('heading', { name: 'Como você vai participar?' })).toBeVisible();
+    await page.getByRole('radio', { name: /Jipe sintético/ }).click();
+    await page.getByRole('button', { name: 'Confirmar participação' }).click();
+    const detail = page.getByRole('dialog');
+    await expect(detail.getByRole('link', { name: 'Ver cobranças e pagamentos' })).toHaveAttribute('href', '/financeiro');
+    await expect(detail.getByText('Inscrição pendente de pagamento')).toBeVisible();
 });
 
 test('sidebar distingue erro de consulta e usa tamanho solicitado', async ({ page, api }) => {

@@ -96,8 +96,8 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
             <span role="status" className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-extrabold ${pendingPayment ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-900"}`}>
                 {pendingPayment ? <CalendarCheck size={17} aria-hidden="true" /> : <BadgeCheck size={17} aria-hidden="true" />}{label}
             </span>
-            <Link href="/financeiro" className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-bold text-j-blue-800 underline underline-offset-2 hover:text-j-blue-600 focus-visible:outline-2 focus-visible:outline-j-blue-800">Ver cobranças em Gestão de débitos</Link>
-            <p className="basis-full text-xs leading-relaxed text-j-gray-500">As cobranças configuradas para este evento são lançadas na sua conta ao se inscrever. Consulte valores e vencimentos em Gestão de débitos.</p>
+            <Link href="/financeiro" className="inline-flex min-h-11 cursor-pointer items-center rounded-xl px-3 text-sm font-bold text-j-blue-800 underline underline-offset-2 hover:text-j-blue-600 focus-visible:outline-2 focus-visible:outline-j-blue-800">Ver cobranças e pagamentos</Link>
+            <p className="basis-full text-xs leading-relaxed text-j-gray-500">{pendingPayment ? "Consulte o valor e vencimento da cobrança do evento e envie o comprovante em Gestão de débitos." : "Se o evento gerou alguma cobrança, ela estará disponível no seu histórico pessoal em Gestão de débitos."}</p>
             {canCancel && eventStatus === "OPEN" && <button type="button" disabled={isPending} onClick={() => cancel.mutate()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-j-gray-300 px-4 text-sm font-bold text-j-gray-600 transition-colors hover:border-red-300 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:opacity-50">
                 <X size={16} aria-hidden="true" />{cancel.isPending ? "Cancelando..." : "Cancelar inscrição"}
             </button>}
@@ -120,13 +120,12 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
 
 
     function openRegistrationForm() {
-        setContent(<EventRegistrationModal eventId={eventId} canRequestGuest={canRequestGuest} onSubmit={(data) => register.mutateAsync(data)} />);
+        setContent(<EventRegistrationModal eventId={eventId} eventTitle={eventTitle} canRequestGuest={canRequestGuest} onSubmit={(data) => register.mutateAsync(data)} />);
         setOpen();
     }
 
     return <div className={`flex flex-col gap-2 ${compact ? "w-full" : ""}`}>
-        <p className="rounded-xl bg-j-gray-100 px-3 py-2 text-sm leading-relaxed text-j-gray-600">Os valores configurados para {eventTitle} não estão disponíveis nesta tela. Ao se inscrever, as cobranças do evento serão lançadas na sua conta. Consulte valores e vencimentos em Gestão de débitos. Se houver cobrança obrigatória, a inscrição poderá ficar pendente até o pagamento ou o envio do comprovante dentro do prazo.</p>
-        <button type="button" disabled={isPending} onClick={openRegistrationForm} className={buttonClass}>
+        <button type="button" disabled={isPending} onClick={openRegistrationForm} className={`${buttonClass} cursor-pointer`}>
             <CalendarCheck size={18} aria-hidden="true" />Participar do evento
         </button>
     </div>;
