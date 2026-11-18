@@ -72,7 +72,7 @@ export default function Admin() {
 
                 {availableModules.length > 0 ? (
                     <>
-                        <div id="tour-admin-search" className="w-full max-w-md">
+                        <div id="tour-admin-search" className="w-full">
                             <InputSearch
                                 value={searchQuery}
                                 onSubmit={setSearchQuery}

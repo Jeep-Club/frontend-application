@@ -121,11 +121,11 @@ export function MembershipApplicationsTab() {
             </div>
 
             {temporaryPassword && (
-                <section role="status" className="rounded-xl border border-j-yellow-400 bg-yellow-50 p-4">
+                <section role="status" className="rounded-xl border border-input-border bg-background-secondary p-4">
                     <h3 className="font-bold text-j-blue-800">Senha provisória gerada</h3>
                     <p className="mt-1 text-sm text-j-gray-600">No primeiro acesso, o associado deverá criar uma senha permanente. Esta senha aparece somente nesta tela.</p>
                     <div className="mt-3 flex flex-wrap items-center gap-3">
-                        <code className="rounded-lg border border-j-yellow-300 bg-white px-3 py-2 font-mono font-bold text-j-blue-800">{temporaryPassword.temporaryPassword}</code>
+                        <code className="rounded-lg border border-input-border bg-background px-3 py-2 font-mono font-bold text-j-blue-800">{temporaryPassword.temporaryPassword}</code>
                         <Button type="button" onClick={async () => {
                             try { await navigator.clipboard.writeText(temporaryPassword.temporaryPassword); toast.success('Senha copiada.'); }
                             catch { toast.error('Não foi possível copiar automaticamente. Selecione e copie a senha.'); }
@@ -137,7 +137,7 @@ export function MembershipApplicationsTab() {
                 </section>
             )}
 
-            <div id="tour-applications-list" className="flex flex-col gap-4">
+            <div id="tour-applications-list" className="flex flex-col gap-3">
             {query.isLoading ? <div className="flex min-h-40 items-center justify-center gap-2 text-sm text-j-gray-500"><LoaderCircle size={20} className="animate-spin" /> Carregando solicitações...</div> : null}
             {query.isError && <div role="alert" className="flex flex-col items-center gap-3 rounded-xl border border-j-red-200 bg-j-red-50 p-6 text-center"><p className="text-sm text-j-red-700">{query.error.message}</p><Button type="button" onClick={() => void query.refetch()}><RefreshCw size={16} /> Tentar novamente</Button></div>}
             {query.data?.empty && <div className="rounded-xl border border-dashed border-j-gray-300 p-10 text-center text-sm text-j-gray-500">Nenhuma solicitação encontrada neste status.</div>}
@@ -148,39 +148,39 @@ export function MembershipApplicationsTab() {
                 const phone = applicationPhone(application.phoneNumber);
                 const userId = application.userId ?? approvedUserIds[application.id];
                 return (
-                    <article key={application.id} className="rounded-2xl border border-j-gray-200 bg-white p-3 shadow-sm sm:p-4">
-                        <header className="flex flex-wrap items-start justify-between gap-3">
-                            <div><h3 className="text-lg font-extrabold text-j-blue-800">{application.name}</h3></div>
-                            <span className={`rounded-full px-3 py-1 text-xs font-bold ${application.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : application.status === 'APPROVED' || application.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 'bg-j-gray-100 text-j-gray-600'}`}>{statusLabel[application.status]}</span>
+                    <article key={application.id} className="min-w-0 rounded-xl border border-input-border bg-background p-3 shadow-sm">
+                        <header className="flex flex-wrap items-center justify-between gap-2">
+                            <div><h3 className="text-base font-extrabold text-primary">{application.name}</h3></div>
+                            <span className={`rounded-full px-3 py-1 text-xs font-bold ${application.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800 [:root[data-theme=dark]_&]:bg-amber-300/15 [:root[data-theme=dark]_&]:text-amber-200' : application.status === 'APPROVED' || application.status === 'COMPLETED' ? 'bg-green-100 text-green-800 [:root[data-theme=dark]_&]:bg-green-300/15 [:root[data-theme=dark]_&]:text-green-200' : 'bg-j-gray-100 text-j-gray-600'}`}>{statusLabel[application.status]}</span>
                         </header>
-                        <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm lg:grid-cols-4">
+                        <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 text-sm lg:grid-cols-[1fr_1fr_1.5fr_1fr]">
                             <p><span className="block text-xs font-semibold text-j-gray-500">CPF</span><span className="font-medium text-j-gray-800">{maskCPF(application.cpf)}</span></p>
                             <p><span className="block text-xs font-semibold text-j-gray-500">Celular</span><a className="font-medium text-j-blue-700 underline" href={`https://wa.me/${phone.whatsapp}`} target="_blank" rel="noreferrer">{phone.display}</a></p>
                             <p className="col-span-2 min-w-0 lg:col-span-1"><span className="block text-xs font-semibold text-j-gray-500">E-mail</span><span className="break-words font-medium text-j-gray-800">{application.email || 'Não informado'}</span></p>
                             <p><span className="block text-xs font-semibold text-j-gray-500">Recebida</span><span className="font-medium text-j-gray-800">{new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(application.requestedAt))}</span></p>
                         </div>
-                        <div className="mt-3 rounded-xl bg-j-gray-50 px-0 py-2"><h4 className="text-sm font-bold text-j-gray-700">Carta de apresentação</h4><p className="mt-1 whitespace-pre-wrap text-sm leading-5 text-j-gray-700">{application.message || 'Nenhuma apresentação informada.'}</p></div>
+                        <div className="mt-2 rounded-lg bg-background-secondary px-3 py-2"><h4 className="text-sm font-bold text-j-gray-700">Carta de apresentação</h4><p className="mt-1 whitespace-pre-wrap break-words text-sm leading-5 text-j-gray-700">{application.message || 'Nenhuma apresentação informada.'}</p></div>
                         {application.rejectionReason && <p className="mt-3 text-sm text-j-red-700"><strong>Motivo da rejeição:</strong> {application.rejectionReason}</p>}
-                        {isPending && (canApprove || canReject) && <div id={index === 0 ? "tour-applications-actions" : undefined} className="mt-3 border-t border-j-gray-100 pt-3">
-                            {canReject && <label className="mb-3 block text-xs font-bold text-j-gray-600">Motivo (opcional para rejeitar; obrigatório para bloquear)
-                                <textarea value={reason} maxLength={2000} onChange={(event) => setReasons((current) => ({ ...current, [application.id]: event.target.value }))} rows={1} className="mt-1 block w-full rounded-lg border border-j-gray-300 p-2 text-sm font-normal text-j-gray-800" placeholder="Registre o motivo, se necessário." />
+                        {isPending && (canApprove || canReject) && <div id={index === 0 ? "tour-applications-actions" : undefined} className="mt-2 flex flex-col gap-2 border-t border-input-border pt-2">
+                            {canReject && <label className="block text-xs font-bold text-j-gray-600">Motivo (opcional para rejeitar; obrigatório para bloquear)
+                                <textarea value={reason} maxLength={2000} onChange={(event) => setReasons((current) => ({ ...current, [application.id]: event.target.value }))} rows={1} className="mt-1 block w-full rounded-lg border border-input-border bg-input-bg px-2 py-1.5 text-sm font-normal text-input-text" placeholder="Registre o motivo, se necessário." />
                             </label>}
                             <div className="flex flex-wrap justify-end gap-2">
                                 {canApprove && <Button type="button" disabled={busy} onClick={async () => {
                                     if (await confirmAction(`Aprovar ${application.name} e gerar uma senha provisória?`)) approve.mutate(application.id);
-                                }}><Check size={16} /> Aprovar e gerar senha</Button>}
+                                }} className="min-h-9 px-3 py-1.5 text-xs"><Check size={15} /> Aprovar e gerar senha</Button>}
                                 {canApprove && application.email && <Button type="button" disabled={busy} onClick={async () => {
                                     if (await confirmAction(`Aprovar ${application.name} e enviar um convite por e-mail?`)) approveByLink.mutate(application.id);
-                                }} className="bg-j-blue-100 text-j-blue-800 hover:bg-j-blue-200 hover:text-j-blue-900"><Mail size={16} /> Aprovar e enviar convite</Button>}
+                                }} className="min-h-9 border border-input-border bg-background-secondary px-3 py-1.5 text-xs text-primary hover:bg-background-tertiary hover:text-primary"><Mail size={16} /> Aprovar e enviar convite</Button>}
                                 {canReject && <Button type="button" disabled={busy} onClick={async () => {
                                     if (await confirmAction(`Rejeitar a solicitação de ${application.name}?`)) reject.mutate({ id: application.id, reason });
-                                }} className="bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800"><X size={16} /> Rejeitar</Button>}
+                                }} className="min-h-9 border border-input-border bg-background-secondary px-3 py-1.5 text-xs text-primary hover:bg-background-tertiary hover:text-primary"><X size={16} /> Rejeitar</Button>}
                                 {canBlock && <Button type="button" disabled={busy || !reason.trim()} onClick={async () => {
                                     if (await confirmAction(`Rejeitar e bloquear novas solicitações deste CPF?`)) rejectAndBlock.mutate({ id: application.id, reason });
-                                }} className="bg-red-50 text-j-red-700 hover:bg-red-100 hover:text-j-red-800"><ShieldAlert size={16} /> Rejeitar e bloquear CPF</Button>}
+                                }} className="min-h-9 border border-input-border bg-background-secondary px-3 py-1.5 text-xs text-red-700 hover:bg-background-tertiary [:root[data-theme=dark]_&]:text-red-300 [:root[data-theme=dark]_&]:hover:text-red-200"><ShieldAlert size={16} /> Rejeitar e bloquear CPF</Button>}
                             </div>
                         </div>}
-                        {application.status === 'APPROVED' && canApprove && application.email && <Button type="button" disabled={busy} onClick={() => resend.mutate(application.id)} className="mt-4 bg-j-blue-100 text-j-blue-800 hover:bg-j-blue-200 hover:text-j-blue-900"><RefreshCw size={16} /> Reenviar convite de ativação</Button>}
+                        {application.status === 'APPROVED' && canApprove && application.email && <Button type="button" disabled={busy} onClick={() => resend.mutate(application.id)} className="mt-4 min-h-9 border border-input-border bg-background-secondary px-3 py-1.5 text-xs text-primary hover:bg-background-tertiary hover:text-primary"><RefreshCw size={16} /> Reenviar convite de ativação</Button>}
                         {application.status === 'APPROVED' && canGeneratePassword && userId && <Button type="button" disabled={busy} onClick={async () => {
                             if (await confirmAction(`Gerar uma nova senha provisória para ${application.name}?`)) {
                                 generatePassword.mutate({ userId, name: application.name, phoneNumber: application.phoneNumber });

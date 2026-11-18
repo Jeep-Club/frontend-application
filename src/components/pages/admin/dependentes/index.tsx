@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { ProfileTabLoading } from "@/components/pages/profile/tabs/ProfileTabLoading";
+import { ProfileEmptyPanel } from "@/components/pages/profile/tabs/ProfileTabEmptyState";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import {
-    Archive,
-    ArchiveRestore,
+import { Users,
     Download,
     Eye,
     Power,
@@ -22,6 +22,7 @@ import { getDependentsTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
 import { Button } from "@/components/common/button";
 import { InputSearch } from "@/components/common/input/input-search";
+import { Table } from "@/components/common/table";
 import { ListPagination } from "@/components/common/table/ListPagination";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
@@ -53,8 +54,6 @@ export default function DependentManagement() {
     const canRead = hasPermission(permissions, "DEPENDENTS", "DEPENDENT_READ");
     const canActivate = hasPermission(permissions, "DEPENDENTS", "DEPENDENT_ACTIVATE");
     const canDeactivate = hasPermission(permissions, "DEPENDENTS", "DEPENDENT_DEACTIVATE");
-    const canArchive = hasPermission(permissions, "DEPENDENTS", "DEPENDENT_ARCHIVE");
-    const canUnarchive = hasPermission(permissions, "DEPENDENTS", "DEPENDENT_UNARCHIVE");
     const canDelete = hasPermission(permissions, "DEPENDENTS", "DEPENDENT_DELETE");
     const canExport = hasPermission(permissions, "DEPENDENTS", "DEPENDENT_EXPORT");
 
@@ -234,410 +233,353 @@ export default function DependentManagement() {
                         </p>
                     </section>
                 ) : (
-                    <section className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm sm:p-5">
-                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                            <div>
-                                <h3 className="text-base font-bold text-j-gray-700">
-                                    Dependentes cadastrados
-                                </h3>
-                                <p className="text-xs text-j-gray-500">
-                                    Consulte familiares e convidados vinculados aos associados, audite fotos 3x4 e gerencie situações cadastrais.
-                                </p>
-                            </div>
+                    <div className="flex w-full flex-col gap-3">
+                        <section className="flex flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+                            <Table.Header className="items-stretch">
+                            <div
+                                id="tour-dependents-filters"
+                                className="flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center"
+                            >
+                                <div className="min-w-0 flex-1 lg:min-w-64">
+                                    <InputSearch
+                                        value={searchQuery}
+                                        onSubmit={handleSearch}
+                                        submitOnChange
+                                        isLoading={isFetching}
+                                        label="Buscar dependente por nome, titular, CPF ou telefone"
+                                        placeholder="Buscar por nome do dependente, nome do titular, CPF ou telefone..."
+                                        className="h-10 border border-j-gray-200 bg-j-white py-2 pl-10 pr-10 text-sm font-normal text-j-gray-700 placeholder:text-j-gray-400 focus:border-j-yellow-400 focus:bg-input-bg-focus focus:text-j-gray-700"
+                                        iconClassName="text-j-gray-400"
+                                        clearButtonClassName="text-j-gray-400 hover:bg-j-gray-200 hover:text-j-blue-800"
+                                    />
+                                </div>
 
-                            {canExport && (
-                                <div
-                                    id="tour-dependents-export"
-                                    className="flex flex-wrap items-center gap-2 rounded-xl border border-j-gray-200 bg-j-gray-100/60 p-2"
-                                >
-                                    <label htmlFor="admin-dependent-export-format" className="sr-only">
-                                        Formato de exportação
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <label htmlFor="admin-dependent-relationship-filter" className="sr-only">
+                                        Filtrar por parentesco
                                     </label>
                                     <select
-                                        id="admin-dependent-export-format"
-                                        aria-label="Formato de exportação"
-                                        value={exportFormat}
-                                        onChange={(e) => setExportFormat(e.target.value as "CSV" | "PDF")}
-                                        className="h-9 cursor-pointer rounded-lg border border-j-gray-200 bg-j-white px-2.5 text-xs font-bold text-j-gray-700 focus:border-j-yellow-400 focus:outline-none"
+                                        id="admin-dependent-relationship-filter"
+                                        aria-label="Filtrar por parentesco"
+                                        value={relationshipFilter}
+                                        onChange={(e) =>
+                                            handleRelationshipChange(
+                                                e.target.value as DependentRelationshipType | "",
+                                            )
+                                        }
+                                        className="h-10 cursor-pointer rounded-lg border border-j-gray-200 bg-j-white px-3 py-2 text-sm font-medium text-j-gray-700 transition-colors focus:border-j-yellow-400 focus:outline-none"
                                     >
-                                        <option value="CSV">CSV</option>
-                                        <option value="PDF">PDF</option>
+                                        {ADMIN_DEPENDENT_RELATIONSHIP_FILTER_OPTIONS.map((option) => (
+                                            <option key={option.value || "ALL"} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
                                     </select>
 
-                                    <label className="flex cursor-pointer items-center gap-1.5 px-2 text-xs font-medium text-j-gray-700 select-none">
-                                        <input
-                                            type="checkbox"
-                                            checked={exportHistory}
-                                            onChange={(e) => setExportHistory(e.target.checked)}
-                                            className="h-3.5 w-3.5 rounded border-j-gray-300 text-j-blue-800 focus:ring-j-blue-800"
-                                        />
-                                        Histórico de exclusões
+                                    <label htmlFor="admin-dependent-status-filter" className="sr-only">
+                                        Filtrar por status
                                     </label>
-
-                                    <Button
-                                        type="button"
-                                        onClick={() => void handleExport()}
-                                        disabled={isExporting}
-                                        className="h-9 gap-1.5 px-3 text-xs"
+                                    <select
+                                        id="admin-dependent-status-filter"
+                                        aria-label="Filtrar por status"
+                                        value={statusFilter}
+                                        onChange={(e) =>
+                                            handleStatusChange(
+                                                e.target.value as AdminDependentStatus | "",
+                                            )
+                                        }
+                                        className="h-10 cursor-pointer rounded-lg border border-j-gray-200 bg-j-white px-3 py-2 text-sm font-medium text-j-gray-700 transition-colors focus:border-j-yellow-400 focus:outline-none"
                                     >
-                                        <Download size={14} />
-                                        {isExporting ? "Exportando..." : "Exportar"}
-                                    </Button>
+                                        {ADMIN_DEPENDENT_STATUS_FILTER_OPTIONS.map((option) => (
+                                            <option key={option.value || "ALL"} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                    {hasActiveFilters && (
+                                        <button
+                                            type="button"
+                                            onClick={handleClearFilters}
+                                            className="flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-j-gray-200 bg-j-white px-3 text-xs font-bold text-j-gray-600 transition-colors hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-blue-800"
+                                        >
+                                            <RotateCcw size={14} />
+                                            Limpar filtros
+                                        </button>
+                                    )}
                                 </div>
-                            )}
-                        </div>
-
-                        <div
-                            id="tour-dependents-filters"
-                            className="flex flex-col gap-3 rounded-xl border border-j-gray-200 bg-j-gray-100/50 p-3 lg:flex-row lg:items-center"
-                        >
-                            <div className="flex-1">
-                                <InputSearch
-                                    value={searchQuery}
-                                    onSubmit={handleSearch}
-                                    submitOnChange
-                                    isLoading={isFetching}
-                                    label="Buscar dependente por nome, titular, CPF ou telefone"
-                                    placeholder="Buscar por nome do dependente, nome do titular, CPF ou telefone..."
-                                    className="h-10 border border-j-gray-200 bg-j-white py-2 pl-10 pr-10 text-sm font-normal text-j-gray-700 placeholder:text-j-gray-400 focus:border-j-yellow-400 focus:bg-input-bg-focus focus:text-j-gray-700"
-                                    iconClassName="text-j-gray-400"
-                                    clearButtonClassName="text-j-gray-400 hover:bg-j-gray-200 hover:text-j-blue-800"
-                                />
-                            </div>
-
-                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                <label htmlFor="admin-dependent-relationship-filter" className="sr-only">
-                                    Filtrar por parentesco
-                                </label>
-                                <select
-                                    id="admin-dependent-relationship-filter"
-                                    aria-label="Filtrar por parentesco"
-                                    value={relationshipFilter}
-                                    onChange={(e) =>
-                                        handleRelationshipChange(
-                                            e.target.value as DependentRelationshipType | "",
-                                        )
-                                    }
-                                    className="h-10 cursor-pointer rounded-lg border border-j-gray-200 bg-j-white px-3 py-2 text-sm font-medium text-j-gray-700 transition-colors focus:border-j-yellow-400 focus:outline-none"
-                                >
-                                    {ADMIN_DEPENDENT_RELATIONSHIP_FILTER_OPTIONS.map((option) => (
-                                        <option key={option.value || "ALL"} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                <label htmlFor="admin-dependent-status-filter" className="sr-only">
-                                    Filtrar por status
-                                </label>
-                                <select
-                                    id="admin-dependent-status-filter"
-                                    aria-label="Filtrar por status"
-                                    value={statusFilter}
-                                    onChange={(e) =>
-                                        handleStatusChange(
-                                            e.target.value as AdminDependentStatus | "",
-                                        )
-                                    }
-                                    className="h-10 cursor-pointer rounded-lg border border-j-gray-200 bg-j-white px-3 py-2 text-sm font-medium text-j-gray-700 transition-colors focus:border-j-yellow-400 focus:outline-none"
-                                >
-                                    {ADMIN_DEPENDENT_STATUS_FILTER_OPTIONS.map((option) => (
-                                        <option key={option.value || "ALL"} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                {hasActiveFilters && (
-                                    <button
-                                        type="button"
-                                        onClick={handleClearFilters}
-                                        className="flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-j-gray-200 bg-j-white px-3 text-xs font-bold text-j-gray-600 transition-colors hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-blue-800"
+                                {canExport && (
+                                    <div
+                                        id="tour-dependents-export"
+                                        className="flex flex-wrap items-center gap-2"
                                     >
-                                        <RotateCcw size={14} />
-                                        Limpar filtros
-                                    </button>
+                                        <label htmlFor="admin-dependent-export-format" className="sr-only">
+                                            Formato de exportação
+                                        </label>
+                                        <select
+                                            id="admin-dependent-export-format"
+                                            aria-label="Formato de exportação"
+                                            value={exportFormat}
+                                            onChange={(e) => setExportFormat(e.target.value as "CSV" | "PDF")}
+                                            className="h-9 cursor-pointer rounded-lg border border-j-gray-200 bg-j-white px-2.5 text-xs font-bold text-j-gray-700 focus:border-j-yellow-400 focus:outline-none"
+                                        >
+                                            <option value="CSV">CSV</option>
+                                            <option value="PDF">PDF</option>
+                                        </select>
+
+                                        <label className="flex cursor-pointer items-center gap-1.5 px-2 text-xs font-medium text-j-gray-700 select-none">
+                                            <input
+                                                type="checkbox"
+                                                checked={exportHistory}
+                                                onChange={(e) => setExportHistory(e.target.checked)}
+                                                className="h-3.5 w-3.5 rounded border-j-gray-300 text-j-blue-800 focus:ring-j-blue-800"
+                                            />
+                                            Histórico de exclusões
+                                        </label>
+
+                                        <Button
+                                            type="button"
+                                            onClick={() => void handleExport()}
+                                            disabled={isExporting}
+                                            className="h-10 gap-1.5 px-3 text-xs"
+                                        >
+                                            <Download size={14} />
+                                            {isExporting ? "Exportando..." : "Exportar"}
+                                        </Button>
+                                    </div>
                                 )}
                             </div>
-                        </div>
 
-                        <div id="tour-dependents-list">
-                            {isLoading && (
-                                <p className="text-sm text-j-gray-400">
-                                    Carregando dependentes...
-                                </p>
-                            )}
+                            </Table.Header>
 
-                            {error && (
-                                <div
-                                    role="alert"
-                                    className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"
-                                >
-                                    <p>{error.message}</p>
-                                    <Button
-                                        onClick={() => void query.refetch()}
-                                        disabled={isFetching}
+                            <div id="tour-dependents-list">
+                                {isLoading && (
+                                    <ProfileTabLoading tab="dependents" title="Dependentes" />
+                                )}
+
+                                {error && (
+                                    <div
+                                        role="alert"
+                                        className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"
                                     >
-                                        Tentar novamente
-                                    </Button>
-                                </div>
-                            )}
-
-                            {!isLoading && !error && !data?.content.length && (
-                                <p className="text-sm text-j-gray-400">
-                                    {hasActiveFilters
-                                        ? "Nenhum dependente encontrado para os filtros informados."
-                                        : "Nenhum dependente cadastrado."}
-                                </p>
-                            )}
-
-                            {!isLoading && !error && Boolean(data?.content.length) && (
-                                <div className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
-                                    <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(150px,0.9fr)_minmax(140px,0.8fr)_minmax(100px,0.5fr)_380px] items-center gap-3 border-b border-j-gray-200 bg-j-gray-100/70 px-4 py-3 text-[10px] font-extrabold uppercase tracking-wide text-j-gray-400 xl:grid">
-                                        <span>Dependente</span>
-                                        <span>Titular (Associado)</span>
-                                        <span>CPF / Telefone</span>
-                                        <span className="text-center">Status</span>
-                                        <span className="text-center">Ações</span>
+                                        <p>{error.message}</p>
+                                        <Button
+                                            onClick={() => void query.refetch()}
+                                            disabled={isFetching}
+                                        >
+                                            Tentar novamente
+                                        </Button>
                                     </div>
+                                )}
 
-                                    <div className="divide-y divide-j-gray-100">
-                                        {data?.content.map((dependent, index) => {
-                                            const isArchived = dependent.status === "ARCHIVED";
-                                            const photoUrl = getAdminDependentPhotoUrl(dependent);
+                                {!isLoading && !error && !data?.content.length && (
+                                    <ProfileEmptyPanel icon={Users} title={hasActiveFilters
+                                            ? "Nenhum dependente encontrado para os filtros informados."
+                                            : "Nenhum dependente cadastrado."} />
+                                )}
 
-                                            const canToggleStatus =
-                                                !isArchived &&
-                                                (dependent.status === "ACTIVE"
-                                                    ? canDeactivate
-                                                    : dependent.status === "INACTIVE"
-                                                        ? canActivate
-                                                        : false);
+                                {!isLoading && !error && Boolean(data?.content.length) && (
+                                    <div className="overflow-hidden">
+                                        <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(150px,0.9fr)_minmax(140px,0.8fr)_minmax(100px,0.5fr)_280px] items-center gap-3 border-b border-j-gray-200 bg-j-gray-100/70 px-4 py-3 text-[10px] font-extrabold uppercase tracking-wide text-j-gray-400 xl:grid">
+                                            <span>Dependente</span>
+                                            <span>Titular (Associado)</span>
+                                            <span>CPF / Telefone</span>
+                                            <span className="text-center">Status</span>
+                                            <span className="text-center">Ações</span>
+                                        </div>
 
-                                            const canToggleArchive = isArchived
-                                                ? canUnarchive
-                                                : canArchive;
+                                        <div className="divide-y divide-j-gray-100">
+                                            {data?.content.map((dependent, index) => {
+                                                const isArchived = dependent.status === "ARCHIVED";
+                                                const photoUrl = getAdminDependentPhotoUrl(dependent);
 
-                                            return (
-                                                <div
-                                                    key={dependent.id}
-                                                    className="flex flex-col gap-3 p-4 transition-colors hover:bg-blue-50/30 xl:grid xl:grid-cols-[minmax(0,1.4fr)_minmax(150px,0.9fr)_minmax(140px,0.8fr)_minmax(100px,0.5fr)_380px] xl:items-center xl:gap-3"
-                                                >
-                                                    <div className="flex min-w-0 items-center gap-3">
-                                                        {photoUrl ? (
-                                                            // eslint-disable-next-line @next/next/no-img-element
-                                                            <img
-                                                                src={photoUrl}
-                                                                alt={`Foto de ${dependent.name}`}
-                                                                className="h-16 w-12 shrink-0 rounded-lg border border-j-gray-200 object-cover"
-                                                            />
-                                                        ) : (
-                                                            <span className="flex h-16 w-12 shrink-0 items-center justify-center rounded-lg border border-j-gray-200 bg-j-blue-800 text-j-yellow-300">
-                                                                <User size={18} aria-hidden="true" />
-                                                            </span>
-                                                        )}
+                                                const canToggleStatus =
+                                                    !isArchived &&
+                                                    (dependent.status === "ACTIVE"
+                                                        ? canDeactivate
+                                                        : dependent.status === "INACTIVE"
+                                                            ? canActivate
+                                                            : false);
+
+
+                                                return (
+                                                    <div
+                                                        key={dependent.id}
+                                                        className="flex flex-col gap-3 p-4 transition-colors hover:bg-blue-50/30 xl:grid xl:grid-cols-[minmax(0,1.4fr)_minmax(150px,0.9fr)_minmax(140px,0.8fr)_minmax(100px,0.5fr)_280px] xl:items-center xl:gap-3"
+                                                    >
+                                                        <div className="flex min-w-0 items-center gap-3">
+                                                            {photoUrl ? (
+                                                                // eslint-disable-next-line @next/next/no-img-element
+                                                                <img
+                                                                    src={photoUrl}
+                                                                    alt={`Foto de ${dependent.name}`}
+                                                                    className="h-16 w-12 shrink-0 rounded-lg border border-j-gray-200 object-cover"
+                                                                />
+                                                            ) : (
+                                                                <span className="flex h-16 w-12 shrink-0 items-center justify-center rounded-lg border border-j-gray-200 bg-j-blue-800 text-j-yellow-300">
+                                                                    <User size={18} aria-hidden="true" />
+                                                                </span>
+                                                            )}
+
+                                                            <div className="min-w-0">
+                                                                <h4
+                                                                    className="truncate font-extrabold text-j-blue-800"
+                                                                    title={dependent.name}
+                                                                >
+                                                                    {dependent.name}
+                                                                </h4>
+                                                                <p className="text-xs text-j-gray-500">
+                                                                    {DEPENDENT_RELATIONSHIP_LABEL[
+                                                                        dependent.relationshipType
+                                                                    ] ?? dependent.relationshipType}{" "}
+                                                                    • Nasc.:{" "}
+                                                                    {formatDependentBirthDate(
+                                                                        dependent.birthDate,
+                                                                    )}
+                                                                </p>
+                                                                <span
+                                                                    className={twMerge(
+                                                                        "mt-1 inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold xl:hidden",
+                                                                        DEPENDENT_STATUS_BADGE_CLASS[
+                                                                            dependent.status
+                                                                        ],
+                                                                    )}
+                                                                >
+                                                                    {DEPENDENT_STATUS_LABEL[
+                                                                        dependent.status
+                                                                    ] ?? dependent.status}
+                                                                </span>
+                                                            </div>
+                                                        </div>
 
                                                         <div className="min-w-0">
-                                                            <h4
-                                                                className="truncate font-extrabold text-j-blue-800"
-                                                                title={dependent.name}
-                                                            >
-                                                                {dependent.name}
-                                                            </h4>
+                                                            <p className="truncate text-sm font-bold text-j-gray-700">
+                                                                <span className="mr-1 text-xs font-bold text-j-gray-400 xl:hidden">
+                                                                    Titular:
+                                                                </span>
+                                                                {dependent.ownerName || "Titular indisponível"}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="min-w-0">
+                                                            <p className="text-xs font-semibold text-j-gray-700">
+                                                                CPF: {formatDependentCpf(dependent.cpf)}
+                                                            </p>
                                                             <p className="text-xs text-j-gray-500">
-                                                                {DEPENDENT_RELATIONSHIP_LABEL[
-                                                                    dependent.relationshipType
-                                                                ] ?? dependent.relationshipType}{" "}
-                                                                • Nasc.:{" "}
-                                                                {formatDependentBirthDate(
-                                                                    dependent.birthDate,
+                                                                Tel.:{" "}
+                                                                {formatDependentPhone(
+                                                                    dependent.phoneNumber,
                                                                 )}
                                                             </p>
-                                                            <p className="text-[11px] text-j-gray-400">
-                                                                ID #{dependent.id}
-                                                            </p>
-                                                            <span
-                                                                className={twMerge(
-                                                                    "mt-1 inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold xl:hidden",
-                                                                    DEPENDENT_STATUS_BADGE_CLASS[
-                                                                        dependent.status
-                                                                    ],
-                                                                )}
-                                                            >
-                                                                {DEPENDENT_STATUS_LABEL[
+                                                        </div>
+
+                                                        <span
+                                                            className={twMerge(
+                                                                "hidden w-fit justify-self-center rounded-full px-2.5 py-1 text-xs font-bold xl:inline-flex",
+                                                                DEPENDENT_STATUS_BADGE_CLASS[
                                                                     dependent.status
-                                                                ] ?? dependent.status}
-                                                            </span>
+                                                                ],
+                                                            )}
+                                                        >
+                                                            {DEPENDENT_STATUS_LABEL[dependent.status] ??
+                                                                dependent.status}
+                                                        </span>
+
+                                                        <div
+                                                            id={
+                                                                index === 0
+                                                                    ? "tour-dependents-actions"
+                                                                    : undefined
+                                                            }
+                                                            className="grid grid-cols-3 gap-2"
+                                                        >
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleOpenDetail(dependent)}
+                                                                aria-label={`Visualizar ${dependent.name}`}
+                                                                title="Visualizar"
+                                                                className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 transition-colors hover:bg-blue-100 record-action"
+                                                            >
+                                                                <Eye size={15} aria-hidden="true" />
+                                                                <span className="hidden sm:inline">
+                                                                    Visualizar
+                                                                </span>
+                                                            </button>
+
+                                                            {canToggleStatus && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        handleOpenLifecycle(
+                                                                            dependent,
+                                                                            dependent.status === "ACTIVE"
+                                                                                ? "DISABLE"
+                                                                                : "ENABLE",
+                                                                        )
+                                                                    }
+                                                                    aria-label={`${dependent.status === "ACTIVE" ? "Desativar" : "Ativar"} ${dependent.name}`}
+                                                                    title={
+                                                                        dependent.status === "ACTIVE"
+                                                                            ? "Desativar"
+                                                                            : "Ativar"
+                                                                    }
+                                                                    className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-purple-50 px-2 py-2 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100 record-action"
+                                                                >
+                                                                    <Power size={15} aria-hidden="true" />
+                                                                    <span className="hidden sm:inline">
+                                                                        {dependent.status === "ACTIVE"
+                                                                            ? "Desativar"
+                                                                            : "Ativar"}
+                                                                    </span>
+                                                                </button>
+                                                            )}
+
+
+                                                            {canDelete && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        handleOpenDelete(dependent)
+                                                                    }
+                                                                    aria-label={`Excluir ${dependent.name}`}
+                                                                    title="Excluir"
+                                                                    className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-2 text-xs font-bold text-red-500 transition-colors hover:bg-red-100 record-action-danger"
+                                                                >
+                                                                    <Trash2 size={15} aria-hidden="true" />
+                                                                    <span className="hidden sm:inline">
+                                                                        Excluir
+                                                                    </span>
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     </div>
-
-                                                    <div className="min-w-0">
-                                                        <p className="truncate text-sm font-bold text-j-gray-700">
-                                                            <span className="mr-1 text-xs font-bold text-j-gray-400 xl:hidden">
-                                                                Titular:
-                                                            </span>
-                                                            {dependent.ownerName || `Associado #${dependent.userId}`}
-                                                        </p>
-                                                        <p className="text-xs text-j-gray-500">
-                                                            ID #{dependent.userId}
-                                                        </p>
-                                                    </div>
-
-                                                    <div className="min-w-0">
-                                                        <p className="text-xs font-semibold text-j-gray-700">
-                                                            CPF: {formatDependentCpf(dependent.cpf)}
-                                                        </p>
-                                                        <p className="text-xs text-j-gray-500">
-                                                            Tel.:{" "}
-                                                            {formatDependentPhone(
-                                                                dependent.phoneNumber,
-                                                            )}
-                                                        </p>
-                                                    </div>
-
-                                                    <span
-                                                        className={twMerge(
-                                                            "hidden w-fit justify-self-center rounded-full px-2.5 py-1 text-xs font-bold xl:inline-flex",
-                                                            DEPENDENT_STATUS_BADGE_CLASS[
-                                                                dependent.status
-                                                            ],
-                                                        )}
-                                                    >
-                                                        {DEPENDENT_STATUS_LABEL[dependent.status] ??
-                                                            dependent.status}
-                                                    </span>
-
-                                                    <div
-                                                        id={
-                                                            index === 0
-                                                                ? "tour-dependents-actions"
-                                                                : undefined
-                                                        }
-                                                        className="grid grid-cols-2 gap-2 sm:grid-cols-4"
-                                                    >
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleOpenDetail(dependent)}
-                                                            aria-label={`Visualizar ${dependent.name}`}
-                                                            title="Visualizar"
-                                                            className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 transition-colors hover:bg-blue-100"
-                                                        >
-                                                            <Eye size={15} aria-hidden="true" />
-                                                            <span className="hidden sm:inline">
-                                                                Visualizar
-                                                            </span>
-                                                        </button>
-
-                                                        {canToggleStatus && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    handleOpenLifecycle(
-                                                                        dependent,
-                                                                        dependent.status === "ACTIVE"
-                                                                            ? "DISABLE"
-                                                                            : "ENABLE",
-                                                                    )
-                                                                }
-                                                                aria-label={`${dependent.status === "ACTIVE" ? "Desativar" : "Ativar"} ${dependent.name}`}
-                                                                title={
-                                                                    dependent.status === "ACTIVE"
-                                                                        ? "Desativar"
-                                                                        : "Ativar"
-                                                                }
-                                                                className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-purple-50 px-2 py-2 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"
-                                                            >
-                                                                <Power size={15} aria-hidden="true" />
-                                                                <span className="hidden sm:inline">
-                                                                    {dependent.status === "ACTIVE"
-                                                                        ? "Desativar"
-                                                                        : "Ativar"}
-                                                                </span>
-                                                            </button>
-                                                        )}
-
-                                                        {canToggleArchive && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    handleOpenLifecycle(
-                                                                        dependent,
-                                                                        isArchived
-                                                                            ? "UNARCHIVE"
-                                                                            : "ARCHIVE",
-                                                                    )
-                                                                }
-                                                                aria-label={`${isArchived ? "Desarquivar" : "Arquivar"} ${dependent.name}`}
-                                                                title={
-                                                                    isArchived
-                                                                        ? "Desarquivar"
-                                                                        : "Arquivar"
-                                                                }
-                                                                className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-amber-50 px-2 py-2 text-xs font-bold text-amber-700 transition-colors hover:bg-amber-100"
-                                                            >
-                                                                {isArchived ? (
-                                                                    <ArchiveRestore
-                                                                        size={15}
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                ) : (
-                                                                    <Archive
-                                                                        size={15}
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                )}
-                                                                <span className="hidden sm:inline">
-                                                                    {isArchived
-                                                                        ? "Desarquivar"
-                                                                        : "Arquivar"}
-                                                                </span>
-                                                            </button>
-                                                        )}
-
-                                                        {canDelete && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    handleOpenDelete(dependent)
-                                                                }
-                                                                aria-label={`Excluir ${dependent.name}`}
-                                                                title="Excluir"
-                                                                className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-2 text-xs font-bold text-red-500 transition-colors hover:bg-red-100"
-                                                            >
-                                                                <Trash2 size={15} aria-hidden="true" />
-                                                                <span className="hidden sm:inline">
-                                                                    Excluir
-                                                                </span>
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
 
-                        {data && !error && (
-                            <ListPagination
-                                itemLabel="dependente"
-                                isFetching={isFetching}
-                                pagination={{
-                                    pageIndex: data.number,
-                                    pageSize,
-                                    pageCount: data.totalPages,
-                                    rowCount: data.totalElements,
-                                    onChange: (next) => {
-                                        setPage(
-                                            next.pageSize !== pageSize ? 0 : next.pageIndex,
-                                        );
-                                        setPageSize(next.pageSize);
-                                    },
-                                }}
-                            />
-                        )}
-                    </section>
+                        </section>
+                            {data && !error && (
+                                <ListPagination
+                                    itemLabel="dependente"
+                                    isFetching={isFetching}
+                                    pagination={{
+                                        pageIndex: data.number,
+                                        pageSize,
+                                        pageCount: data.totalPages,
+                                        rowCount: data.totalElements,
+                                        onChange: (next) => {
+                                            setPage(
+                                                next.pageSize !== pageSize ? 0 : next.pageIndex,
+                                            );
+                                            setPageSize(next.pageSize);
+                                        },
+                                    }}
+                                />
+                            )}
+                    </div>
                 )}
             </div>
         </div>

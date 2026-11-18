@@ -8,11 +8,11 @@ import { DraftPublicationActionModal } from "./DraftPublicationActionModal";
 import type { PublicationListItem } from "./PublicationList";
 
 const buttons = {
-    edit: { label: "Editar", icon: Pencil, color: "bg-yellow-50 text-j-gray-700 hover:bg-yellow-100" },
-    archive: { label: "Arquivar", icon: Archive, color: "bg-blue-50 text-j-blue-700 hover:bg-blue-100" },
-    cancel: { label: "Cancelar", icon: XCircle, color: "bg-red-50 text-red-500 hover:bg-red-100" },
-    finish: { label: "Encerrar", icon: Flag, color: "bg-blue-50 text-j-blue-700 hover:bg-blue-100" },
-    delete: { label: "Excluir", icon: Trash2, color: "bg-red-50 text-red-500 hover:bg-red-100" },
+    edit: { label: "Editar", icon: Pencil, color: "bg-yellow-50 text-j-gray-700 hover:bg-yellow-100 record-action" },
+    archive: { label: "Arquivar", icon: Archive, color: "bg-blue-50 text-j-blue-700 hover:bg-blue-100 record-action" },
+    cancel: { label: "Cancelar", icon: XCircle, color: "bg-red-50 text-red-500 hover:bg-red-100 record-action-danger" },
+    finish: { label: "Encerrar", icon: Flag, color: "bg-blue-50 text-j-blue-700 hover:bg-blue-100 record-action" },
+    delete: { label: "Excluir", icon: Trash2, color: "bg-red-50 text-red-500 hover:bg-red-100 record-action-danger" },
 };
 
 export function PublishedPublicationCardActions({ publication }: { publication: PublicationListItem }) {

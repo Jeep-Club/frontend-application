@@ -31,13 +31,19 @@ export function ProfileTabEmptyState({
                 <div className="w-full shrink-0 sm:w-60">{action}</div>
             </div>
 
-            <div className="flex min-h-52 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white px-5 py-10 text-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-j-blue-50 text-j-blue-700">
-                    <Icon size={22} aria-hidden="true" />
-                </span>
-                <p className="mt-3 font-bold text-j-gray-700">{emptyTitle}</p>
-                <p className="mt-1 max-w-md text-sm text-j-gray-500">{emptyDescription}</p>
-            </div>
+            <ProfileEmptyPanel icon={Icon} title={emptyTitle} description={emptyDescription} />
         </section>
+    );
+}
+
+export function ProfileEmptyPanel({ icon: Icon, title, description }: { icon: LucideIcon; title: ReactNode; description?: string }) {
+    return (
+        <div className="flex min-h-52 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white px-5 py-10 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-j-blue-50 text-j-blue-700">
+                <Icon size={22} aria-hidden="true" />
+            </span>
+            <p className="mt-3 font-bold text-j-gray-700">{title}</p>
+            {description && <p className="mt-1 max-w-md text-sm text-j-gray-500">{description}</p>}
+        </div>
     );
 }

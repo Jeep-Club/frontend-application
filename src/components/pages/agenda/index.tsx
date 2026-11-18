@@ -157,7 +157,7 @@ export default function AgendaPage() {
     }
 
     return <div className="min-h-full w-full p-3 pb-8 md:p-5">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
+        <div className="flex w-full flex-col gap-5">
             <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-1 text-xs text-j-gray-400 md:text-sm">
                 <Link href="/feed" className="transition-colors hover:text-j-blue-700">Home</Link>
                 <ChevronRight size={14} aria-hidden="true" />

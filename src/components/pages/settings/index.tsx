@@ -20,7 +20,7 @@ import {
     Smartphone,
     Sun,
     UserRound,
-    WalletCards,
+    CircleDollarSign,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -91,7 +91,7 @@ const SECTIONS: SettingSection[] = [
         options: [
             { key: "event-history", label: "Histórico de eventos", description: "Inscrições e participações", icon: CalendarCheck },
             { key: "account-activity", label: "Atividade da conta", description: "Alterações feitas no cadastro", icon: ListChecks },
-            { key: "financial-history", label: "Gestão de débitos", description: "Pagamentos e cobranças", icon: WalletCards },
+            { key: "financial-history", label: "Gestão de débitos", description: "Pagamentos e cobranças", icon: CircleDollarSign },
         ],
     },
     {

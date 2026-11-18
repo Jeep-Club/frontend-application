@@ -17,5 +17,5 @@ export async function resolveMembershipAccess(request: () => Promise<unknown>): 
 }
 
 export function canAccessMembershipPage(access: MembershipAccess, pathname: string): boolean {
-    return access === "allowed" || pathname === PAYMENT_HISTORY_PATH;
+    return access === "allowed" || [PAYMENT_HISTORY_PATH, "/configuracoes", "/tutoriais"].includes(pathname);
 }

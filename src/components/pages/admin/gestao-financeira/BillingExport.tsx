@@ -19,7 +19,7 @@ export function BillingExport({ kind, filters = {}, variant = "primary", classNa
     }
     const statuses = { definitions: ["ACTIVE", "INACTIVE", "ARCHIVED"], cycles: ["GENERATED", "FINISHED", "CANCELED", "ARCHIVED"], "member-charges": ["PENDING", "PAID", "CANCELED"], payments: ["PENDING_VALIDATION", "CONFIRMED", "REJECTED", "CANCELED"], refunds: ["ELIGIBLE", "REQUESTED", "APPROVED", "REJECTED", "REFUNDED", "EXPIRED", "CANCELED"] };
     const fields = [
-        ["id", "Código do registro", "number"], ["userId", "Matrícula do associado", "number"],
+        ["id", "Código do registro", "number"],
         ["chargeDefinitionId", "Código da definição", "number"], ["chargeCycleId", "Código do ciclo", "number"], ["eventId", "Código do evento", "number"],
         ["year", "Ano", "number"], ["month", "Mês", "number"], ["dueFrom", "Vencimento de", "date"], ["dueTo", "Vencimento até", "date"],
         ["from", "Período desde", "datetime-local"], ["to", "Período até", "datetime-local"],

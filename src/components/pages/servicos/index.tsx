@@ -8,6 +8,7 @@ import { Button } from "@/components/common/button";
 import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
 import { getServicesPageTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
+import { PageHeader } from "@/components/common/page-header";
 import { PublicationDetailModal } from "@/components/pages/feed/PublicationDetailModal";
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
@@ -75,24 +76,11 @@ export default function ServicesPage() {
     }
 
     return <main className="min-h-full w-full px-3 py-4 pb-8 md:px-6 md:py-6">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
-            <header id="tour-services-header" className="rounded-2xl border border-j-gray-200 bg-j-white p-5 shadow-sm sm:p-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="flex items-start gap-4">
-                        <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-j-blue-50 text-j-blue-800"><Store size={23} aria-hidden="true" /></span>
-                        <div className="min-w-0">
-                            <h1 className="text-2xl font-extrabold text-j-blue-900 md:text-3xl">Serviços</h1>
-                            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-j-gray-600">Encontre serviços oferecidos pela comunidade do Jeep Clube Tamoios e entre em contato com quem publicou.</p>
-                        </div>
-                    </div>
-                    <TourHelpButton
-                        id="tour-header-help-btn"
-                        onClick={restartTour}
-                        label="Como usar os serviços?"
-                        className="w-full shrink-0 justify-center sm:w-auto"
-                    />
-                </div>
-            </header>
+        <div className="flex w-full flex-col gap-5">
+            <div className="space-y-2">
+                <PageHeader id="tour-services-header" actions={<TourHelpButton id="tour-header-help-btn" onClick={restartTour} label="Como usar os serviços?" className="w-full justify-center sm:w-auto" />} title="Serviços" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Serviços" }]} />
+                <p className="max-w-2xl text-sm leading-relaxed text-secondary">Encontre serviços oferecidos pela comunidade do Jeep Clube Tamoios e entre em contato com quem publicou.</p>
+            </div>
 
             <div id="tour-services-list" className="flex flex-col gap-5">
             {query.isPending ? <div role="status" className="flex min-h-56 items-center justify-center gap-3 rounded-2xl border border-j-gray-200 bg-j-white text-sm text-j-gray-500"><LoaderCircle size={20} className="animate-spin" aria-hidden="true" />Carregando serviços...</div>

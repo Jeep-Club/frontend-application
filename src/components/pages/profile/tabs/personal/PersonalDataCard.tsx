@@ -67,9 +67,14 @@ export function PersonalDataCard({
                 <div className="absolute -right-10 -top-16 h-44 w-44 rounded-full border-[28px] border-j-blue-700/70" />
                 <div className="absolute bottom-0 left-0 h-1 w-full bg-j-yellow-300" />
                 <div className="relative z-10 flex items-start justify-between gap-3">
-                    <div>
-                        <h2 className="text-sm font-extrabold text-j-white">Dados pessoais</h2>
-                        <p className="mt-0.5 text-xs text-j-white/60">Informações do associado</p>
+                    <div className="flex items-center gap-2.5">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-j-yellow-300">
+                            <UserRound size={18} aria-hidden="true" />
+                        </span>
+                        <div>
+                            <h2 className="text-sm font-extrabold text-j-white">Dados pessoais</h2>
+                            <p className="mt-0.5 text-xs text-j-white/60">Informações do associado</p>
+                        </div>
                     </div>
 
                 </div>
