@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const columns = ['Tela', 'Caso', 'Erro simulado', 'Resposta esperada', 'Resultado obtido', 'Estado', 'Quem fez (autor do commit; não identifica executor)', 'Quando commit (ISO)', 'Quando executado (ISO)', 'Commit', 'Árvore com alterações', 'Motor', 'Projeto', 'Arquivo', 'Erro'];
+export const columns = ['Tela', 'Erro simulado', 'Resposta esperada', 'Resultado', 'Quem fez (autor do commit)', 'Quando executado (ISO)', 'Caso técnico', 'Motor', 'Projeto', 'Arquivo', 'Detalhes da falha', 'Quando commit (ISO)', 'Commit', 'Árvore com alterações'];
 
 /** Quote every field and neutralize spreadsheet formulas, including leading whitespace. */
 export function csvField(value) {
@@ -15,10 +15,10 @@ export function csvField(value) {
 }
 
 export function toCsv(rows, context = {}) {
-    return '\uFEFF' + [columns, ...rows.map(row => [
-        row.screen, row.title, row.simulatedError, row.expected, row.actual, row.state,
-        context.author, context.commitDate, context.executedAt, context.commit, context.dirty,
-        row.engine, row.project, row.file, row.error,
+    return '\uFEFF' + [columns, ...rows.filter(row => row.documented || row.state === 'infrastructure-error').map(row => [
+        row.screen, row.simulatedError, row.response, row.actual,
+        context.author, context.executedAt, row.title, row.engine, row.project,
+        relativeTestPath(row.file, row.engine), row.error, context.commitDate, context.commit, context.dirty,
     ])].map(fields => fields.map(csvField).join(';')).join('\r\n') + '\r\n';
 }
 
@@ -28,11 +28,19 @@ function errorText(value) {
     return String(value ?? '');
 }
 
+export function relativeTestPath(file, engine) {
+    if (!file) return '';
+    const normalized = String(file).replaceAll('\\', '/');
+    const marker = normalized.toLowerCase().lastIndexOf('/tests/');
+    if (marker >= 0) return normalized.slice(marker);
+    return normalized.startsWith('tests/') ? `/${normalized}` : path.isAbsolute(file) || /^[A-Za-z]:\//.test(normalized) ? '' : engine === 'Playwright' ? `/tests/browser/${normalized}` : normalized;
+}
+
 function decorate(row, cases) {
-    const metadata = cases.find(entry => typeof entry.match === 'string' && row.title.includes(entry.match));
-    return { ...row, title: metadata?.title ?? row.title, screen: metadata?.screen ?? (row.file || 'Infraestrutura'),
-        simulatedError: metadata?.error ?? 'Não especificado; consultar cenário',
-        expected: row.expected === 'NAO' ? 'NAO' : metadata?.expected ?? 'OK' };
+    const metadata = cases.find(entry => typeof entry.match === 'string' && row.title.includes(entry.match) && (!entry.engine || entry.engine === row.engine));
+    return { ...row, documented: Boolean(metadata), screen: metadata?.screen ?? 'Execução dos testes',
+        simulatedError: metadata?.error ?? 'Falha na execução dos testes',
+        response: metadata?.response ?? 'Os testes devem ser executados e seus resultados registrados.' };
 }
 
 export function normalizeJest(report, cases = []) {
@@ -70,7 +78,9 @@ export function normalizePlaywright(report, cases = []) {
             const last = results.at(-1);
             const nonexecuted = !last || ['skipped', 'interrupted'].includes(last.status);
             const expectedFailed = test.expectedStatus === 'failed';
-            rows.push(decorate({ engine: 'Playwright', project: test.projectName ?? test.projectId ?? '', file: spec.file ?? file,
+            const specFile = spec.file ?? file;
+            const reportFile = specFile && report.config?.rootDir && !path.isAbsolute(specFile) ? path.join(report.config.rootDir, specFile) : specFile;
+            rows.push(decorate({ engine: 'Playwright', project: test.projectName ?? test.projectId ?? '', file: reportFile,
                 title: [...titles, spec.title].join(' › '), expected: expectedFailed ? 'NAO' : 'OK',
                 actual: nonexecuted ? 'NAO EXECUTADO' : last.status === 'passed' ? 'OK' : 'NAO',
                 state: test.status ?? last?.status ?? 'not-run',
@@ -114,11 +124,11 @@ async function execute(cli, args, env) {
     });
 }
 
-/** Each invocation owns new JSON paths. Native coverage/HTML directories retain their runner defaults. */
+/** Each invocation keeps runner reports and coverage together in a new directory. */
 export async function main(args = process.argv.slice(2)) {
     const options = parseArgs(args);
     if (options.help) {
-        console.log('Uso: npm run test:docs -- [--jest-pattern=expressão] [--pw-file=arquivo] [--pw-config=arquivo] [--project=nome]\nFiltros jest-pattern, pw-file e project podem ser repetidos. Sem filtros: Jest completo com coverage e Playwright completo.\nCSV/JSON por execução em tests/docs; cobertura em coverage; HTML nativo em playwright-report.\nQuem fez identifica o autor do commit HEAD, nunca o executor dos testes.');
+        console.log('Uso: npm run test:docs -- [--jest-pattern=expressão] [--pw-file=arquivo] [--pw-config=arquivo] [--project=nome]\nFiltros jest-pattern, pw-file e project podem ser repetidos. Sem filtros: Jest completo com coverage e Playwright completo.\nCSV, JSON, cobertura Jest e HTML Playwright ficam juntos em tests/docs.\nQuem fez identifica o autor do commit HEAD, nunca o executor dos testes.');
         return 0;
     }
     const executedAt = new Date().toISOString();
@@ -143,10 +153,10 @@ export async function main(args = process.argv.slice(2)) {
     } catch (error) { if (error.code !== 'ENOENT') infrastructure('Metadados', error); }
     const jobs = [
         { name: 'Jest', cli: 'node_modules/jest/bin/jest.js', file: path.join(directory, 'jest.json'), normalize: normalizeJest,
-            args: ['--runInBand', '--coverage', '--json', `--outputFile=${path.join(directory, 'jest.json')}`, ...options.jestPatterns.map(value => `--testPathPatterns=${value}`)] },
+            args: ['--runInBand', '--coverage', `--coverageDirectory=${path.join(directory, 'coverage')}`, '--json', `--outputFile=${path.join(directory, 'jest.json')}`, ...options.jestPatterns.map(value => `--testPathPatterns=${value}`)] },
         { name: 'Playwright', cli: 'node_modules/@playwright/test/cli.js', file: path.join(directory, 'playwright.json'), normalize: normalizePlaywright,
             args: ['test', ...options.pwFiles, ...(options.pwConfig ? [`--config=${options.pwConfig}`] : []), ...options.projects.map(value => `--project=${value}`), '--reporter=list,html,json'],
-            env: { PLAYWRIGHT_JSON_OUTPUT_FILE: path.join(directory, 'playwright.json'), PLAYWRIGHT_HTML_OPEN: 'never' } },
+            env: { PLAYWRIGHT_JSON_OUTPUT_FILE: path.join(directory, 'playwright.json'), PLAYWRIGHT_HTML_OUTPUT_DIR: path.join(directory, 'playwright-report'), PLAYWRIGHT_HTML_OPEN: 'never' } },
     ];
     try {
         for (const job of jobs) {

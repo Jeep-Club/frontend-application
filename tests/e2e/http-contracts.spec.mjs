@@ -6,11 +6,9 @@ import { spawn } from 'node:child_process';
 import { seedLocalContracts } from './seed-local.mjs';
 import { readActionFrame } from './action-wire.mjs';
 
-// No shared Playwright configuration: this suite can be merged alongside the other branch.
-// Run after npm run build: npx playwright test tests/e2e/http-contracts.spec.mjs --workers=1
+// Run after npm run build: npm run test:e2e:contracts
 // Uses the installed Chrome; E2E_BROWSER_CHANNEL can select another installed channel.
 test.use({ channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
-test.describe.configure({ mode: 'serial' });
 let seed, api, next, baseURL, manifest;
 let scenario;
 let calls = [];

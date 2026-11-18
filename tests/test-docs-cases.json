@@ -1,15 +1,117 @@
 [
-  { "match": "ERR-FOCUS", "screen": "/feed/[id] → /feed", "error": "Revalidação assíncrona de Membership na navegação. Esperado: Tab contido no diálogo, fechamento por Escape e foco restaurado ao link acionador após a verificação.", "expected": "OK" },
-  { "match": "ERR-MEMBERSHIP", "screen": "/feed → /financeiro", "error": "HTTP 402 MEMBERSHIP_PAYMENT_REQUIRED. Esperado: bloquear conteúdo e encaminhar aos débitos; membership não concede permissões administrativas.", "expected": "OK" },
-  { "match": "ERR-403", "screen": "/feed/[id]", "error": "HTTP 403: acesso negado. Esperado: mensagem de acesso negado sem conteúdo protegido; sessão preservada.", "expected": "OK", "status": 403 },
-  { "match": "ERR-404", "screen": "/feed/[id]", "error": "HTTP 404: publicação indisponível. Esperado: mensagem de não encontrado, sem falso estado vazio ou logout.", "expected": "OK", "status": 404 },
-  { "match": "ERR-503", "screen": "/feed/[id]", "error": "HTTP 503: indisponibilidade temporária. Esperado: erro recuperável, nova tentativa disponível e sessão preservada.", "expected": "OK", "status": 503 },
-  { "match": "ERR-LIKE", "screen": "/feed/[id]", "error": "POST de curtida retorna HTTP 500. Esperado: não alterar likedByMe ou contador; permitir nova tentativa.", "expected": "OK" },
-  { "match": "ERR-COMMENT", "screen": "/feed/[id]", "error": "POST de comentário retorna HTTP 500. Esperado: preservar rascunho, não exibir comentário falso e permitir reenvio.", "expected": "OK" },
-  { "match": "ERR-LOGIN", "screen": "/login", "error": "HTTP 401 INVALID_CREDENTIALS. Esperado: mensagem de credenciais inválidas sem tratar como sessão expirada.", "expected": "OK" },
-  { "match": "ERR-NETWORK", "screen": "Transporte HTTP de todas as telas", "error": "Falha de conexão fetch. Esperado: erro público sem expor URL privada ou stack do servidor.", "expected": "OK" },
-  { "match": "curtida confirmada permite recuperar contadores", "screen": "/feed/[id]", "error": "Escrita de curtida confirmada, releitura HTTP 500. Esperado: preservar curtida e recuperar total sem repetir escrita.", "expected": "OK" },
-  { "match": "comentários paginam autoria", "screen": "/feed/[id]", "error": "Consulta de comentários HTTP 500 seguida de nova tentativa bem-sucedida. Esperado: loading, erro, recuperação e vazio distintos.", "expected": "OK" },
-  { "match": "404 de evento na inscrição", "screen": "/feed/[id]/register", "error": "EVENT_NOT_FOUND versus EVENT_REGISTRATION_NOT_FOUND. Esperado: distinguir erro real da ausência de inscrição.", "expected": "OK" },
-  { "match": "emergency permission does not grant", "screen": "/admin/dados-medicos", "error": "Sessão com authority de emergência mas sem HEALTH_READ/EXPORT. Esperado: negar rota sem consultar dados clínicos.", "expected": "OK" }
+  {
+    "match": "ERR-FOCUS",
+    "screen": "/feed e detalhe da publicação",
+    "error": "Fechar o detalhe após a verificação de acesso.",
+    "response": "O foco volta para o link que abriu a publicação.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "ERR-MEMBERSHIP",
+    "screen": "/feed",
+    "error": "Associado com acesso bloqueado por pagamento pendente.",
+    "response": "Exibe a página de débitos e oculta as publicações.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "ERR-403",
+    "screen": "/feed — detalhe da publicação",
+    "error": "Usuário sem permissão para visualizar a publicação.",
+    "status": 403,
+    "response": "Exibe aviso de erro sem revelar o conteúdo e oferece nova tentativa.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "ERR-404",
+    "screen": "/feed — detalhe da publicação",
+    "error": "Publicação não encontrada.",
+    "status": 404,
+    "response": "Exibe aviso de erro e oferece nova tentativa.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "ERR-503",
+    "screen": "/feed — detalhe da publicação",
+    "error": "Serviço temporariamente indisponível.",
+    "status": 503,
+    "response": "Exibe aviso de erro e oferece nova tentativa.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "ERR-LIKE",
+    "screen": "/feed — detalhe da publicação",
+    "error": "Falha ao curtir uma publicação.",
+    "response": "Exibe aviso, mantém a curtida e o contador anteriores e permite tentar novamente.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "ERR-COMMENT",
+    "screen": "/feed — comentários",
+    "error": "Falha ao enviar um comentário.",
+    "response": "Mantém o texto digitado e permite reenviar sem criar comentário duplicado.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "ERR-LOGIN",
+    "screen": "/login",
+    "error": "CPF ou senha inválidos.",
+    "response": "Exibe a mensagem de credenciais inválidas sem redirecionar.",
+    "engine": "Jest"
+  },
+  {
+    "match": "ERR-NETWORK",
+    "screen": "Comunicação com o serviço",
+    "error": "Falha de conexão com o serviço.",
+    "response": "Retorna um erro sem expor endereço privado ou detalhes internos.",
+    "engine": "Jest"
+  },
+  {
+    "match": "curtida confirmada permite recuperar contadores",
+    "screen": "/feed — detalhe da publicação",
+    "error": "Falha ao atualizar o contador depois de curtir.",
+    "response": "Mantém a curtida e permite recuperar o contador sem repetir a operação.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "comentários paginam autoria",
+    "screen": "/feed — comentários",
+    "error": "Falha ao carregar comentários.",
+    "response": "Exibe o estado de erro e permite tentar novamente.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "404 de evento na inscrição",
+    "screen": "/feed — inscrição em evento",
+    "error": "Evento da inscrição não encontrado.",
+    "response": "Exibe erro e permite tentar novamente.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "emergency permission does not grant",
+    "screen": "/admin/dados-medicos",
+    "error": "Usuário tem acesso de emergência, mas não tem permissão para consultar dados médicos.",
+    "response": "Bloqueia o acesso geral aos dados médicos.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "unprivileged users cannot render the administrative users page",
+    "screen": "/admin/usuarios",
+    "error": "Usuário sem permissão para consultar usuários.",
+    "response": "Não exibe a administração de usuários e mantém a sessão.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "login shows the API error in the browser",
+    "screen": "/login",
+    "error": "CPF ou senha inválidos.",
+    "response": "Exibe mensagem de credenciais inválidas e permanece no login.",
+    "engine": "Playwright"
+  },
+  {
+    "match": "a real query rejection restores its toast",
+    "screen": "/profile — ferramentas",
+    "error": "Usuário sem permissão para consultar ferramentas.",
+    "response": "Exibe aviso de erro e mantém a sessão.",
+    "engine": "Playwright"
+  }
 ]

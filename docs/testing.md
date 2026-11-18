@@ -8,7 +8,7 @@ Os comandos disponíveis ficam no [README](../README.md). Este guia descreve o a
 `tests/docs/<início-ISO>-<id>/resultados.csv`, `jest.json`, `playwright.json` e
 `execucao.json`. A pasta é ignorada pelo Git. Sem filtros, executa as suítes
 completas configuradas; exige o mesmo ambiente e navegadores do Playwright normal.
-Os relatórios nativos continuam em `coverage/` (Jest) e `playwright-report/`
+  O coverage nativo do Jest fica em `tests/docs/<execução>/coverage/` e o relatório Playwright em `tests/docs/<execução>/playwright-report/`
 (HTML, capturas e traces ligados ao resultado). Não é necessário instalar biblioteca
 de planilhas: CSV UTF-8 com BOM, separador `;` e campos escapados abre no Excel.
 
@@ -24,8 +24,8 @@ encerramento automático de servidores não funciona, pode-se iniciar o Next de
 testes separadamente com o ambiente sintético da configuração e definir
 `JEEP_TEST_EXTERNAL_SERVER=1` para o config `feed-local`. Não usar API real.
 
-As colunas separam tela, caso, erro simulado, resposta esperada, resultado obtido,
-estado, autor/data/SHA do commit, início real da execução e árvore alterada.
+As primeiras colunas descrevem a tela, erro simulado, comportamento esperado e resultado.
+Informações técnicas, incluindo caminho relativo a `/tests` e SHA do commit, ficam ao final.
 **Quem fez** significa **autor do commit HEAD**, não identidade comprovada do
 executor. Os metadados vêm do checkout Git (inclusive offline), não de uma consulta
 ao GitHub; árvore alterada é registrada para não atribuir código não commitado a um
@@ -39,9 +39,9 @@ se houver falha, instabilidade, skip ou relatório ausente; não transforma aus�
 de evidência em aprovação. Cada execução usa arquivos novos, sem importar JSON antigo.
 
 Os casos documentados ficam em `tests/test-docs-cases.json`, identificados pelo
-texto do título (IDs `ERR-*` nos testes novos). Casos sem metadados usam o arquivo
-como tela e indicam que o erro simulado não foi especificado; não há inferência de
-erro ou tela a partir de nomes vagos. Amplie esse cadastro ao documentar novos fluxos.
+texto do título e motor de teste (IDs `ERR-*` nos testes novos). A planilha inclui
+apenas cenários com descrição revisada e falhas de infraestrutura; os relatórios JSON
+contêm os resultados completos. Amplie esse cadastro ao documentar novos fluxos.
 Os testes de erro usam APIs sintéticas e cobrem restrição, não encontrado,
 indisponibilidade, falha de curtida, preservação de comentário, rede e credenciais.
 Não comprovam autorização ou persistência do backend real.
@@ -54,6 +54,18 @@ comprova o redirecionamento aos débitos sem exibir o feed quando a API retorna 
 O normalizador de relatórios é validado por
 `node --test tests/scripts/test-docs.test.mjs`, com sucesso/falha/skip,
 expected-fail, infraestrutura e proteção contra fórmulas em células de CSV.
+
+  Os contratos com backend local usam `npm run build` seguido de
+  `npm run test:e2e:contracts`. A configuração `playwright.contracts.config.ts`
+  grava HTML, JSON e traces em `tests/docs/contracts/`. Exigem Chrome instalado,
+  backend de desenvolvimento ativo e um MySQL **exclusivo para testes**: os seeds
+  criam usuários, permissões, cobranças e publicações e não removem esses dados.
+  Configure o backend para um schema isolado antes de executá-los; o endereço local
+  pode ser informado em `E2E_API_URL`. As credenciais de bootstrap são lidas de
+  `application-dev.properties` do backend. Para gerar também a planilha e cobertura
+  Jest da mesma rodada, use `npm run test:docs -- --pw-config=playwright.contracts.config.ts`.
+  Erros específicos são simulados por um proxy local; os demais dados e contratos
+  vêm da API local. Esses testes não cobrem todas as actions da aplicação.
 
 ## Feed e detalhe de publicações (WEB-224)
 
@@ -118,7 +130,7 @@ exercita o cleanup e o cache, sem se apresentar como um fluxo completo entre dua
 | [Storybook](../.storybook/main.ts) | Catálogo isolado de componentes com autodocs, controles e seletor de viewport. Não executa uma suíte visual ou E2E |
 | [Playwright](../playwright.config.ts) | Chromium, Firefox e WebKit reais; pilotos em tests/browser/, excluídos da coleta Jest. Interações, teclado, reflow e capturas exploratórias, sem autenticação ou backend |
 
-O Jest coleta cobertura por padrão, com relatórios text/lcov/html em coverage. A coleta está restrita aos utilitários definidos na configuração, não à aplicação inteira. Os argumentos sem cobertura/cache no README evitam esses artefatos, mas testes individuais ainda podem escrever arquivos.
+  O Jest coleta cobertura por padrão, com relatórios text/lcov/html em `tests/docs/coverage/` (ou na pasta da execução ao usar `test:docs`). A coleta está restrita aos utilitários definidos na configuração, não à aplicação inteira. Os argumentos sem cobertura/cache no README evitam esses artefatos, mas testes individuais ainda podem escrever arquivos.
 
 ## Organização e escolha do teste
 

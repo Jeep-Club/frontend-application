@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { csvField, toCsv, normalizeJest, normalizePlaywright, parseArgs } from '../../scripts/test-docs.mjs';
+import { csvField, toCsv, normalizeJest, normalizePlaywright, parseArgs, relativeTestPath } from '../../scripts/test-docs.mjs';
 
 test('CSV uses BOM, quoted semicolon fields and formula-safe spreadsheet values', () => {
     assert.equal(csvField('  =SUM(1;2)'), '"\'  =SUM(1;2)"');
@@ -8,9 +8,14 @@ test('CSV uses BOM, quoted semicolon fields and formula-safe spreadsheet values'
     assert.equal(csvField('-1'), '"\'-1"');
     assert.equal(csvField('+x'), '"\'+x"');
     assert.equal(csvField('a;"b"\nc'), '"a;""b""\nc"');
-    const csv = toCsv([{ title: 'Teste', actual: 'OK' }], { author: '=danger' });
-    assert.ok(csv.startsWith('\uFEFF"Tela";"Caso"'));
-    assert.ok(csv.includes('autor do commit; não identifica executor'));
+    const csv = toCsv([{ title: 'Teste', actual: 'OK', documented: true, screen: '/feed', simulatedError: 'Sem acesso', response: 'Exibe erro', file: 'C:/projeto/tests/feed.spec.ts' }], { author: '=danger' });
+    assert.ok(csv.startsWith('\uFEFF"Tela";"Erro simulado";"Resposta esperada";"Resultado"'));
+    assert.ok(csv.includes('Exibe erro'));
+    assert.ok(csv.includes('/tests/feed.spec.ts'));
+    assert.ok(!csv.includes('C:/projeto'));
+    assert.equal(relativeTestPath('C:\\projeto\\tests\\feed.spec.ts'), '/tests/feed.spec.ts');
+    assert.equal(relativeTestPath('/tests/feed.spec.ts'), '/tests/feed.spec.ts');
+    assert.equal(relativeTestPath('feed/errors.spec.ts', 'Playwright'), '/tests/browser/feed/errors.spec.ts');
     assert.ok(csv.includes('"\'=danger"'));
 });
 
@@ -23,7 +28,9 @@ test('Jest separates success, failure, pending and uncollected suite errors', ()
     ]);
     assert.deepEqual(rows.map(row => row.actual), ['OK', 'NAO', 'NAO EXECUTADO', 'NAO EXECUTADO', 'NAO EXECUTADO']);
     assert.equal(rows[0].screen, '/feed');
-    assert.equal(rows[1].simulatedError, 'Não especificado; consultar cenário');
+    assert.equal(rows[1].documented, false);
+    assert.equal(rows[0].documented, true);
+    assert.equal(toCsv(rows).split('\r\n').length, 3);
     assert.equal(rows[1].error, 'erro real');
     assert.equal(rows[4].error, 'SyntaxError');
     assert.throws(() => normalizeJest({}), /testResults/);
