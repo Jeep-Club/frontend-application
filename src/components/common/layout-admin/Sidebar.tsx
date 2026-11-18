@@ -1,6 +1,7 @@
 "use client";
 
 import Link, { useLinkStatus } from "next/link";
+import { Fragment } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { CalendarRange, HelpCircle, LoaderCircle, LogOut, Megaphone, Newspaper, Settings, ShieldCheck, Store, UserRound, WalletCards, X } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
@@ -15,12 +16,12 @@ import { LogoutConfirmationModal } from "./LogoutConfirmationModal";
 import styles from "./Sidebar.module.css";
 
 const navItems = [
-    { href: "/feed", label: "Feed", icon: Newspaper, desktopOnly: true },
-    { href: "/profile", label: "Conta", icon: UserRound },
-    { href: "/financeiro", label: "Gestão de débitos", icon: WalletCards },
+    { href: "/feed", label: "Feed", icon: Newspaper },
+    { href: "/financeiro", label: "Histórico financeiro", icon: WalletCards },
     { href: "/agenda", label: "Agenda", icon: CalendarRange },
-    { href: "/servicos", label: "Serviços", icon: Store },
     { href: "/notificacoes", label: "Avisos", icon: Megaphone },
+    { href: "/profile", label: "Conta", icon: UserRound },
+    { href: "/servicos", label: "Serviços", icon: Store },
 ];
 
 function NavigationProgress() {
@@ -65,19 +66,20 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile, user
                 <h1 className={twMerge(styles.label, "text-xs font-black tracking-tight text-j-white")}>JEEP CLUBE TAMOIOS</h1>
             </header>
             <nav aria-label="Menu principal" className={styles.navigation}>
-                {navItems.map(({ href, label, icon: Icon, desktopOnly }) => <Link
-                    key={href} href={href} title={label} aria-label={label}
+                {navItems.map(({ href, label, icon: Icon }) => <Fragment key={href}>
+                    {href === "/financeiro" && canAccessAdmin && <Link href="/admin" id="tour-admin-link" title="Gestão" aria-label="Gestão" aria-current={pathname.startsWith("/admin") ? "page" : undefined} onClick={openBranchTour} className={itemClass(pathname.startsWith("/admin"))}>
+                        <ShieldCheck size={18} aria-hidden="true" /><span className={styles.label}>Gestão</span><NavigationProgress />
+                    </Link>}
+                    <Link
+                    href={href} title={label} aria-label={label}
                     aria-current={pathname.startsWith(href) ? "page" : undefined}
                     id={href === "/feed" ? "tour-nav-feed" : href === "/profile" ? "tour-manage-account-btn" : undefined}
                     onClick={href === "/profile" ? openBranchTour : onCloseMobile}
-                    className={twMerge(itemClass(pathname.startsWith(href)), desktopOnly && styles.desktopOnly)}
+                    className={itemClass(pathname.startsWith(href))}
                 >
                     <Icon size={18} aria-hidden="true" /><span className={styles.label}>{label}</span><NavigationProgress />
-                </Link>)}
+                </Link></Fragment>)}
                 {canAccessAdmin && <>
-                    <Link href="/admin" id="tour-admin-link" title="Gestão" aria-label="Gestão" aria-current={pathname.startsWith("/admin") ? "page" : undefined} onClick={openBranchTour} className={itemClass(pathname.startsWith("/admin"))}>
-                        <ShieldCheck size={18} aria-hidden="true" /><span className={styles.label}>Gestão</span><NavigationProgress />
-                    </Link>
                     {favoriteModules.length > 0 && <div className="mt-3 border-t border-j-blue-700 pt-2">
                         <p className={twMerge(styles.favoritesHeading, "text-[11px] font-bold uppercase tracking-wider text-j-transparent-white")}>Favoritos de gestão</p>
                         {favoriteModules.map(({ key, title, href, icon: Icon }) => {

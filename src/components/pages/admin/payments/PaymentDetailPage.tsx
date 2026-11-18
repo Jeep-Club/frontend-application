@@ -88,11 +88,11 @@ export default function PaymentDetailPage({ id }: { id: number }) {
                                 <span id="reason-help" className="text-xs font-normal text-j-gray-600">{reason.length}/500 caracteres. O motivo é obrigatório.</span>
                             </label>}
                             <div className="flex flex-wrap gap-3">
-                                <Button type="submit" isLoading={mutation.isPending} disabled={!canSubmit} className={decision === "reject" ? "bg-red-700 text-white hover:bg-red-800 hover:text-white" : "bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white"}>{mutation.isPending ? "Salvando decisão..." : decision === "confirm" ? "Confirmar pagamento" : "Rejeitar pagamento"}</Button>
-                                <Button disabled={mutation.isPending} onClick={() => { setDecision(null); mutation.reset(); }} className="bg-j-gray-100 text-j-blue-800">Cancelar</Button>
+                                <Button type="submit" isLoading={mutation.isPending} disabled={!canSubmit} className={decision === "reject" ? "bg-red-700 text-white hover:bg-red-800 hover:text-white" : "bg-green-700 text-white hover:bg-green-800 hover:text-white focus-visible:bg-green-800 focus-visible:outline-green-700"}>{mutation.isPending ? "Salvando decisão..." : decision === "confirm" ? "Confirmar pagamento" : "Rejeitar pagamento"}</Button>
+                                <Button disabled={mutation.isPending} onClick={() => { setDecision(null); mutation.reset(); }} className="bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white">Cancelar</Button>
                             </div>
                         </form> : <div className="flex flex-wrap gap-3">
-                            {canConfirm && <Button disabled={isFetching || mutation.isPending} onClick={() => { mutation.reset(); setDecision("confirm"); }}><Check size={18} /> Confirmar</Button>}
+                            {canConfirm && <Button className="bg-green-700 text-white border-green-700 hover:bg-green-800 hover:text-white hover:border-green-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-green-800 focus-visible:text-white" disabled={isFetching || mutation.isPending} onClick={() => { mutation.reset(); setDecision("confirm"); }}><Check size={18} /> Confirmar</Button>}
                             {canReject && <Button disabled={isFetching || mutation.isPending} onClick={() => { mutation.reset(); setDecision("reject"); }} className="bg-red-700 text-white hover:bg-red-800 hover:text-white"><X size={18} /> Rejeitar</Button>}
                         </div>}
             </section>

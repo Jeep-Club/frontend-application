@@ -171,7 +171,7 @@ function RoleAssignmentFormContent({
                         type="button"
                         onClick={setClose}
                         disabled={isSaving}
-                        className="flex-1 border-2 border-j-transparent-white bg-transparent text-j-white hover:bg-j-transparent-white/10 hover:text-j-white"
+                        className="flex-1 border-2 bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white"
                     >
                         Cancelar
                     </Button>

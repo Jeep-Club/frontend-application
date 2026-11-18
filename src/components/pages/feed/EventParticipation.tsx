@@ -114,7 +114,7 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
             <span role="status" className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-extrabold ${pendingPayment ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-900"}`}>
                 {pendingPayment ? <CalendarCheck size={17} aria-hidden="true" /> : <BadgeCheck size={17} aria-hidden="true" />}{label}
             </span>
-            {canCancel && eventStatus === "OPEN" && <button type="button" disabled={isPending} onClick={() => cancel.mutate()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-j-gray-300 px-4 text-sm font-bold text-j-gray-600 transition-colors hover:border-red-300 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:opacity-50">
+            {canCancel && eventStatus === "OPEN" && <button type="button" disabled={isPending} onClick={() => cancel.mutate()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-bold transition-colors bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white cursor-pointer">
                 <X size={16} aria-hidden="true" />{cancel.isPending ? "Cancelando..." : "Cancelar inscrição"}
             </button>}
             {canRequestGuest && guestRetryData && eventStatus === "OPEN" && <button type="button" disabled={retryGuest.isPending} onClick={() => retryGuest.mutate()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-300 px-4 text-sm font-bold text-amber-800 transition-colors hover:bg-amber-50 disabled:opacity-50">
@@ -162,7 +162,7 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
 
             </>}
 
-            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row"><button type="button" onClick={setClose} className="min-h-11 flex-1 rounded-xl border border-j-gray-300 px-4 text-sm font-bold text-j-gray-600">Cancelar</button><button type="button" onClick={openRegistrationForm} className="min-h-11 flex-1 rounded-xl bg-j-yellow-300 px-4 text-sm font-extrabold text-j-blue-900">Confirmar e continuar</button></div>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row"><button type="button" onClick={setClose} className="min-h-11 flex-1 rounded-xl border px-4 text-sm font-bold bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white cursor-pointer">Cancelar</button><button type="button" onClick={openRegistrationForm} className="min-h-11 flex-1 rounded-xl px-4 text-sm font-extrabold bg-green-700 text-white border-green-700 hover:bg-green-800 hover:text-white hover:border-green-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-green-800 focus-visible:text-white cursor-pointer">Confirmar e continuar</button></div>
         </section>);
         setOpen();
     }

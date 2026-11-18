@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn } from "storybook/test";
 import { Button } from "./Button";
+import { ConfirmButton } from "./ConfirmButton";
 
 const meta = {
   title: "Componentes/Button",
@@ -43,4 +44,8 @@ export const Carregando: Story = {
 };
 export const TextoLongo: Story = {
   args: { children: "Salvar alterações da definição de cobrança" },
+};
+
+export const Confirmacao: Story = {
+  render: () => <ConfirmButton>Confirmar</ConfirmButton>,
 };

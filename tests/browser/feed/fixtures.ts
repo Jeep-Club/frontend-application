@@ -60,6 +60,21 @@ export const test = base.extend<{ api: ApiState }>({
                 return response.end(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64'));
             }
             if (url.pathname === '/identity/me') return json({ id: 7, name: 'Associado sintético', cpf: '12345678909', birthDate: '1995-05-12', email: null, rg: null, phoneNumber: null, profilePhotoStorageKey: null, status: 'ACTIVE', createdAt: instant, updatedAt: null, disabledAt: null });
+            if (url.pathname === '/billing/me/member-charges') {
+                const charges = Array.from({ length: 56 }, (_, index) => ({
+                    id: index + 1, userId: 7, chargeDefinitionId: 1, chargeCycleId: index + 1, finalAmount: 100,
+                    dueDate: '2026-11-01', paymentAcceptancePolicy: 'AFTER_DUE_DATE', paymentAllowedUntil: null,
+                    status: index < 54 ? 'PENDING' : index === 54 ? 'PAID' : 'CANCELED',
+                    effectiveStatus: index < 52 ? 'PENDING' : index === 52 ? 'OVERDUE' : index === 53 ? 'EXPIRED' : index === 54 ? 'PAID' : 'CANCELED',
+                })).filter(charge => !url.searchParams.has('status') || charge.status === url.searchParams.get('status'));
+                const size = Number(url.searchParams.get('size') ?? 10);
+                const number = Number(url.searchParams.get('page') ?? 0);
+                const content = charges.slice(number * size, (number + 1) * size);
+                const totalPages = Math.ceil(charges.length / size);
+                return json({ content, totalElements: charges.length, totalPages, number, size, first: number === 0, last: number + 1 >= totalPages, numberOfElements: content.length, empty: content.length === 0 });
+            }
+            if (url.pathname === '/vehicles/list/member') return json({ content: [{ id: 1, nickname: 'Jipe da trilha', plate: 'ABC1234', photo: null, modelYear: 2020, model: 'Jeep', color: 'Verde', status: 'ACTIVE' }], totalElements: 1, totalPages: 1, number: 0, size: 50, first: true, last: true, numberOfElements: 1, empty: false });
+            if (url.pathname === '/dependents') return json([]);
             if (url.pathname === '/authentication/refresh') {
                 if (state.refreshFails) return failure(401);
                 return json({ accessToken: 'synthetic-refreshed', refreshToken: 'synthetic-refresh', expiresInSeconds: 3600 });

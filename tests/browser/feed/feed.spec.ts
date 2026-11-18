@@ -1,5 +1,26 @@
 import { test, expect } from './fixtures';
 
+test('menu principal mantém a ordem e mostra o Feed também no celular', async ({ page, api }, testInfo) => {
+    await api.grant(['FEED_READ', 'NOTICE_CREATE']);
+    await page.goto('/feed');
+    await expect(page.getByRole('link', { name: 'Ver publicação completa: Aviso do clube', exact: true })).toBeVisible();
+    if (testInfo.project.name.endsWith('-mobile')) {
+        await page.getByRole('button', { name: 'Abrir menu lateral' }).click();
+    }
+    const menu = page.getByRole('navigation', { name: 'Menu principal' });
+    await expect(menu.getByRole('link', { name: 'Feed', exact: true })).toBeVisible();
+    await expect(menu.locator(':scope > a')).toHaveText(['Feed', 'Gestão', 'Histórico financeiro', 'Agenda', 'Avisos', 'Conta', 'Serviços']);
+});
+
+test('menu sem acesso administrativo mantém a ordem dos demais links', async ({ page }, testInfo) => {
+    await page.goto('/feed');
+    if (testInfo.project.name.endsWith('-mobile')) {
+        await page.getByRole('button', { name: 'Abrir menu lateral' }).click();
+    }
+    const menu = page.getByRole('navigation', { name: 'Menu principal' });
+    await expect(menu.locator(':scope > a')).toHaveText(['Feed', 'Histórico financeiro', 'Agenda', 'Avisos', 'Conta', 'Serviços']);
+});
+
 test('agenda mantém resumo e detalhe compartilhado por provider', async ({ page, api }) => {
     await page.goto('/agenda');
     await expect.poll(() => api.completed.some(url => url.pathname === '/publications/feed' && url.searchParams.get('size') === '48')).toBe(true);
@@ -36,6 +57,13 @@ test('participação existente recebe foco e Escape retorna ao detalhe', async (
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
     await page.getByRole('dialog').getByRole('button', { name: 'Participar do evento' }).click();
     await expect(page.getByRole('heading', { name: 'Como você vai participar?' })).toBeVisible();
+    const vehicles = page.getByRole('radiogroup', { name: 'Selecione seu veículo' });
+    await expect(vehicles).toHaveAccessibleDescription('Selecione o veículo que você usará no evento.');
+    await expect(page.getByText('Selecione o veículo que você usará no evento.')).toBeVisible();
+    const confirm = page.getByRole('button', { name: 'Confirmar participação' });
+    await expect(confirm).toBeDisabled();
+    await vehicles.getByRole('radio', { name: /Jipe da trilha/ }).click();
+    await expect(confirm).toBeEnabled();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
     await expect(page).toHaveURL(/publication=2/);

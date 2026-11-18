@@ -53,7 +53,7 @@ export default function MedicalForm({ medicalProfile, onSaved }: { medicalProfil
             <MedicalProfileFields />
         </fieldset>
         <div className="flex flex-col-reverse gap-3 border-t border-j-gray-200 pt-5 sm:flex-row sm:justify-end">
-            <Button type="button" onClick={onSaved} disabled={mutation.isPending} className="border-2 border-j-gray-200 bg-j-white px-5 text-j-gray-600 hover:bg-j-gray-100">Cancelar</Button>
+            <Button type="button" onClick={onSaved} disabled={mutation.isPending} className="border-2 px-5 bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white">Cancelar</Button>
             <Button type="submit" isLoading={mutation.isPending} disabled={!medicalProfile && !member} className="gap-2 bg-j-blue-700 px-6 text-j-white hover:bg-j-blue-800 hover:text-j-white">{mutation.isPending ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}{mutation.isPending ? "Salvando..." : "Salvar alterações"}</Button>
         </div>
     </Form>;

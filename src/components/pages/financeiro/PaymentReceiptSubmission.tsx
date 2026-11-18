@@ -87,7 +87,7 @@ export function PaymentReceiptSubmission({ charge, submitAction }: Props) {
             {(error || mutation.isError) && <p role="alert" className="text-sm text-input-error-text">{error || extractApiErrorMessage(mutation.error)}</p>}
             <div className="flex flex-wrap gap-2">
                 <Button type="submit" disabled={mutation.isPending || Boolean(fileError)} isLoading={mutation.isPending} className="min-h-10 px-4 text-sm">{mutation.isPending ? "Enviando…" : "Enviar para análise"}</Button>
-                <Button type="button" disabled={mutation.isPending} onClick={() => { setOpen(false); trigger.current?.focus(); }} className="min-h-10 border border-input-border bg-background px-4 text-sm text-primary hover:bg-input-bg-focus">Cancelar</Button>
+                <Button type="button" disabled={mutation.isPending} onClick={() => { setOpen(false); trigger.current?.focus(); }} className="min-h-10 border px-4 text-sm bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white">Cancelar</Button>
             </div>
         </form>}
     </div>;

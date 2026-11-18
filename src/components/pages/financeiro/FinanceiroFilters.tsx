@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { LoaderCircle } from "lucide-react";
 
 interface FinanceiroFiltersProps {
-    initialStatus?: MemberChargeStatus;
+    initialStatus?: MemberChargeEffectiveStatus;
     initialSort: string;
 }
 
@@ -48,7 +48,9 @@ export function FinanceiroFilters({ initialStatus, initialSort }: FinanceiroFilt
                     className="block box-border h-11 w-full min-w-0 max-w-full overflow-hidden text-ellipsis rounded-lg border border-j-gray-200 bg-input-bg px-3 py-2.5 text-sm font-normal text-input-text focus:border-j-blue-500 focus:outline-none"
                 >
                     <option value="">Todos os status</option>
-                    <option value="PENDING">Em aberto (pendente, em atraso ou expirada)</option>
+                    <option value="PENDING">Pendente</option>
+                    <option value="OVERDUE">Em atraso</option>
+                    <option value="EXPIRED">Expirada</option>
                     <option value="PAID">Paga</option>
                     <option value="CANCELED">Cancelada</option>
                 </select>
