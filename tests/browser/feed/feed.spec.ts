@@ -9,7 +9,11 @@ test('menu principal mantém a ordem e mostra o Feed também no celular', async 
     }
     const menu = page.getByRole('navigation', { name: 'Menu principal' });
     await expect(menu.getByRole('link', { name: 'Feed', exact: true })).toBeVisible();
-    await expect(menu.locator(':scope > a')).toHaveText(['Feed', 'Gestão', 'Histórico financeiro', 'Agenda', 'Avisos', 'Conta', 'Serviços']);
+    await expect(menu.locator(':scope > a > span:first-of-type')).toHaveText(['Feed', 'Agenda', 'Serviços', 'Avisos', 'Gestão de débitos', 'Gestão']);
+    const debts = menu.getByRole('link', { name: 'Gestão de débitos', exact: true });
+    await expect(debts).toHaveAccessibleDescription('53 débitos em aberto');
+    await expect(debts.getByText('53', { exact: true })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Opções da conta' }).getByRole('link', { name: 'Perfil', exact: true })).toHaveAttribute('href', '/profile');
 });
 
 test('menu sem acesso administrativo mantém a ordem dos demais links', async ({ page }, testInfo) => {
@@ -18,7 +22,7 @@ test('menu sem acesso administrativo mantém a ordem dos demais links', async ({
         await page.getByRole('button', { name: 'Abrir menu lateral' }).click();
     }
     const menu = page.getByRole('navigation', { name: 'Menu principal' });
-    await expect(menu.locator(':scope > a')).toHaveText(['Feed', 'Histórico financeiro', 'Agenda', 'Avisos', 'Conta', 'Serviços']);
+    await expect(menu.locator(':scope > a > span:first-of-type')).toHaveText(['Feed', 'Agenda', 'Serviços', 'Avisos', 'Gestão de débitos']);
 });
 
 test('agenda mantém resumo e detalhe compartilhado por provider', async ({ page, api }) => {

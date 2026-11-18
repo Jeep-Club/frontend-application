@@ -748,7 +748,7 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
     },
     {
         id: "member-financial",
-        title: "Consultar Mensalidades e Histórico Financeiro",
+        title: "Consultar Mensalidades e Gestão de débitos",
         description:
             "Acompanhe suas cobranças e mensalidades, filtre por pendentes ou pagas e veja datas de vencimento.",
         category: "member",
@@ -760,7 +760,7 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
         imageSteps: MEMBER_VISUAL_GUIDES["member-financial"],
         supportsLiveTour: true,
         topics: [
-            "Menu Histórico financeiro",
+            "Menu Gestão de débitos",
             "Filtro por status",
             "Vencimento e valor",
         ],

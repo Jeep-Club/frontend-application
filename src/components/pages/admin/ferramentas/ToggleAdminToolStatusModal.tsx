@@ -65,10 +65,10 @@ export function ToggleAdminToolStatusModal({
                     </span>
                     <div>
                         <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
-                            {isDeactivating ? "Desativar ferramenta?" : "Ativar ferramenta?"}
+                            {isDeactivating ? "Inativar ferramenta?" : "Ativar ferramenta?"}
                         </h2>
                         <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            Tem certeza que deseja {isDeactivating ? "desativar" : "ativar"}{" "}
+                            Tem certeza que deseja {isDeactivating ? "inativar" : "ativar"}{" "}
                             <span className="font-bold text-j-blue-800">{toolName}</span>?
                         </p>
                     </div>
@@ -92,7 +92,7 @@ export function ToggleAdminToolStatusModal({
                 >
                     {mutation.isPending
                         ? (isDeactivating ? "Desativando..." : "Ativando...")
-                        : (isDeactivating ? "Desativar" : "Ativar")}
+                        : (isDeactivating ? "Inativar" : "Ativar")}
                 </ConfirmButton>
             </div>
         </div>

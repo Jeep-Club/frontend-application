@@ -32,7 +32,7 @@ export function ReadOnlyField({
                     className,
                 )}
             >
-                {Icon && <Icon size={17} className="shrink-0 text-j-blue-600" />}
+                {Icon && <Icon size={17} aria-hidden="true" className="shrink-0 text-(--accent-text)" />}
 
                 <div className="min-w-0">
                     <span

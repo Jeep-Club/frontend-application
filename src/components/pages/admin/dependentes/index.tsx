@@ -4,9 +4,7 @@ import { useState } from "react";
 import { ProfileTabLoading } from "@/components/pages/profile/tabs/ProfileTabLoading";
 import { ProfileEmptyPanel } from "@/components/pages/profile/tabs/ProfileTabEmptyState";
 import { useQuery } from "@tanstack/react-query";
-import toast from "react-hot-toast";
 import { Users,
-    Download,
     Eye,
     Power,
     RotateCcw,
@@ -20,6 +18,7 @@ import { PageHeader } from "@/components/common/page-header";
 import TourHelpButton from "@/components/common/tour/TourHelpButton";
 import { getDependentsTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
+import { AdminExport } from "@/components/common/admin-export/AdminExport";
 import { Button } from "@/components/common/button";
 import { InputSearch } from "@/components/common/input/input-search";
 import { Table } from "@/components/common/table";
@@ -69,9 +68,6 @@ export default function DependentManagement() {
     const [searchQuery, setSearchQuery] = useState("");
     const [relationshipFilter, setRelationshipFilter] = useState<DependentRelationshipType | "">("");
     const [statusFilter, setStatusFilter] = useState<AdminDependentStatus | "">("");
-    const [exportFormat, setExportFormat] = useState<"CSV" | "PDF">("CSV");
-    const [exportHistory, setExportHistory] = useState(false);
-    const [isExporting, setIsExporting] = useState(false);
 
     const hasActiveFilters = Boolean(
         searchQuery.trim() || relationshipFilter || statusFilter,
@@ -162,43 +158,6 @@ export default function DependentManagement() {
         setOpen();
     };
 
-    const handleExport = async () => {
-        if (!canExport || isExporting) return;
-        setIsExporting(true);
-        try {
-            const file = await exportAdminDependentsAction({
-                format: exportFormat,
-                history: exportHistory,
-                name: searchQuery.trim() || undefined,
-                status: statusFilter || undefined,
-            });
-            const bytes = Uint8Array.from(atob(file.base64), (character) =>
-                character.charCodeAt(0),
-            );
-            const url = URL.createObjectURL(
-                new Blob([bytes], { type: file.contentType }),
-            );
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = file.filename;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-            toast.success(
-                `Relatório ${exportFormat} ${exportHistory ? "do histórico " : ""}gerado com sucesso!`,
-            );
-        } catch (err) {
-            toast.error(
-                err instanceof Error
-                    ? err.message
-                    : "Não foi possível exportar os dependentes.",
-            );
-        } finally {
-            setIsExporting(false);
-        }
-    };
-
     return (
         <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
@@ -267,7 +226,7 @@ export default function DependentManagement() {
                                                 e.target.value as DependentRelationshipType | "",
                                             )
                                         }
-                                        className="h-10 cursor-pointer rounded-lg border border-j-gray-200 bg-j-white px-3 py-2 text-sm font-medium text-j-gray-700 transition-colors focus:border-j-yellow-400 focus:outline-none"
+                                        className="h-10 w-full min-w-0 cursor-pointer rounded-lg border border-j-gray-200 bg-j-white px-3 py-2 text-sm font-medium text-j-gray-700 transition-colors focus:border-j-yellow-400 focus:outline-none sm:w-auto"
                                     >
                                         {ADMIN_DEPENDENT_RELATIONSHIP_FILTER_OPTIONS.map((option) => (
                                             <option key={option.value || "ALL"} value={option.value}>
@@ -288,7 +247,7 @@ export default function DependentManagement() {
                                                 e.target.value as AdminDependentStatus | "",
                                             )
                                         }
-                                        className="h-10 cursor-pointer rounded-lg border border-j-gray-200 bg-j-white px-3 py-2 text-sm font-medium text-j-gray-700 transition-colors focus:border-j-yellow-400 focus:outline-none"
+                                        className="h-10 w-full min-w-0 cursor-pointer rounded-lg border border-j-gray-200 bg-j-white px-3 py-2 text-sm font-medium text-j-gray-700 transition-colors focus:border-j-yellow-400 focus:outline-none sm:w-auto"
                                     >
                                         {ADMIN_DEPENDENT_STATUS_FILTER_OPTIONS.map((option) => (
                                             <option key={option.value || "ALL"} value={option.value}>
@@ -313,39 +272,11 @@ export default function DependentManagement() {
                                         id="tour-dependents-export"
                                         className="flex flex-wrap items-center gap-2"
                                     >
-                                        <label htmlFor="admin-dependent-export-format" className="sr-only">
-                                            Formato de exportação
-                                        </label>
-                                        <select
-                                            id="admin-dependent-export-format"
-                                            aria-label="Formato de exportação"
-                                            value={exportFormat}
-                                            onChange={(e) => setExportFormat(e.target.value as "CSV" | "PDF")}
-                                            className="h-9 cursor-pointer rounded-lg border border-j-gray-200 bg-j-white px-2.5 text-xs font-bold text-j-gray-700 focus:border-j-yellow-400 focus:outline-none"
-                                        >
-                                            <option value="CSV">CSV</option>
-                                            <option value="PDF">PDF</option>
-                                        </select>
-
-                                        <label className="flex cursor-pointer items-center gap-1.5 px-2 text-xs font-medium text-j-gray-700 select-none">
-                                            <input
-                                                type="checkbox"
-                                                checked={exportHistory}
-                                                onChange={(e) => setExportHistory(e.target.checked)}
-                                                className="h-3.5 w-3.5 rounded border-j-gray-300 text-j-blue-800 focus:ring-j-blue-800"
-                                            />
-                                            Histórico de exclusões
-                                        </label>
-
-                                        <Button
-                                            type="button"
-                                            onClick={() => void handleExport()}
-                                            disabled={isExporting}
-                                            className="h-10 gap-1.5 px-3 text-xs"
-                                        >
-                                            <Download size={14} />
-                                            {isExporting ? "Exportando..." : "Exportar"}
-                                        </Button>
+                                        <AdminExport onExport={(format) => exportAdminDependentsAction({
+                                            format,
+                                            name: searchQuery.trim() || undefined,
+                                            status: statusFilter || undefined,
+                                        })} />
                                     </div>
                                 )}
                             </div>
@@ -392,6 +323,8 @@ export default function DependentManagement() {
                                             {data?.content.map((dependent, index) => {
                                                 const isArchived = dependent.status === "ARCHIVED";
                                                 const photoUrl = getAdminDependentPhotoUrl(dependent);
+                                                const nameParts = dependent.name.trim().split(/\s+/);
+                                                const shortName = nameParts.length > 1 ? `${nameParts[0]} ${nameParts.at(-1)}` : nameParts[0];
 
                                                 const canToggleStatus =
                                                     !isArchived &&
@@ -426,7 +359,8 @@ export default function DependentManagement() {
                                                                     className="truncate font-extrabold text-j-blue-800"
                                                                     title={dependent.name}
                                                                 >
-                                                                    {dependent.name}
+                                                                    <span className="sm:hidden">{shortName}</span>
+                                                                    <span className="hidden sm:inline">{dependent.name}</span>
                                                                 </h4>
                                                                 <p className="text-xs text-j-gray-500">
                                                                     {DEPENDENT_RELATIONSHIP_LABEL[
@@ -517,10 +451,10 @@ export default function DependentManagement() {
                                                                                 : "ENABLE",
                                                                         )
                                                                     }
-                                                                    aria-label={`${dependent.status === "ACTIVE" ? "Desativar" : "Ativar"} ${dependent.name}`}
+                                                                    aria-label={`${dependent.status === "ACTIVE" ? "Inativar" : "Ativar"} ${dependent.name}`}
                                                                     title={
                                                                         dependent.status === "ACTIVE"
-                                                                            ? "Desativar"
+                                                                            ? "Inativar"
                                                                             : "Ativar"
                                                                     }
                                                                     className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-purple-50 px-2 py-2 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100 record-action"
@@ -528,7 +462,7 @@ export default function DependentManagement() {
                                                                     <Power size={15} aria-hidden="true" />
                                                                     <span className="hidden sm:inline">
                                                                         {dependent.status === "ACTIVE"
-                                                                            ? "Desativar"
+                                                                            ? "Inativar"
                                                                             : "Ativar"}
                                                                     </span>
                                                                 </button>
