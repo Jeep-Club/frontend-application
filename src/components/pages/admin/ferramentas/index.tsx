@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { ProfileTabLoading } from "@/components/pages/profile/tabs/ProfileTabLoading";
+import { ProfileEmptyPanel } from "@/components/pages/profile/tabs/ProfileTabEmptyState";
 import { useQuery } from "@tanstack/react-query";
-import { Eye, Pencil, Plus, Power, RotateCcw, ShieldX, Trash2, Wrench } from "lucide-react";
+import { Eye, Pencil, Plus, RotateCcw, ShieldX, Trash2, Wrench } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { PageHeader } from "@/components/common/page-header";
@@ -19,7 +21,6 @@ import { listToolsAdminAction } from "@/server/actions/admin/tools/list";
 
 import { ToolDetailModal } from "./ToolDetailModal";
 import { IncludeAdminToolModal } from "./IncludeAdminToolModal";
-import { ToggleAdminToolStatusModal } from "./ToggleAdminToolStatusModal";
 import { DeleteAdminToolModal } from "./DeleteAdminToolModal";
 import {
     ADMIN_TOOL_STATUS_FILTER_OPTIONS,
@@ -36,8 +37,6 @@ export default function ToolManagement() {
     const canRead = hasPermission(permissions, "TOOLS", "TOOL_READ");
     const canCreate = hasPermission(permissions, "TOOLS", "TOOL_CREATE");
     const canUpdate = hasPermission(permissions, "TOOLS", "TOOL_UPDATE");
-    const canActivate = hasPermission(permissions, "TOOLS", "TOOL_ACTIVATE");
-    const canDeactivate = hasPermission(permissions, "TOOLS", "TOOL_DEACTIVATE");
     const canDelete = hasPermission(permissions, "TOOLS", "TOOL_DELETE");
     usePageTour({
         storageKey: "tour_completed_admin_tools",
@@ -105,17 +104,6 @@ export default function ToolManagement() {
 
     const handleOpenEdit = (toolId: number) => {
         setContent(<IncludeAdminToolModal toolId={toolId} />);
-        setOpen();
-    };
-
-    const handleOpenToggleStatus = (tool: AdminToolListItem) => {
-        setContent(
-            <ToggleAdminToolStatusModal
-                toolId={tool.id}
-                toolName={tool.name}
-                nextStatus={tool.status === "ACTIVE" ? "DEACTIVATE" : "ACTIVATE"}
-            />,
-        );
         setOpen();
     };
 
@@ -224,7 +212,7 @@ export default function ToolManagement() {
 
                         <div id="tour-tools-list">
                         {isLoading && (
-                            <p className="text-sm text-j-gray-400">Carregando ferramentas...</p>
+                            <ProfileTabLoading tab="tools" title="Ferramentas" label="Carregando ferramentas..." />
                         )}
 
                         {error && (
@@ -240,11 +228,9 @@ export default function ToolManagement() {
                         )}
 
                         {!isLoading && !error && !data?.content.length && (
-                            <p className="text-sm text-j-gray-400">
-                                {hasActiveFilters
+                            <ProfileEmptyPanel icon={Wrench} title={hasActiveFilters
                                     ? "Nenhuma ferramenta encontrada para os filtros informados."
-                                    : "Nenhuma ferramenta cadastrada."}
-                            </p>
+                                    : "Nenhuma ferramenta cadastrada."} />
                         )}
 
                         {!isLoading && !error && Boolean(data?.content.length) && (
@@ -259,14 +245,6 @@ export default function ToolManagement() {
                                 <div className="divide-y divide-j-gray-100">
                                     {data?.content.map((tool, index) => {
                                         const isArchived = tool.status === "ARCHIVED";
-                                        const canToggleToolStatus =
-                                            !isArchived &&
-                                            (tool.status === "ACTIVE"
-                                                ? canDeactivate
-                                                : tool.status === "INACTIVE"
-                                                    ? canActivate
-                                                    : false);
-
                                         return (
                                             <div
                                                 key={tool.id}
@@ -293,9 +271,6 @@ export default function ToolManagement() {
                                                         >
                                                             {tool.name}
                                                         </h4>
-                                                        <p className="text-xs text-j-gray-500">
-                                                            ID #{tool.id}
-                                                        </p>
                                                         <span
                                                             className={twMerge(
                                                                 "mt-1 inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold xl:hidden",
@@ -323,13 +298,13 @@ export default function ToolManagement() {
                                                     {TOOL_STATUS_LABEL[tool.status] ?? tool.status}
                                                 </span>
 
-                                                <div id={index === 0 ? "tour-tools-actions" : undefined} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                                <div id={index === 0 ? "tour-tools-actions" : undefined} className="grid grid-cols-3 gap-2">
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenDetail(tool.id)}
                                                         aria-label={`Visualizar ${tool.name}`}
                                                         title="Visualizar"
-                                                        className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 transition-colors hover:bg-blue-100"
+                                                        className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 transition-colors hover:bg-blue-100 record-action"
                                                     >
                                                         <Eye size={15} aria-hidden="true" />
                                                         <span className="hidden sm:inline">Visualizar</span>
@@ -341,7 +316,7 @@ export default function ToolManagement() {
                                                             onClick={() => handleOpenEdit(tool.id)}
                                                             aria-label={`Editar ${tool.name}`}
                                                             title="Editar"
-                                                            className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-yellow-50 px-2 py-2 text-xs font-bold text-j-gray-700 transition-colors hover:bg-yellow-100"
+                                                            className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-yellow-50 px-2 py-2 text-xs font-bold text-j-gray-700 transition-colors hover:bg-yellow-100 record-action"
                                                         >
                                                             <Pencil
                                                                 size={15}
@@ -352,30 +327,13 @@ export default function ToolManagement() {
                                                         </button>
                                                     )}
 
-                                                    {canToggleToolStatus && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleOpenToggleStatus(tool)}
-                                                            aria-label={`${tool.status === "ACTIVE" ? "Desativar" : "Ativar"} ${tool.name}`}
-                                                            title={tool.status === "ACTIVE" ? "Desativar" : "Ativar"}
-                                                            className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-purple-50 px-2 py-2 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"
-                                                        >
-                                                            <Power size={15} aria-hidden="true" />
-                                                            <span className="hidden sm:inline">
-                                                                {tool.status === "ACTIVE"
-                                                                    ? "Desativar"
-                                                                    : "Ativar"}
-                                                            </span>
-                                                        </button>
-                                                    )}
-
                                                     {canDelete && !isArchived && (
                                                         <button
                                                             type="button"
                                                             onClick={() => handleOpenDelete(tool)}
                                                             aria-label={`Excluir ${tool.name}`}
                                                             title="Excluir"
-                                                            className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-2 text-xs font-bold text-red-500 transition-colors hover:bg-red-100"
+                                                            className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-2 text-xs font-bold text-red-500 transition-colors hover:bg-red-100 record-action-danger"
                                                         >
                                                             <Trash2 size={15} aria-hidden="true" />
                                                             <span className="hidden sm:inline">Excluir</span>

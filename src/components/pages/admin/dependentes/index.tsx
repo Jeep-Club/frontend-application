@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { ProfileTabLoading } from "@/components/pages/profile/tabs/ProfileTabLoading";
+import { ProfileEmptyPanel } from "@/components/pages/profile/tabs/ProfileTabEmptyState";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import {
+import { Users,
     Archive,
     ArchiveRestore,
     Download,
@@ -361,9 +363,7 @@ export default function DependentManagement() {
 
                         <div id="tour-dependents-list">
                             {isLoading && (
-                                <p className="text-sm text-j-gray-400">
-                                    Carregando dependentes...
-                                </p>
+                                <ProfileTabLoading tab="dependents" title="Dependentes" />
                             )}
 
                             {error && (
@@ -382,11 +382,9 @@ export default function DependentManagement() {
                             )}
 
                             {!isLoading && !error && !data?.content.length && (
-                                <p className="text-sm text-j-gray-400">
-                                    {hasActiveFilters
+                                <ProfileEmptyPanel icon={Users} title={hasActiveFilters
                                         ? "Nenhum dependente encontrado para os filtros informados."
-                                        : "Nenhum dependente cadastrado."}
-                                </p>
+                                        : "Nenhum dependente cadastrado."} />
                             )}
 
                             {!isLoading && !error && Boolean(data?.content.length) && (
@@ -518,7 +516,7 @@ export default function DependentManagement() {
                                                             onClick={() => handleOpenDetail(dependent)}
                                                             aria-label={`Visualizar ${dependent.name}`}
                                                             title="Visualizar"
-                                                            className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 transition-colors hover:bg-blue-100"
+                                                            className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 transition-colors hover:bg-blue-100 record-action"
                                                         >
                                                             <Eye size={15} aria-hidden="true" />
                                                             <span className="hidden sm:inline">
@@ -543,7 +541,7 @@ export default function DependentManagement() {
                                                                         ? "Desativar"
                                                                         : "Ativar"
                                                                 }
-                                                                className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-purple-50 px-2 py-2 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"
+                                                                className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-purple-50 px-2 py-2 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100 record-action"
                                                             >
                                                                 <Power size={15} aria-hidden="true" />
                                                                 <span className="hidden sm:inline">
@@ -571,7 +569,7 @@ export default function DependentManagement() {
                                                                         ? "Desarquivar"
                                                                         : "Arquivar"
                                                                 }
-                                                                className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-amber-50 px-2 py-2 text-xs font-bold text-amber-700 transition-colors hover:bg-amber-100"
+                                                                className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-amber-50 px-2 py-2 text-xs font-bold text-amber-700 transition-colors hover:bg-amber-100 record-action"
                                                             >
                                                                 {isArchived ? (
                                                                     <ArchiveRestore
@@ -600,7 +598,7 @@ export default function DependentManagement() {
                                                                 }
                                                                 aria-label={`Excluir ${dependent.name}`}
                                                                 title="Excluir"
-                                                                className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-2 text-xs font-bold text-red-500 transition-colors hover:bg-red-100"
+                                                                className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-2 text-xs font-bold text-red-500 transition-colors hover:bg-red-100 record-action-danger"
                                                             >
                                                                 <Trash2 size={15} aria-hidden="true" />
                                                                 <span className="hidden sm:inline">

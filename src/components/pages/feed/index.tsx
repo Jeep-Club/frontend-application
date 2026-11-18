@@ -10,6 +10,7 @@ import { useModal } from "@/providers/ModalProvider";
 import type { PublicationFeedFilters } from "@/schemas/publications/feed";
 import { parsePublicationFeedFilters, updatePublicationFeedFilters } from "@/utils/publications/feedFilters";
 import { FeedPeriodFilters } from "./FeedPeriodFilters";
+import { openAnimatedDialog } from "@/components/common/modal/openAnimatedDialog";
 import { ModalRoot } from "@/components/common/modal/root";
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { useUserStore } from "@/stores/userStore";
@@ -218,15 +219,7 @@ export default function Feed() {
         const dialog = publicationPickerRef.current;
         if (!dialog || dialog.open) return;
 
-        const start = trigger.getBoundingClientRect();
-        dialog.showModal();
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-        const end = dialog.getBoundingClientRect();
-        dialog.animate([
-            { transform: `translate(${start.left - end.left}px, ${start.top - end.top}px) scale(${start.width / end.width}, ${start.height / end.height})`, opacity: 0.65 },
-            { transform: "none", opacity: 1 },
-        ], { duration: 250, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
+        openAnimatedDialog(dialog, trigger);
     }
 
     const publicationOptions = [
@@ -237,7 +230,7 @@ export default function Feed() {
 
     return (
         <div tabIndex={-1} data-publication-return className="min-h-full w-full px-3 py-4 focus:outline-none md:px-6 md:py-6">
-            <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_clamp(14rem,27%,20rem)] lg:items-start">
+            <div className="grid w-full min-w-0 grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_clamp(14rem,27%,20rem)] lg:items-start">
                 <div className="flex w-full min-w-0 flex-col gap-5 md:gap-6">
                         <>
                             <h1 tabIndex={-1} className="sr-only">Mural do clube</h1>

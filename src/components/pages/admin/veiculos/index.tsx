@@ -1,6 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { ProfileTabLoading } from "@/components/pages/profile/tabs/ProfileTabLoading";
+import { ProfileEmptyPanel } from "@/components/pages/profile/tabs/ProfileTabEmptyState";
 import { useState } from "react";
 
 import { Car,Eye,Filter,Pencil,Plus,ShieldX,Trash2 } from "lucide-react";
@@ -122,9 +124,9 @@ export default function VehicleManagement() {
                             <button type="button" onClick={() => setExportFilters(EMPTY_EXPORT_FILTERS)} className="min-h-9 cursor-pointer justify-self-start rounded-lg px-3 text-xs font-bold text-j-blue-800 underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-j-blue-800 sm:col-span-2 lg:col-span-3">Limpar filtros da exportação</button>
                         </fieldset>}
                         <div id="tour-vehicles-list">
-                        {isLoading && <p className="text-sm text-j-gray-400">Carregando veículos...</p>}
+                        {isLoading && <ProfileTabLoading tab="vehicles" title="Veículos" />}
                         {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"><p>{error.message}</p><Button onClick={() => query.refetch()} disabled={isFetching}>Tentar novamente</Button></div>}
-                        {!isLoading && !error && !data?.content.length && <p className="text-sm text-j-gray-400">Nenhum veículo cadastrado.</p>}
+                        {!isLoading && !error && !data?.content.length && <ProfileEmptyPanel icon={Car} title="Nenhum veículo cadastrado." />}
                         {!isLoading && !error && Boolean(data?.content.length) && (
                             <div className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                                 <div className="hidden grid-cols-[minmax(0,1.2fr)_minmax(120px,0.6fr)_minmax(140px,1fr)_280px] items-center gap-3 border-b border-j-gray-200 bg-j-gray-100/70 px-4 py-3 text-[10px] font-extrabold uppercase tracking-wide text-j-gray-400 xl:grid">
@@ -146,9 +148,9 @@ export default function VehicleManagement() {
                                             <p className="text-sm font-bold text-j-gray-600 xl:text-center"><span className="mr-1 text-xs xl:hidden">Placa:</span>{maskPlate(vehicle.plate)}</p>
                                             <p className="truncate text-sm text-j-gray-600 xl:text-center" title={vehicle.ownerName ?? undefined}><span className="mr-1 text-xs font-bold xl:hidden">Dono:</span>{vehicle.ownerName || '—'}</p>
                                             <div id={index === 0 ? "tour-vehicles-actions" : undefined} className="grid grid-cols-3 gap-2">
-                                                <button type="button" onClick={() => handleOpenDetail(vehicle.id)} aria-label={`Visualizar ${vehicle.model}`} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 hover:bg-blue-100"><Eye size={15} aria-hidden="true" /><span className="hidden sm:inline">Visualizar</span></button>
-                                                {canUpdate && <button type="button" onClick={() => handleOpenEdit(vehicle.id)} aria-label={`Editar ${vehicle.model}`} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-yellow-50 px-2 py-2 text-xs font-bold text-j-gray-700 hover:bg-yellow-100"><Pencil size={15} className="text-j-yellow-500" aria-hidden="true" /><span className="hidden sm:inline">Editar</span></button>}
-                                                {canDelete && <button type="button" onClick={() => handleOpenDelete(vehicle)} aria-label={`Excluir ${vehicle.model}`} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-2 text-xs font-bold text-red-500 hover:bg-red-100"><Trash2 size={15} aria-hidden="true" /><span className="hidden sm:inline">Excluir</span></button>}
+                                                <button type="button" onClick={() => handleOpenDetail(vehicle.id)} aria-label={`Visualizar ${vehicle.model}`} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 hover:bg-blue-100 record-action"><Eye size={15} aria-hidden="true" /><span className="hidden sm:inline">Visualizar</span></button>
+                                                {canUpdate && <button type="button" onClick={() => handleOpenEdit(vehicle.id)} aria-label={`Editar ${vehicle.model}`} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-yellow-50 px-2 py-2 text-xs font-bold text-j-gray-700 hover:bg-yellow-100 record-action"><Pencil size={15} className="text-j-yellow-500 record-action-icon" aria-hidden="true" /><span className="hidden sm:inline">Editar</span></button>}
+                                                {canDelete && <button type="button" onClick={() => handleOpenDelete(vehicle)} aria-label={`Excluir ${vehicle.model}`} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-2 text-xs font-bold text-red-500 hover:bg-red-100 record-action-danger"><Trash2 size={15} aria-hidden="true" /><span className="hidden sm:inline">Excluir</span></button>}
                                             </div>
                                         </div>
                                     ))}

@@ -3,7 +3,7 @@
 import { useRestrictedNavigation } from "./MembershipAccessGate";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CalendarRange, HelpCircle, LoaderCircle, LogOut, Megaphone, Newspaper, Settings, ShieldCheck, Store, UserRound, WalletCards, X } from "lucide-react";
+import { CalendarRange, HelpCircle, LoaderCircle, LogOut, Megaphone, Newspaper, Settings, ShieldCheck, Store, UserRound, CircleDollarSign, X } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { twMerge } from "tailwind-merge";
 import { Logo } from "@/components/common/logo";
@@ -18,7 +18,7 @@ import styles from "./Sidebar.module.css";
 const navItems = [
     { href: "/feed", label: "Feed", icon: Newspaper, desktopOnly: true },
     { href: "/profile", label: "Conta", icon: UserRound },
-    { href: "/financeiro", label: "Gestão de débitos", icon: WalletCards },
+    { href: "/financeiro", label: "Gestão de débitos", icon: CircleDollarSign },
     { href: "/agenda", label: "Agenda", icon: CalendarRange },
     { href: "/servicos", label: "Serviços", icon: Store },
     { href: "/notificacoes", label: "Avisos", icon: Megaphone },

@@ -103,7 +103,7 @@ export default function PaymentsPage({
                                                         <td className="px-4 py-4">{methodLabels[payment.paymentMethod]}</td>
                                                         <td className="whitespace-nowrap px-4 py-4">{formatDate(payment.paidAt)}</td>
                                                         <td className="px-4 py-4"><PaymentStatusBadge status={payment.status} /></td>
-                                                        <td className="px-4 py-4"><Link id={index === 0 ? "tour-payments-detail-btn" : undefined} href={`/admin/pagamentos/${payment.id}`} aria-label={`Analisar pagamento ${payment.id}`} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-j-blue-700 hover:bg-blue-100"><Eye size={16} /> Detalhes</Link></td>
+                                                        <td className="px-4 py-4"><Link id={index === 0 ? "tour-payments-detail-btn" : undefined} href={`/admin/pagamentos/${payment.id}`} aria-label={`Analisar pagamento ${payment.id}`} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-j-blue-700 hover:bg-blue-100 record-action"><Eye size={16} /> Detalhes</Link></td>
                                                     </tr>)}
                                                 </tbody>
                                             </table>

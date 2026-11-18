@@ -123,8 +123,8 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
     }, [router]);
 
     const handleViewUser = useCallback((userId: number) => {
-        router.push(`/admin/users/${userId}`);
-    }, [router]);
+        window.location.assign(`/admin/users/${userId}`);
+    }, []);
 
     const updateUserStatusMutation = useMutation({
         mutationFn: patchUserStatusAction,

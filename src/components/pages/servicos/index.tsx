@@ -5,6 +5,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { ChevronRight, LoaderCircle, MessageCircle, Store } from "lucide-react";
 import { useModal } from "@/providers/ModalProvider";
 import { Button } from "@/components/common/button";
+import { PageHeader } from "@/components/common/page-header";
 import { PublicationDetailModal } from "@/components/pages/feed/PublicationDetailModal";
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
@@ -67,16 +68,11 @@ export default function ServicesPage() {
     }
 
     return <main className="min-h-full w-full px-3 py-4 pb-8 md:px-6 md:py-6">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
-            <header className="rounded-2xl border border-j-gray-200 bg-j-white p-5 shadow-sm sm:p-6">
-                <div className="flex items-start gap-4">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-j-blue-50 text-j-blue-800"><Store size={23} aria-hidden="true" /></span>
-                    <div className="min-w-0">
-                        <h1 className="text-2xl font-extrabold text-j-blue-900 md:text-3xl">Serviços</h1>
-                        <p className="mt-1 max-w-2xl text-sm leading-relaxed text-j-gray-600">Encontre serviços oferecidos pela comunidade do Jeep Clube Tamoios e entre em contato com quem publicou.</p>
-                    </div>
-                </div>
-            </header>
+        <div className="flex w-full flex-col gap-5">
+            <div className="space-y-2">
+                <PageHeader title="Serviços" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Serviços" }]} />
+                <p className="max-w-2xl text-sm leading-relaxed text-secondary">Encontre serviços oferecidos pela comunidade do Jeep Clube Tamoios e entre em contato com quem publicou.</p>
+            </div>
 
             {query.isPending ? <div role="status" className="flex min-h-56 items-center justify-center gap-3 rounded-2xl border border-j-gray-200 bg-j-white text-sm text-j-gray-500"><LoaderCircle size={20} className="animate-spin" aria-hidden="true" />Carregando serviços...</div>
                 : query.isError ? <div role="alert" className="rounded-2xl border border-j-gray-200 bg-j-white p-6 text-center"><p className="text-sm text-j-gray-600">{failure.message}</p><Button className="mt-3" onClick={() => void query.refetch()}>Tentar novamente</Button></div>

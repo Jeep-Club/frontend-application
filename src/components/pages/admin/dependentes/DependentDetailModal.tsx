@@ -247,7 +247,7 @@ export function DependentDetailModal({
                                                 type="button"
                                                 disabled={isPhotoBusy}
                                                 onClick={() => removePhotoMutation.mutate()}
-                                                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50"
+                                                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50 record-action-danger"
                                             >
                                                 <Trash2 size={14} aria-hidden="true" />
                                                 {removePhotoMutation.isPending

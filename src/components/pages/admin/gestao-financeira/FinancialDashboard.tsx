@@ -15,7 +15,7 @@ export type FinancialTab = "dashboard" | "definitions" | "cycles" | "movements";
 
 const chargeStatuses = ["PENDING", "PAID", "CANCELED"] as const;
 const queueGroups = [
-    { id: "payments" as const, label: "Pagamentos", resource: "payments" as const, status: "PENDING_VALIDATION", permission: "PAYMENT_READ", destination: { tab: "movements", movement: "analysis", status: "PENDING_VALIDATION" } as const },
+    { id: "payments" as const, label: "Pagamentos", resource: "payments" as const, status: "PENDING_VALIDATION", permission: "PAYMENT_READ", destination: { tab: "movements", movement: "payments", status: "PENDING_VALIDATION" } as const },
     { id: "refunds" as const, label: "Reembolsos", resource: "refunds" as const, status: "REQUESTED", permission: "REFUND_READ", destination: { tab: "movements", movement: "refunds", status: "REQUESTED" } as const },
     { id: "returns" as const, label: "Devoluções", resource: "refunds" as const, status: "APPROVED", permission: "REFUND_READ", destination: { tab: "movements", movement: "refunds", status: "APPROVED" } as const },
 ];

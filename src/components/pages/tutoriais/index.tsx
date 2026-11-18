@@ -349,7 +349,7 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
             "Consulte comprovantes enviados pelos associados e aprove ou rejeite pagamentos de mensalidades e eventos.",
         category: "admin",
         categoryLabel: "Administração",
-        href: "/admin/gestao-financeira/movimentacoes?movement=analysis",
+        href: "/admin/gestao-financeira/movimentacoes?movement=payments",
         storageKey: "tour_completed_admin_payments",
         stepCount: getPaymentsTourSteps(false).length,
         icon: WalletCards,
@@ -646,7 +646,7 @@ export default function TutorialsPageContent() {
 
     return (
         <div className="min-h-full w-full p-3 pb-10 md:p-6">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+            <div className="flex w-full flex-col gap-6">
                 <PageHeader
                     id="tour-tutorials-header"
                     title="Tutoriais"
