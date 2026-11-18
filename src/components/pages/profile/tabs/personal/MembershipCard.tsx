@@ -215,7 +215,8 @@ export function MembershipCard(props: MembershipCardProps) {
             </div>,
             document.body,
         ) : null}
-        <div ref={exportFaces} aria-hidden="true" style={{ position: "fixed", left: "-10000px", top: 0, width: 856, pointerEvents: "none" }}><CardFace side="front" data={props} logo={logo.data} photo={photo.data} /><CardFace side="back" data={props} logo={logo.data} photo={photo.data} /></div>
+        {/* Mantém as faces dimensionadas para clonagem sem ampliar a área rolável da tela. */}
+        <div ref={exportFaces} aria-hidden="true" style={{ position: "fixed", left: "-10000px", top: 0, width: 856, height: 0, overflow: "hidden", pointerEvents: "none" }}><CardFace side="front" data={props} logo={logo.data} photo={photo.data} /><CardFace side="back" data={props} logo={logo.data} photo={photo.data} /></div>
     </section>;
 }
 

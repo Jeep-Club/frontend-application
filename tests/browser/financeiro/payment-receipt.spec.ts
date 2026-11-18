@@ -24,13 +24,14 @@ for (const theme of ["light", "dark"]) {
         await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
         await trigger.focus();
         await trigger.press("Enter");
-        await expect(page.getByRole("button", { name: "Fechar envio", exact: true })).toHaveAttribute("aria-expanded", "true");
+        await expect(page.getByRole("dialog", { name: "Enviar comprovante" })).toBeVisible();
+        await page.getByRole("dialog").getByRole("spinbutton").first().focus();
+        await page.keyboard.type("131120201530");
         await expect(page.getByRole("textbox", { name: "Valor do pagamento (R$)" })).toHaveValue("250,00");
         await page.getByLabel(/^Comprovante/).setInputFiles(receipt);
         await page.getByRole("textbox", { name: "Observações (opcional)" }).fill("Pagamento de teste");
         await page.getByRole("button", { name: "Enviar para análise" }).click();
-        await expect(page.getByRole("status")).toContainText("Aguardando validação da gestão");
-        await expect(page.getByRole("status")).toContainText("não libera o acesso");
+        await expect(page.getByRole("status")).toContainText("Comprovante em análise");
         await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     });
 }
@@ -44,12 +45,14 @@ test("Comprovante: cancelamento restaura foco e formato inválido impede envio",
     await expect(page.getByRole("button", { name: "Enviar para análise" })).toBeDisabled();
     await page.getByRole("button", { name: "Cancelar", exact: true }).click();
     await expect(trigger).toBeFocused();
-    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByRole("dialog")).toBeHidden();
 });
 
 test("Comprovante: falha preserva dados para tentar novamente", async ({ page }) => {
     await page.goto(storyUrl(storyIds.error));
     await page.getByRole("button", { name: "Enviar comprovante", exact: true }).click();
+    await page.getByRole("dialog").getByRole("spinbutton").first().focus();
+    await page.keyboard.type("131120201530");
     await page.getByLabel(/^Comprovante/).setInputFiles(receipt);
     const notes = page.getByRole("textbox", { name: "Observações (opcional)" });
     await notes.fill("Manter observação");
