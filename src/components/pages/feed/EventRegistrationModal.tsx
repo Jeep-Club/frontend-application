@@ -20,8 +20,9 @@ export interface EventRegistrationFormData {
     guest?: { name: string; cpf: string };
 }
 
-export function EventRegistrationModal({ eventId, onSubmit, canRequestGuest }: {
+export function EventRegistrationModal({ eventId, eventTitle, onSubmit, canRequestGuest }: {
     eventId: number;
+    eventTitle: string;
     onSubmit: (data: EventRegistrationFormData) => Promise<unknown>;
     canRequestGuest: boolean;
 }) {
@@ -72,6 +73,7 @@ export function EventRegistrationModal({ eventId, onSubmit, canRequestGuest }: {
             <div>
                 <p className="text-xs font-extrabold uppercase tracking-wide text-j-yellow-600">Inscrição no evento</p>
                 <h2 id="event-registration-title" className="mt-1 text-xl font-extrabold text-j-blue-900">Como você vai participar?</h2>
+                <p className="mt-1 text-sm font-semibold text-j-gray-600">{eventTitle}</p>
                 <p className="mt-1 text-sm text-j-gray-500">Escolha o veículo e quem vai com você.</p>
             </div>
             <button type="button" onClick={setClose} aria-label="Fechar" className="rounded-full p-2 text-j-gray-500 hover:bg-j-gray-100"><X size={20} /></button>
@@ -79,6 +81,7 @@ export function EventRegistrationModal({ eventId, onSubmit, canRequestGuest }: {
 
         {loading ? <p role="status" className="p-6 text-sm text-j-gray-500">Carregando seus veículos e dependentes...</p> : loadError ? <div role="alert" className="p-6"><p className="text-sm text-red-600">Não foi possível carregar seus veículos e dependentes.</p><button type="button" onClick={() => { void vehiclesQuery.refetch(); void dependentsQuery.refetch(); }} className="mt-3 text-sm font-bold text-j-blue-700 underline">Tentar novamente</button></div> : (
             <form onSubmit={submit} className="flex flex-col gap-5 p-5 sm:p-6">
+                <p className="rounded-xl bg-j-gray-100 p-3 text-sm leading-relaxed text-j-gray-700">Após confirmar, se houver cobrança configurada para este evento, ela será lançada no seu histórico pessoal em Gestão de débitos. Uma cobrança obrigatória pode deixar a inscrição pendente até a confirmação do pagamento; se necessário, envie o comprovante pelo histórico.</p>
                 <fieldset>
                     <legend className="mb-2 flex items-center gap-2 text-sm font-extrabold text-j-blue-900"><CarFront size={17} />Seu veículo <span className="text-j-red-500">*</span></legend>
 

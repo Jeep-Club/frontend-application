@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import Link from "next/link";
 import toast from "react-hot-toast";
 import { BadgeCheck, CalendarCheck, X } from "lucide-react";
 import { cancelMyEventRegistrationAction, getMyEventRegistrationAction, registerForEventAction, requestEventGuestAction } from "@/server/actions/publications/event-registration";
@@ -10,11 +11,7 @@ import { hasPermission } from "@/utils/permission/hasPermission";
 import { useModal } from "@/providers/ModalProvider";
 import { EventRegistrationModal, type EventRegistrationFormData } from "./EventRegistrationModal";
 
-type EventCharge = { name: string; description?: string | null; amount: number; requiredForParticipation: boolean };
-const currency = (amount: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(amount);
-
-
-export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus, charges, compact = false }: { eventId: number; eventTitle?: string; eventStatus: "OPEN" | "IN_PROGRESS" | "FINISHED" | "CANCELLED"; charges?: EventCharge[]; compact?: boolean }) {
+export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus, compact = false }: { eventId: number; eventTitle?: string; eventStatus: "OPEN" | "IN_PROGRESS" | "FINISHED" | "CANCELLED"; compact?: boolean }) {
 
     const permissions = useUserStore((state) => state.permissions);
     const canRegister = hasPermission(permissions, "PUBLICATIONS", "EVENT_REGISTER");
@@ -86,21 +83,6 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
     const currentRegistration = registration.data;
 
 
-    const requiredCharges = (charges ?? []).filter((charge) => charge.requiredForParticipation);
-
-    const requiredAmount = requiredCharges.reduce((total, charge) => total + charge.amount, 0);
-    const chargeSummary = charges === undefined ? (
-        <p className="font-bold text-j-blue-800">Valor não informado</p>
-    ) : requiredAmount > 0 ? (
-        <>
-            <p className="font-bold text-j-blue-800">
-                {currency(requiredAmount)} — {requiredCharges[0]?.name || "Inscrição"}{requiredCharges.length > 1 ? " (total)" : ""}
-            </p>
-            {requiredCharges[0]?.description && <p className="mt-1 text-xs">{requiredCharges[0].description}</p>}
-        </>
-    ) : (
-        <p className="font-bold text-green-700">Gratuito</p>
-    );
     const isPending = register.isPending || cancel.isPending;
 
     const buttonClass = compact
@@ -114,6 +96,8 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
             <span role="status" className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-extrabold ${pendingPayment ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-900"}`}>
                 {pendingPayment ? <CalendarCheck size={17} aria-hidden="true" /> : <BadgeCheck size={17} aria-hidden="true" />}{label}
             </span>
+            <Link href="/financeiro" className="inline-flex min-h-11 cursor-pointer items-center rounded-xl px-3 text-sm font-bold text-j-blue-800 underline underline-offset-2 hover:text-j-blue-600 focus-visible:outline-2 focus-visible:outline-j-blue-800">Ver cobranças e pagamentos</Link>
+            <p className="basis-full text-xs leading-relaxed text-j-gray-500">{pendingPayment ? "Consulte o valor e vencimento da cobrança do evento e envie o comprovante em Gestão de débitos." : "Se o evento gerou alguma cobrança, ela estará disponível no seu histórico pessoal em Gestão de débitos."}</p>
             {canCancel && eventStatus === "OPEN" && <button type="button" disabled={isPending} onClick={() => cancel.mutate()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-bold transition-colors bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white cursor-pointer">
                 <X size={16} aria-hidden="true" />{cancel.isPending ? "Cancelando..." : "Cancelar inscrição"}
             </button>}
@@ -136,44 +120,12 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
 
 
     function openRegistrationForm() {
-        setContent(<EventRegistrationModal eventId={eventId} canRequestGuest={canRequestGuest} onSubmit={(data) => register.mutateAsync(data)} />);
-        setOpen();
-    }
-
-    function openRegistration() {
-
-        if (requiredAmount <= 0) {
-
-            openRegistrationForm();
-            return;
-        }
-        setContent(<section role="dialog" aria-modal="true" aria-labelledby="event-charge-confirmation-title" className="w-full max-w-lg rounded-3xl bg-j-white p-6 shadow-2xl sm:p-8">
-
-            <h2 id="event-charge-confirmation-title" className="text-xl font-extrabold text-j-blue-900">{charges === undefined ? "Valor não informado" : "Confirmar participação"}</h2>
-            <p className="mt-2 text-sm text-j-gray-600">{eventTitle}</p>
-            {charges === undefined ? <p className="mt-5 rounded-2xl bg-j-gray-100 p-4 text-sm leading-relaxed text-j-gray-700">A publicação não informou o valor da inscrição. Se houver cobrança, ela será registrada depois da inscrição. Confirme com a organização antes de prosseguir.</p> : <>
-
-            <div className="mt-5 rounded-2xl bg-j-gray-100 p-4">
-                {requiredCharges.map((charge) => <div key={charge.name} className="flex items-baseline justify-between gap-4"><span className="text-sm font-semibold text-j-gray-700">{charge.name}</span><span className="text-lg font-extrabold text-j-blue-800">{currency(charge.amount)}</span></div>)}
-                {requiredCharges.length > 1 && <div className="mt-3 flex justify-between border-t border-j-gray-300 pt-3 text-sm font-extrabold text-j-blue-900"><span>Total</span><span>{currency(requiredAmount)}</span></div>}
-                {requiredCharges[0]?.description && <p className="mt-3 text-xs leading-relaxed text-j-gray-500">{requiredCharges[0].description}</p>}
-            </div>
-            <p className="mt-4 text-sm leading-relaxed text-j-gray-600">Ao concluir a inscrição, a cobrança será registrada como pendente no seu histórico de gastos.</p>
-
-            </>}
-
-            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row"><button type="button" onClick={setClose} className="min-h-11 flex-1 rounded-xl border px-4 text-sm font-bold bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white cursor-pointer">Cancelar</button><button type="button" onClick={openRegistrationForm} className="min-h-11 flex-1 rounded-xl px-4 text-sm font-extrabold bg-green-700 text-white border-green-700 hover:bg-green-800 hover:text-white hover:border-green-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-green-800 focus-visible:text-white cursor-pointer">Confirmar e continuar</button></div>
-        </section>);
+        setContent(<EventRegistrationModal eventId={eventId} eventTitle={eventTitle} canRequestGuest={canRequestGuest} onSubmit={(data) => register.mutateAsync(data)} />);
         setOpen();
     }
 
     return <div className={`flex flex-col gap-2 ${compact ? "w-full" : ""}`}>
-        <div className="rounded-xl bg-j-gray-100 px-3 py-2 text-sm text-j-gray-600" aria-label="Valores do evento">
-            {chargeSummary}
-            {(charges ?? []).filter((charge) => !charge.requiredForParticipation).map((charge) => <p key={charge.name}>{charge.name}: {currency(charge.amount)} (opcional)</p>)}
-
-        </div>
-        <button type="button" disabled={isPending} onClick={openRegistration} className={buttonClass}>
+        <button type="button" disabled={isPending} onClick={openRegistrationForm} className={`${buttonClass} cursor-pointer`}>
             <CalendarCheck size={18} aria-hidden="true" />Participar do evento
         </button>
     </div>;

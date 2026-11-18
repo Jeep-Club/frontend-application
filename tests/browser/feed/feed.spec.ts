@@ -43,8 +43,14 @@ test('agenda mantém resumo e detalhe compartilhado por provider', async ({ page
 test('criação contextual existente continua disponível sem executar escrita', async ({ page, api }) => {
     await api.grant(['FEED_READ', 'NOTICE_CREATE']);
     await page.goto('/feed?type=NOTICE');
-    await page.getByRole('button', { name: 'Criar aviso', exact: true }).click();
-    await expect(page.getByRole('dialog').getByRole('heading', { name: 'Criar aviso' })).toBeVisible();
+    if (page.viewportSize()!.width < 1024) {
+        await page.getByRole('button', { name: 'Criar publicação', exact: true }).click();
+        await page.getByRole('menuitem', { name: 'Publicar aviso' }).click();
+    } else {
+        await page.getByRole('button', { name: 'Postar', exact: true }).click();
+        await page.getByRole('dialog').getByRole('button', { name: 'Publicar aviso' }).click();
+    }
+    await expect(page.getByRole('dialog').getByRole('heading', { name: 'Divulgar aviso' })).toBeVisible();
     await page.getByRole('dialog').getByRole('button', { name: 'Fechar', exact: true }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page).toHaveURL(/type=NOTICE/);
@@ -57,23 +63,40 @@ test('participação existente recebe foco e Escape retorna ao detalhe', async (
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
     await page.getByRole('dialog').getByRole('button', { name: 'Participar do evento' }).click();
     await expect(page.getByRole('heading', { name: 'Como você vai participar?' })).toBeVisible();
+    await expect(page.getByText(/Após confirmar, se houver cobrança configurada para este evento/)).toBeVisible();
     const vehicles = page.getByRole('radiogroup', { name: 'Selecione seu veículo' });
     await expect(vehicles).toHaveAccessibleDescription('Selecione o veículo que você usará no evento.');
     await expect(page.getByText('Selecione o veículo que você usará no evento.')).toBeVisible();
     const confirm = page.getByRole('button', { name: 'Confirmar participação' });
     await expect(confirm).toBeDisabled();
-    await vehicles.getByRole('radio', { name: /Jipe da trilha/ }).click();
+    await vehicles.getByRole('radio', { name: /Jipe sintético/ }).click();
     await expect(confirm).toBeEnabled();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
     await expect(page).toHaveURL(/publication=2/);
 });
 
+test('inscrição pendente leva ao histórico pessoal de cobranças', async ({ page, api }) => {
+    api.eventOpen = true;
+    await api.grant(['PUBLICATION_READ', 'EVENT_REGISTER', 'EVENT_REGISTRATION_READ']);
+    await page.goto('/feed?publication=2');
+    await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
+    await page.getByRole('dialog').getByRole('button', { name: 'Participar do evento' }).click();
+    await expect(page.getByRole('heading', { name: 'Como você vai participar?' })).toBeVisible();
+    await page.getByRole('radio', { name: /Jipe sintético/ }).click();
+    await page.getByRole('button', { name: 'Confirmar participação' }).click();
+    const detail = page.getByRole('dialog');
+    await expect(detail.getByRole('link', { name: 'Ver cobranças e pagamentos' })).toHaveAttribute('href', '/financeiro');
+    await expect(detail.getByText('Inscrição pendente de pagamento')).toBeVisible();
+});
+
 test('sidebar distingue erro de consulta e usa tamanho solicitado', async ({ page, api }) => {
-    api.feedStatus = 503;
+    api.eventFeedStatus = 503;
     await page.goto('/feed');
-    await expect(page.getByRole('complementary', { name: 'Informações do clube' }).getByRole('alert').first()).toContainText('temporariamente indisponível');
-    expect(api.calls.some(url => url.searchParams.get('type') === 'NOTICE' && url.searchParams.get('size') === '3')).toBe(true);
+    if (page.viewportSize()!.width < 1024) await page.getByRole('button', { name: 'Abrir painel de eventos, aniversariantes e avisos' }).click();
+    const sidebar = page.getByRole(page.viewportSize()!.width < 1024 ? 'dialog' : 'complementary', { name: 'Informações do clube' });
+    await expect(sidebar.getByRole('alert').first()).toContainText('temporariamente indisponível');
+    expect(api.calls.some(url => url.searchParams.get('type') === 'EVENT' && url.searchParams.get('size') === '48')).toBe(true);
 });
 
 test('falha de imagem conserva leitura e galeria navegável', async ({ page, api }) => {

@@ -3,9 +3,11 @@ import { CalendarDays,CircleAlert,ReceiptText,WalletCards } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { listMyMemberChargesAction } from "@/server/actions/billing/memberCharges/listMine";
 import Link from "next/link";
-import { FinanceiroFilters } from "./FinanceiroFilters";
+
+import { FinanceiroFilters, FinanceiroTourHelpButton } from "./FinanceiroFilters";
 import { PaymentReceiptSubmission } from "./PaymentReceiptSubmission";
 import { submitMemberPaymentAction } from "@/server/actions/billing/memberPayments/submit";
+
 
 type FinanceiroSearchParams = {
     status?: string;
@@ -86,11 +88,14 @@ export default async function Financeiro({
         <div className="min-h-full w-full p-3 pb-8 md:p-4">
             <div className="flex w-full flex-col gap-4">
                 <PageHeader
-                    title="Gestão de débitos"
+                    id="tour-member-financial-header"
+                    title="Histórico financeiro"
+
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
                         { label: "Gestão de débitos" },
                     ]}
+                    actions={<FinanceiroTourHelpButton />}
                 />
 
                 <section className="overflow-hidden rounded-xl border border-j-gray-200 bg-j-white">
@@ -109,6 +114,7 @@ export default async function Financeiro({
                     <div className="p-5">
                         <FinanceiroFilters initialStatus={status} initialSort={sort} />
 
+                        <div id="tour-member-financial-list">
                         {loadError ? (
                             <div className="flex min-h-52 flex-col items-center justify-center rounded-xl border border-dashed border-j-red-200 p-6 text-center">
                                 <CircleAlert size={30} className="text-j-red-400" />
@@ -156,6 +162,7 @@ export default async function Financeiro({
                                 ))}
                             </div>
                         )}
+                        </div>
                         {!loadError && totalPages > 1 && (
                             <nav aria-label="Paginação da gestão de débitos" className="mt-5 flex items-center justify-between border-t border-j-gray-200 pt-4">
                                 <Link

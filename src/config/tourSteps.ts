@@ -2,7 +2,7 @@ import type { DriveStep } from "driver.js";
 
 function createStepHeader(title: string, svgPath: string, badge?: string): string {
     const badgeHtml = badge
-        ? `<span style="margin-left:auto; background:#e0e7ff; color:#1e3a8a; font-size:9px; font-weight:800; padding:2px 6px; border-radius:4px; text-transform:uppercase; letter-spacing:0.05em;">${badge}</span>`
+        ? `<span style="margin-left:auto; background:var(--accent-surface); color:var(--accent-text); font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px; text-transform:uppercase; letter-spacing:0.04em;">${badge}</span>`
         : "";
 
     return `
@@ -12,7 +12,7 @@ function createStepHeader(title: string, svgPath: string, badge?: string): strin
                     ${svgPath}
                 </svg>
             </span>
-            <span style="font-weight:800; color:#061e50; font-size:14px; letter-spacing:-0.01em;">${title}</span>
+            <span style="font-weight:800; color:var(--accent-text); font-size:15px; letter-spacing:-0.01em;">${title}</span>
             ${badgeHtml}
         </div>
     `;
@@ -42,6 +42,9 @@ const ICONS = {
     wrench: `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>`,
     arrowDown: `<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>`,
     mapPin: `<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>`,
+    calendar: `<rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>`,
+    store: `<path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/>`,
+    settings: `<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>`,
 };
 
 // Tour da tela inicial (Home / Landing Page)
@@ -429,7 +432,7 @@ export function getAdminPanelTourSteps(isMobile: boolean = false): DriveStep[] {
             element: "#tour-admin-help-btn",
             popover: {
                 title: createStepHeader("Ajuda Contextual", ICONS.helpCircle),
-                description: "Este guia pode ser reaberto a qualquer momento por este botão.",
+                description: "Este guia pode ser reaberto a qualquer momento por este botão ou clicando em <strong>'Precisa de ajuda?'</strong> no topo da página.",
                 side: "bottom",
                 align: isMobile ? "center" : "end",
             },
@@ -487,6 +490,15 @@ export function getPublicationsTourSteps(isMobile: boolean = false): DriveStep[]
                 align: "center",
             },
         },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Sempre que quiser rever como gerenciar as publicações do clube, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
     ];
 }
 
@@ -498,8 +510,8 @@ export function getRolesTourSteps(isMobile: boolean = false): DriveStep[] {
         {
             element: "#tour-roles-header",
             popover: {
-                title: createStepHeader("Controle de Cargos e Acessos", ICONS.shield),
-                description: "Administração central dos cargos e níveis de acesso ao sistema.",
+                title: createStepHeader("Controle de Cargos e Acessos", ICONS.shield, "RBAC"),
+                description: "Administração central de papéis e níveis de autorização do sistema.",
                 side: "bottom",
                 align: isMobile ? "center" : "start",
             },
@@ -508,7 +520,7 @@ export function getRolesTourSteps(isMobile: boolean = false): DriveStep[] {
             element: "#tour-roles-tabs",
             popover: {
                 title: createStepHeader("Áreas de Governança", ICONS.layers),
-                description: "Alterne entre <strong>Cargos do sistema</strong>, a lista de <strong>Permissões</strong> por módulo e as <strong>Atribuições de pessoas</strong>.",
+                description: "Alterne entre <strong>Cargos do sistema</strong>, o catálogo de <strong>Permissões</strong> por módulo e as <strong>Atribuições de usuários</strong>.",
                 side: "bottom",
                 align: "center",
             },
@@ -611,6 +623,15 @@ export function getUsersTourSteps(isMobile: boolean = false): DriveStep[] {
                 align: "center",
             },
         },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Reabra este guia a qualquer momento clicando em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
     ];
 }
 
@@ -664,6 +685,15 @@ export function getMembershipApplicationsTourSteps(isMobile: boolean = false): D
                 align: "center",
             },
         },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Sempre que quiser revisar o fluxo de aprovação de novos sócios, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
     ];
 }
 
@@ -708,6 +738,15 @@ export function getPaymentsTourSteps(isMobile: boolean = false): DriveStep[] {
                 align: "center",
             },
         },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Reabra este guia a qualquer momento clicando em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
     ];
 }
 
@@ -726,11 +765,29 @@ export function getFinancialTourSteps(isMobile: boolean = false): DriveStep[] {
             },
         },
         {
+            element: "#tour-financial-tabs",
+            popover: {
+                title: createStepHeader("Áreas Financeiras", ICONS.layers),
+                description: "Navegue entre o <strong>Dashboard</strong> resumido, <strong>Definições e atribuições</strong>, <strong>Ciclos</strong>, <strong>Cobranças</strong>, <strong>Pagamentos</strong> e <strong>Reembolsos</strong>.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
             element: "#tour-financial-content",
             popover: {
                 title: createStepHeader("Painel e Operações da Área", ICONS.sliders),
                 description: "No <strong>Dashboard</strong> você acompanha os indicadores com atalhos diretos; nas demais abas você cria regras de cobrança, gera ciclos, exporta relatórios CSV/PDF e gerencia faturas ou reembolsos.",
                 side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Sempre que quiser revisar como operar as áreas financeiras, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
                 align: "center",
             },
         },
@@ -778,6 +835,15 @@ export function getMedicalProfilesTourSteps(isMobile: boolean = false): DriveSte
                 align: "center",
             },
         },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Reabra este guia a qualquer momento clicando em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
     ];
 }
 
@@ -819,6 +885,15 @@ export function getVehiclesTourSteps(isMobile: boolean = false): DriveStep[] {
                 title: createStepHeader("Ações sobre o Veículo", ICONS.sliders),
                 description: "Utilize os botões <strong>Visualizar</strong>, <strong>Editar</strong> ou <strong>Excluir</strong> para consultar todos os detalhes técnicos ou atualizar o registro.",
                 side: isMobile ? "top" : "left",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Sempre que quiser revisar como administrar a frota do clube, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
                 align: "center",
             },
         },
@@ -875,6 +950,15 @@ export function getToolsTourSteps(isMobile: boolean = false): DriveStep[] {
                 align: "center",
             },
         },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Reabra este guia a qualquer momento clicando em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
     ];
 }
 
@@ -928,10 +1012,321 @@ export function getDependentsTourSteps(isMobile: boolean = false): DriveStep[] {
                 align: "center",
             },
         },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Reabra este guia a qualquer momento clicando no botão de ajuda no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
     ];
 }
 
 export const dependentsTourSteps = getDependentsTourSteps(false);
+
+// Tour da Agenda de Eventos (/agenda)
+export function getAgendaTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-agenda-header",
+            popover: {
+                title: createStepHeader("Agenda de Eventos", ICONS.calendar, "Membro"),
+                description: "Acompanhe todas as trilhas, expedições, encontros e aniversariantes do mês no calendário oficial do clube.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-agenda-controls",
+            popover: {
+                title: createStepHeader("Navegação por Mês", ICONS.sliders),
+                description: "Use as setas para avançar ou voltar entre os meses e clique em <strong>'Hoje'</strong> para retornar rapidamente ao mês atual.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+        {
+            element: "#tour-agenda-calendar",
+            popover: {
+                title: createStepHeader("Calendário Mensal", ICONS.layers),
+                description: "Os dias com eventos ou aniversariantes ficam destacados. Clique em qualquer dia marcado para abrir o resumo do evento e confirmar sua participação.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Como usar a Agenda?", ICONS.helpCircle),
+                description: "Sempre que quiser rever como funciona o calendário de eventos, clique neste botão de ajuda no topo.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+    ];
+}
+
+export const agendaTourSteps = getAgendaTourSteps(false);
+
+// Tour do Histórico Financeiro do Associado (/financeiro)
+export function getMemberFinancialTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-member-financial-header",
+            popover: {
+                title: createStepHeader("Histórico Financeiro", ICONS.wallet, "Membro"),
+                description: "Consulte todas as mensalidades, taxas de eventos e cobranças vinculadas ao seu cadastro de associado.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-member-financial-filters",
+            popover: {
+                title: createStepHeader("Filtros e Ordenação", ICONS.sliders),
+                description: "Filtre suas cobranças por situação (<strong>Em aberto</strong>, <strong>Paga</strong> ou <strong>Cancelada</strong>) e ordene pelas datas de vencimento mais recentes ou mais antigas.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-member-financial-list",
+            popover: {
+                title: createStepHeader("Lançamentos e Vencimentos", ICONS.layers),
+                description: "Confira o código da cobrança, o ciclo correspondente, a data de vencimento, o valor final e o status atualizado.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Ajuda com o Financeiro", ICONS.helpCircle),
+                description: "Clique neste botão sempre que precisar revisar como consultar suas mensalidades e cobranças.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+    ];
+}
+
+export const memberFinancialTourSteps = getMemberFinancialTourSteps(false);
+
+// Tour da página de Serviços da Comunidade (/servicos)
+export function getServicesPageTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-services-header",
+            popover: {
+                title: createStepHeader("Serviços da Comunidade", ICONS.store, "Membro"),
+                description: "Encontre produtos, oficinas e serviços divulgados por associados e parceiros do Jeep Clube Tamoios.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-services-list",
+            popover: {
+                title: createStepHeader("Catálogo e Contato Direto", ICONS.layers),
+                description: "Veja fotos, faixa de valor e descrição de cada anúncio. Clique em <strong>'Ver detalhes'</strong> para abrir a publicação completa ou em <strong>'Contato'</strong> para chamar diretamente no WhatsApp.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Ajuda com Serviços", ICONS.helpCircle),
+                description: "Reabra este guia rápido a qualquer momento clicando no botão de ajuda no cabeçalho.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+    ];
+}
+
+export const servicesPageTourSteps = getServicesPageTourSteps(false);
+
+// Tour da página de Configurações (/configuracoes)
+export function getSettingsTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-settings-header",
+            popover: {
+                title: createStepHeader("Configurações da Conta", ICONS.settings, "Ajustes"),
+                description: "Personalize sua experiência no sistema, gerencie sua senha, privacidade, notificações e aparência.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-settings-sections",
+            popover: {
+                title: createStepHeader("Categorias de Configuração", ICONS.layers),
+                description: "Navegue entre <strong>Conta e segurança</strong>, <strong>Sua atividade</strong>, <strong>Notificações</strong>, <strong>Privacidade</strong>, <strong>Preferências</strong> (tema claro/escuro) e <strong>Ajuda</strong>.",
+                side: isMobile ? "bottom" : "right",
+                align: "start",
+            },
+        },
+        {
+            element: "#tour-settings-panel",
+            popover: {
+                title: createStepHeader("Opções e Ajustes", ICONS.sliders),
+                description: "Escolha a opção desejada para alterar sua senha, alternar entre modo claro e escuro ou reiniciar os tutoriais da plataforma.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Clique neste botão no topo sempre que quiser rever como funcionam as configurações.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+    ];
+}
+
+export const settingsTourSteps = getSettingsTourSteps(false);
+
+// Tour de alteração de senha em Configurações (/configuracoes?option=password)
+export function getChangePasswordTourSteps(isMobile: boolean = false): DriveStep[] {
+    if (isMobile) {
+        return [
+            {
+                element: "#tour-settings-change-password-btn",
+                popover: {
+                    title: createStepHeader("Alterar Senha", ICONS.key, "Segurança"),
+                    description: "Toque em <strong>'Alterar minha senha'</strong>, informe sua senha atual e defina uma nova senha com pelo menos 8 caracteres.",
+                    side: "bottom",
+                    align: "center",
+                },
+            },
+            {
+                element: "#tour-header-help-btn",
+                popover: {
+                    title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                    description: "Clique aqui sempre que quiser rever os passos para atualizar sua senha.",
+                    side: "bottom",
+                    align: "center",
+                },
+            },
+        ];
+    }
+
+    return [
+        {
+            element: "#tour-settings-section-account",
+            popover: {
+                title: createStepHeader("Conta e Segurança", ICONS.shield),
+                description: "Em <strong>Configurações</strong>, selecione a categoria <strong>'Conta e segurança'</strong> no menu lateral.",
+                side: "right",
+                align: "start",
+            },
+        },
+        {
+            element: "#tour-settings-option-password",
+            popover: {
+                title: createStepHeader("Opção Senha", ICONS.key),
+                description: "Na coluna de opções, clique em <strong>'Senha'</strong> para abrir as recomendações de segurança.",
+                side: "right",
+                align: "start",
+            },
+        },
+        {
+            element: "#tour-settings-change-password-btn",
+            popover: {
+                title: createStepHeader("Alterar Minha Senha", ICONS.checkCircle),
+                description: "Clique em <strong>'Alterar minha senha'</strong>, informe sua senha atual e digite a nova senha com pelo menos 8 caracteres.",
+                side: "top",
+                align: "start",
+            },
+        },
+    ];
+}
+
+// Tour do formulário público Quero ser Sócio (/membership/apply)
+export function getMembershipApplyTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-apply-card",
+            popover: {
+                title: createStepHeader("Solicitação de Associação", ICONS.userPlus, "Novo Sócio"),
+                description: "Preencha este formulário para enviar seu pedido de entrada ao Jeep Clube Tamoios para análise da diretoria.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-apply-personal",
+            popover: {
+                title: createStepHeader("Identificação e Contato", ICONS.idCard),
+                description: "Informe seu <strong>Nome completo</strong>, <strong>CPF</strong>, <strong>Celular com DDD</strong> (para retorno via WhatsApp) e e-mail opcional.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-apply-message",
+            popover: {
+                title: createStepHeader("Carta de Apresentação", ICONS.feed),
+                description: "Conte um pouco sobre você, sua experiência ou interesse no off-road e por que deseja fazer parte do clube.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-apply-submit",
+            popover: {
+                title: createStepHeader("Enviar para Análise", ICONS.checkCircle),
+                description: "Clique em <strong>'Enviar solicitação'</strong>. A diretoria avaliará seu pedido e entrará em contato com as instruções de acesso.",
+                side: "top",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const membershipApplyTourSteps = getMembershipApplyTourSteps(false);
+
+// Tour da tela de Recuperação de Senha (/forgot-password)
+export function getForgotPasswordTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-forgot-card",
+            popover: {
+                title: createStepHeader("Recuperação de Senha", ICONS.key),
+                description: "Esqueceu sua senha? Solicite um código de verificação para redefinir seu acesso com segurança.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-forgot-cpf",
+            popover: {
+                title: createStepHeader("Informe seu CPF", ICONS.idCard),
+                description: "Digite o CPF cadastrado na sua conta do clube e clique em <strong>'Enviar'</strong> para receber o código por e-mail.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-forgot-back",
+            popover: {
+                title: createStepHeader("Voltar ao Login", ICONS.logIn),
+                description: "Lembrou sua senha? Clique aqui para retornar imediatamente à tela de entrada.",
+                side: "top",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const forgotPasswordTourSteps = getForgotPasswordTourSteps(false);
 
 // Tour da Central de Tutoriais (/tutoriais)
 export function getTutorialsPageTourSteps(isMobile: boolean = false): DriveStep[] {
@@ -949,25 +1344,16 @@ export function getTutorialsPageTourSteps(isMobile: boolean = false): DriveStep[
             element: "#tour-tutorials-search",
             popover: {
                 title: createStepHeader("Pesquise sua Dúvida", ICONS.compass),
-                description: "Digite sua dúvida ou o que deseja fazer (ex.: <strong>'como cadastrar veículo'</strong>, <strong>'ficha médica'</strong>, <strong>'aprovar pagamento'</strong>) ou clique em uma das sugestões rápidas.",
+                description: "Digite sua dúvida ou o que deseja fazer (ex.: <strong>'como cadastrar veículo'</strong>, <strong>'ficha médica'</strong>, <strong>'carteirinha'</strong>) para filtrar a lista.",
                 side: "bottom",
                 align: "center",
             },
         },
         {
-            element: "#tour-tutorials-categories",
-            popover: {
-                title: createStepHeader("Filtros por Categoria", ICONS.layers),
-                description: "Filtre os tutoriais entre <strong>Todos</strong>, guias de <strong>Navegação & Associado</strong> ou módulos de <strong>Gestão Administrativa</strong> liberados para o seu perfil.",
-                side: "bottom",
-                align: isMobile ? "center" : "start",
-            },
-        },
-        {
             element: "#tour-tutorials-results",
             popover: {
-                title: createStepHeader("Resultados Logo Abaixo da Busca", ICONS.checkCircle),
-                description: "Os tutoriais correspondentes à sua pesquisa aparecem imediatamente aqui abaixo, mostrando os tópicos abordados e a quantidade de passos.",
+                title: createStepHeader("Resultados e Guias Ilustrados", ICONS.checkCircle),
+                description: "Os tutoriais disponíveis para você aparecem em formato de lista logo abaixo, com a quantidade de passos e status de conclusão.",
                 side: isMobile ? "bottom" : "top",
                 align: "center",
             },
@@ -975,9 +1361,18 @@ export function getTutorialsPageTourSteps(isMobile: boolean = false): DriveStep[
         {
             element: "#tour-tutorials-start-btn",
             popover: {
-                title: createStepHeader("Iniciar Tutorial Interativo", ICONS.sliders),
-                description: "Clique em <strong>'Iniciar tutorial'</strong> em qualquer card: o sistema levará você até a tela correspondente e iniciará a explicação guiada automaticamente.",
+                title: createStepHeader("Abrir Tutorial Passo a Passo", ICONS.sliders),
+                description: "Clique em <strong>'Ver tutorial'</strong> (ou <strong>'Iniciar tutorial'</strong>) em qualquer card para visualizar o passo a passo ilustrado com imagens ou iniciar o tour na tela.",
                 side: isMobile ? "bottom" : "left",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Botão de Ajuda no Cabeçalho", ICONS.helpCircle),
+                description: "Lembre-se: quando já estiver em qualquer página do sistema, basta clicar no botão vermelho de <strong>ajuda</strong> no cabeçalho (ele muda conforme a tela atual) para iniciar o tutorial na hora!",
+                side: "bottom",
                 align: "center",
             },
         },
@@ -1043,6 +1438,15 @@ export function getFeedTourSteps(isMobile: boolean = false): DriveStep[] {
                 align: isMobile ? "center" : "end",
             },
         },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Ajuda Contextual Dinâmica", ICONS.helpCircle),
+                description: "Sempre que estiver em qualquer página e precisar de orientação, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho para iniciar o tutorial específico da tela atual.",
+                side: "bottom",
+                align: "center",
+            },
+        },
     ];
 }
 
@@ -1070,8 +1474,29 @@ export function resolveRouteTourSteps(
     if (normalizedPath === "/login") {
         return getLoginTourSteps(isMobile);
     }
-    if (normalizedPath === "/feed" || normalizedPath === "/avisos" || normalizedPath === "/servicos" || normalizedPath === "/eventos") {
+    if (normalizedPath === "/membership/apply") {
+        return getMembershipApplyTourSteps(isMobile);
+    }
+    if (normalizedPath === "/forgot-password") {
+        return getForgotPasswordTourSteps(isMobile);
+    }
+    if (normalizedPath === "/servicos") {
+        return getServicesPageTourSteps(isMobile);
+    }
+    if (normalizedPath === "/feed" || normalizedPath === "/avisos" || normalizedPath === "/eventos") {
         return getFeedTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/agenda")) {
+        return getAgendaTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/financeiro")) {
+        return getMemberFinancialTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/configuracoes")) {
+        if (tab === "password") {
+            return getChangePasswordTourSteps(isMobile);
+        }
+        return getSettingsTourSteps(isMobile);
     }
     if (normalizedPath.startsWith("/profile")) {
         return getProfileTourSteps(isMobile);
@@ -1091,7 +1516,7 @@ export function resolveRouteTourSteps(
     if (normalizedPath.startsWith("/admin/gestao-financeira")) {
         return getFinancialTourSteps(isMobile);
     }
-    if (normalizedPath.startsWith("/admin/gestao-publicacoes")) {
+    if (normalizedPath.startsWith("/admin/gestao-publicacoes") || normalizedPath.startsWith("/admin/publications")) {
         return getPublicationsTourSteps(isMobile);
     }
     if (normalizedPath.startsWith("/admin/users")) {
@@ -1114,4 +1539,67 @@ export function resolveRouteTourSteps(
     }
 
     return getTourSteps(canAccessAdmin, isMobile, setMobileMenuOpen);
+}
+
+export interface ContextualHelpLabel {
+    full: string;
+    compact: string;
+}
+
+const CONTEXTUAL_HELP_EXACT_ROUTES: Record<string, ContextualHelpLabel> = {
+    "/": { full: "Como funciona?", compact: "Ajuda?" },
+    "/login": { full: "Ajuda para entrar?", compact: "Ajuda: Login" },
+    "/feed": { full: "Ajuda com o mural?", compact: "Ajuda: Mural" },
+    "/avisos": { full: "Ajuda com os avisos?", compact: "Ajuda: Avisos" },
+    "/servicos": { full: "Ajuda com serviços?", compact: "Ajuda: Serviços" },
+    "/eventos": { full: "Ajuda com eventos?", compact: "Ajuda: Eventos" },
+    "/admin": { full: "Ajuda com o painel?", compact: "Ajuda: Painel" },
+};
+
+const CONTEXTUAL_HELP_PREFIX_ROUTES: Array<[string, ContextualHelpLabel]> = [
+    ["/agenda", { full: "Ajuda com a agenda?", compact: "Ajuda: Agenda" }],
+    ["/financeiro", { full: "Ajuda com financeiro?", compact: "Ajuda: Financeiro" }],
+    ["/profile", { full: "Ajuda com seu perfil?", compact: "Ajuda: Perfil" }],
+    ["/configuracoes", { full: "Ajuda com configurações?", compact: "Ajuda: Ajustes" }],
+    ["/tutoriais", { full: "Ajuda com tutoriais?", compact: "Ajuda: Tutoriais" }],
+    ["/admin/dados-medicos", { full: "Ajuda com dados médicos?", compact: "Ajuda: Saúde" }],
+    ["/admin/pagamentos", { full: "Ajuda com pagamentos?", compact: "Ajuda: Pagamentos" }],
+    ["/admin/gestao-financeira", { full: "Ajuda com finanças?", compact: "Ajuda: Finanças" }],
+    ["/admin/gestao-publicacoes", { full: "Ajuda com publicações?", compact: "Ajuda: Publicações" }],
+    ["/admin/publications", { full: "Ajuda com publicações?", compact: "Ajuda: Publicações" }],
+    ["/admin/gestao-eventos", { full: "Ajuda com eventos?", compact: "Ajuda: Eventos" }],
+    ["/admin/roles-permissoes", { full: "Ajuda com permissões?", compact: "Ajuda: Cargos" }],
+    ["/admin/veiculos", { full: "Ajuda com veículos?", compact: "Ajuda: Veículos" }],
+    ["/admin/ferramentas", { full: "Ajuda com ferramentas?", compact: "Ajuda: Ferramentas" }],
+    ["/admin/tools", { full: "Ajuda com ferramentas?", compact: "Ajuda: Ferramentas" }],
+];
+
+/**
+ * Retorna o rótulo contextual do botão de ajuda no cabeçalho conforme a rota atual.
+ */
+export function getContextualHelpLabel(
+    pathname: string,
+    tab?: string | null,
+): ContextualHelpLabel {
+    const normalizedPath = pathname.replace(/\/+$/, "") || "/";
+
+    if (CONTEXTUAL_HELP_EXACT_ROUTES[normalizedPath]) {
+        return CONTEXTUAL_HELP_EXACT_ROUTES[normalizedPath];
+    }
+
+    if (normalizedPath.startsWith("/admin/users")) {
+        if (tab === "applications") {
+            return { full: "Ajuda com solicitações?", compact: "Ajuda: Pedidos" };
+        }
+        return { full: "Ajuda com usuários?", compact: "Ajuda: Usuários" };
+    }
+
+    const prefixMatch = CONTEXTUAL_HELP_PREFIX_ROUTES.find(([prefix]) =>
+        normalizedPath.startsWith(prefix),
+    );
+    if (prefixMatch) {
+        return prefixMatch[1];
+    }
+
+    return { full: "Precisa de ajuda?", compact: "Ajuda?" };
 }
