@@ -8,7 +8,7 @@ const destinations: FinancialDashboardViewProps["metrics"][number]["destination"
 const metrics: FinancialDashboardViewProps["metrics"] = [
     { id: "pending", title: "Cobranças em aberto", value: 14, description: "Inclui cobranças em atraso e expiradas", tone: "amber", loading: false, destination: { ...destinations, status: "PENDING" } },
     { id: "paid", title: "Cobranças pagas", value: 27, description: "Quitadas por pagamentos confirmados", tone: "green", loading: false, destination: { ...destinations, status: "PAID" } },
-    { id: "validation", title: "Pagamentos para validar", value: 3, description: "Comprovantes aguardando análise", tone: "violet", loading: false, destination: { tab: "movements", movement: "analysis", status: "PENDING_VALIDATION" } },
+    { id: "validation", title: "Pagamentos para validar", value: 3, description: "Comprovantes aguardando análise", tone: "violet", loading: false, destination: { tab: "movements", movement: "payments", status: "PENDING_VALIDATION" } },
     { id: "refunds", title: "Reembolsos solicitados", value: 2, description: "Solicitações aguardando decisão", tone: "amber", loading: false, destination: { tab: "movements", movement: "refunds", status: "REQUESTED" } },
 ];
 const groups: FinancialDashboardViewProps["queue"]["groups"] = [
@@ -18,9 +18,9 @@ const groups: FinancialDashboardViewProps["queue"]["groups"] = [
 ];
 const items: Record<DashboardQueueGroup, FinancialDashboardViewProps["queue"]["items"]> = {
     payments: [
-        { id: 101, title: "Pagamento #101", description: "Aguardando validação", amount: 150, date: "2026-11-10", destination: { tab: "movements", movement: "analysis", status: "PENDING_VALIDATION" } },
-        { id: 102, title: "Pagamento #102", description: "Aguardando validação", amount: 75, date: "2026-11-09", destination: { tab: "movements", movement: "analysis", status: "PENDING_VALIDATION" } },
-        { id: 103, title: "Pagamento #103", description: "Aguardando validação", amount: 120, date: "2026-11-08", destination: { tab: "movements", movement: "analysis", status: "PENDING_VALIDATION" } },
+        { id: 101, title: "Pagamento #101", description: "Aguardando validação", amount: 150, date: "2026-11-10", destination: { tab: "movements", movement: "payments", status: "PENDING_VALIDATION" } },
+        { id: 102, title: "Pagamento #102", description: "Aguardando validação", amount: 75, date: "2026-11-09", destination: { tab: "movements", movement: "payments", status: "PENDING_VALIDATION" } },
+        { id: 103, title: "Pagamento #103", description: "Aguardando validação", amount: 120, date: "2026-11-08", destination: { tab: "movements", movement: "payments", status: "PENDING_VALIDATION" } },
     ],
     refunds: [
         { id: 201, title: "Reembolso #201", description: "Solicitado pelo associado", amount: 50, date: "2026-11-08", destination: { tab: "movements", movement: "refunds", status: "REQUESTED" } },
@@ -45,7 +45,7 @@ const meta = {
                 { id: "CANCELED", label: "Canceladas", count: 4, tone: "blue", destination: { ...destinations, status: "CANCELED" } },
             ], loading: false, available: true,
         },
-        queue: { groups, selected: "payments", items: items.payments, total: 3, loading: false, destination: { tab: "movements", movement: "analysis" } },
+        queue: { groups, selected: "payments", items: items.payments, total: 3, loading: false, destination: { tab: "movements", movement: "payments" } },
         updatedAt: new Date("2026-11-12T12:00:00-03:00").getTime(),
         refreshing: false,
         onRefresh: fn(), onNavigate: fn(), onQueueChange: fn(), onRetryQueue: fn(),

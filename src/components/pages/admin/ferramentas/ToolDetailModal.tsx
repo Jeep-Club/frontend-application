@@ -92,7 +92,6 @@ export function ToolDetailModal({ toolId }: ToolDetailModalProps) {
                         )}
 
                         <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-                            <ReadOnlyField label="ID da ferramenta" value={tool.id} />
                             <ReadOnlyField label="ID do proprietário (Associado)" value={tool.userId} />
                         </div>
 

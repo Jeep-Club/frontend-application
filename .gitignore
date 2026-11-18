@@ -11,6 +11,7 @@
 !.yarn/versions
 
 # testing
+/tests/docs/
 /coverage
 /storybook-static/
 /playwright-report/

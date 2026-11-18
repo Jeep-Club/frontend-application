@@ -23,6 +23,8 @@ type ApiState = {
     commentsDelay: number;
     idempotentLikes: boolean;
     registrationErrorCode: string;
+    registration?: Record<string, unknown> | null;
+    likeStatus?: number;
     calls: URL[]; completed: URL[]; feedStatus: number; detailStatus: number; mediaFails: boolean; actions: string[]; delay: number; pages: number; failPage: number; empty: boolean; unauthorizedOnce: boolean; refreshFails: boolean; eventOpen: boolean; eventStartsAt: string | null; grant: (actions: string[]) => Promise<void>; };
 
 /** Synthetic API/session only. Runs real Next Server Functions without using production or weakening the GET-only pilot fixture. */
@@ -62,6 +64,7 @@ export const test = base.extend<{ api: ApiState }>({
             const socialMatch = /^\/publications\/(\d+)\/(likes(?:\/me)?|comments)$/.exec(url.pathname);
             if (socialMatch) {
                 const id = Number(socialMatch[1]);
+                if (socialMatch[2].startsWith('likes') && state.likeStatus && state.likeStatus !== 200) return failure(state.likeStatus);
                 const item = publications.find(item => item.id === id);
                 if (!item || item.type === 'SERVICE') return failure(404);
                 const social = state.social[id] ??= { likeCount: item.likeCount, commentCount: item.commentCount, likedByMe: item.likedByMe };
@@ -100,8 +103,7 @@ export const test = base.extend<{ api: ApiState }>({
                 return json({ id: 1, authorUserId: 7, ...state.notice, status: 'PUBLISHED', images: [publications[0].primaryImage], createdAt: instant, updatedAt: instant, publishedAt: instant, archivedAt: null });
             }
             if (url.pathname === '/events/2/participants') return json(paged([]));
-            if (url.pathname === '/events/2/registrations/me') return json({ status: 404, code: state.registrationErrorCode, detail: 'Inscrição não encontrada.' }, 404);
-            if (url.pathname === '/vehicles/list/member') return json(paged([]));
+            if (url.pathname === '/events/2/registrations/me' && !state.registration) return json({ status: 404, code: state.registrationErrorCode, detail: 'Inscrição não encontrada.' }, 404);
             if (url.pathname === '/dependents') return json([]);
             if (url.pathname === '/publications/feed') {
                 if (state.delay && url.searchParams.get('type') === 'NOTICE') await new Promise(resolve => setTimeout(resolve, state.delay));
@@ -121,6 +123,19 @@ export const test = base.extend<{ api: ApiState }>({
                 const { primaryImage, ...detail } = item;
                 return json({ ...detail, ...(detail.id === 1 ? state.notice : {}), ...state.social[detail.id], details: state.eventOpen && detail.type === 'EVENT' ? { ...detail.details, status: 'OPEN' } : detail.details, images: [primaryImage, { storageKey: key.replace('0000.jpg', '0001.jpg'), position: 1, primary: false }] });
             }
+            if (/^\/events\/\d+\/registrations\/me$/.test(url.pathname) && request.method === 'GET') {
+                if (!state.registration) return json({ status: 404, code: 'EVENT_REGISTRATION_NOT_FOUND', detail: 'Nenhuma inscrição encontrada.' }, 404);
+                return json(state.registration);
+            }
+            if (/^\/events\/\d+\/registrations$/.test(url.pathname) && request.method === 'POST') {
+                state.registration = { id: 33, eventId: 2, userId: 7, status: 'PENDING_PAYMENT', allocations: body.allocations ?? [], createdAt: instant, confirmedAt: null, cancelledAt: null, unallocatedDependentIds: [] };
+                return json(state.registration);
+            }
+            if (url.pathname === '/vehicles/list/member' && request.method === 'GET') {
+                const content = [{ id: 17, nickname: 'Jipe sintético', plate: 'ABC1D23', photo: null, modelYear: 2020, model: 'Jeep', color: 'Verde', status: 'ACTIVE' }];
+                return json({ content, totalElements: 1, totalPages: 1, number: 0, size: 50, first: true, last: true, numberOfElements: 1, empty: false });
+            }
+            if (url.pathname === '/dependents' && request.method === 'GET') return json([]);
             if (url.pathname === '/media/images') {
                 if (method === 'POST') {
                     const storageKey = key.replace('0000.jpg', String(state.uploadedKeys.length + 10).padStart(4, '0') + '.jpg');

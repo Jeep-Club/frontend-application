@@ -26,8 +26,10 @@ describe("membership access decided by the backend", () => {
         await expect(resolveMembershipAccess(() => Promise.reject(error))).resolves.toBe("unavailable");
     });
 
-    it.each(["payment-required", "unavailable"] as const)("keeps only the exact payment history route open when %s", (access) => {
+    it.each(["payment-required", "unavailable"] as const)("keeps debt management, settings and tutorials open when %s", (access) => {
         expect(canAccessMembershipPage(access, "/financeiro")).toBe(true);
+        expect(canAccessMembershipPage(access, "/configuracoes")).toBe(true);
+        expect(canAccessMembershipPage(access, "/tutoriais")).toBe(true);
         for (const pathname of ["/feed", "/profile", "/admin", "/admin/gestao-financeira", "/agenda", "/financeiro-outra", "/financeiro/qualquer"]) {
             expect(canAccessMembershipPage(access, pathname)).toBe(false);
         }

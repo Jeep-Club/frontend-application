@@ -1,0 +1,15 @@
+[
+  { "match": "ERR-FOCUS", "screen": "/feed/[id] → /feed", "error": "Revalidação assíncrona de Membership na navegação. Esperado: Tab contido no diálogo, fechamento por Escape e foco restaurado ao link acionador após a verificação.", "expected": "OK" },
+  { "match": "ERR-MEMBERSHIP", "screen": "/feed → /financeiro", "error": "HTTP 402 MEMBERSHIP_PAYMENT_REQUIRED. Esperado: bloquear conteúdo e encaminhar aos débitos; membership não concede permissões administrativas.", "expected": "OK" },
+  { "match": "ERR-403", "screen": "/feed/[id]", "error": "HTTP 403: acesso negado. Esperado: mensagem de acesso negado sem conteúdo protegido; sessão preservada.", "expected": "OK", "status": 403 },
+  { "match": "ERR-404", "screen": "/feed/[id]", "error": "HTTP 404: publicação indisponível. Esperado: mensagem de não encontrado, sem falso estado vazio ou logout.", "expected": "OK", "status": 404 },
+  { "match": "ERR-503", "screen": "/feed/[id]", "error": "HTTP 503: indisponibilidade temporária. Esperado: erro recuperável, nova tentativa disponível e sessão preservada.", "expected": "OK", "status": 503 },
+  { "match": "ERR-LIKE", "screen": "/feed/[id]", "error": "POST de curtida retorna HTTP 500. Esperado: não alterar likedByMe ou contador; permitir nova tentativa.", "expected": "OK" },
+  { "match": "ERR-COMMENT", "screen": "/feed/[id]", "error": "POST de comentário retorna HTTP 500. Esperado: preservar rascunho, não exibir comentário falso e permitir reenvio.", "expected": "OK" },
+  { "match": "ERR-LOGIN", "screen": "/login", "error": "HTTP 401 INVALID_CREDENTIALS. Esperado: mensagem de credenciais inválidas sem tratar como sessão expirada.", "expected": "OK" },
+  { "match": "ERR-NETWORK", "screen": "Transporte HTTP de todas as telas", "error": "Falha de conexão fetch. Esperado: erro público sem expor URL privada ou stack do servidor.", "expected": "OK" },
+  { "match": "curtida confirmada permite recuperar contadores", "screen": "/feed/[id]", "error": "Escrita de curtida confirmada, releitura HTTP 500. Esperado: preservar curtida e recuperar total sem repetir escrita.", "expected": "OK" },
+  { "match": "comentários paginam autoria", "screen": "/feed/[id]", "error": "Consulta de comentários HTTP 500 seguida de nova tentativa bem-sucedida. Esperado: loading, erro, recuperação e vazio distintos.", "expected": "OK" },
+  { "match": "404 de evento na inscrição", "screen": "/feed/[id]/register", "error": "EVENT_NOT_FOUND versus EVENT_REGISTRATION_NOT_FOUND. Esperado: distinguir erro real da ausência de inscrição.", "expected": "OK" },
+  { "match": "emergency permission does not grant", "screen": "/admin/dados-medicos", "error": "Sessão com authority de emergência mas sem HEALTH_READ/EXPORT. Esperado: negar rota sem consultar dados clínicos.", "expected": "OK" }
+]

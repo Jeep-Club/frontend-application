@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { ProfileTabLoading } from "@/components/pages/profile/tabs/ProfileTabLoading";
+import { ProfileEmptyPanel } from "@/components/pages/profile/tabs/ProfileTabEmptyState";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Eye, HeartPulse, Pencil, Plus, ShieldX, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { PageHeader } from "@/components/common/page-header";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
 import { getMedicalProfilesTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
 import { Button } from "@/components/common/button";
@@ -72,7 +75,7 @@ export default function MedicalManagement() {
     const permissions = useUserStore(state => state.permissions);
     const can = (action: string) => hasPermission(permissions, permissionsConfig.module, action);
     const canRead = can(permissionsConfig.read);
-    usePageTour({
+    const { restartTour } = usePageTour({
         storageKey: "tour_completed_admin_medical",
         steps: getMedicalProfilesTourSteps,
         autoStartOnFirstVisit: false,
@@ -89,19 +92,18 @@ export default function MedicalManagement() {
         { id: "owner", header: "Titular", meta: { label: "Titular" }, cell: ({ row }) => owner(row.original) },
         { accessorKey: "updatedAt", header: "Atualizado em", meta: { label: "Atualizado em" }, cell: ({ row }) => date(row.original.updatedAt) },
         { id: "actions", header: "Ações", meta: { label: "Ações" }, cell: ({ row }) => <div className="flex flex-wrap justify-end gap-2">
-            <button type="button" aria-label={`Visualizar perfil ${row.original.id}`} onClick={() => open("view", row.original.id)} className="flex min-h-9 items-center gap-1.5 rounded-lg bg-blue-50 px-3 text-xs font-bold text-j-blue-700 hover:bg-blue-100"><Eye size={15} />Visualizar</button>
-            {can(permissionsConfig.update) && <button type="button" aria-label={`Editar perfil ${row.original.id}`} onClick={() => open("edit", row.original.id)} className="flex min-h-9 items-center gap-1.5 rounded-lg bg-yellow-50 px-3 text-xs font-bold text-j-gray-700 hover:bg-yellow-100"><Pencil size={15} />Editar</button>}
-            {can(permissionsConfig.delete) && <button type="button" aria-label={`Excluir perfil ${row.original.id}`} onClick={() => open("delete", row.original.id)} className="flex min-h-9 items-center gap-1.5 rounded-lg bg-red-50 px-3 text-xs font-bold text-red-500 hover:bg-red-100"><Trash2 size={15} />Excluir</button>}
+            <button type="button" aria-label={`Visualizar perfil ${row.original.id}`} onClick={() => open("view", row.original.id)} className="flex min-h-9 items-center gap-1.5 rounded-lg bg-blue-50 px-3 text-xs font-bold text-j-blue-700 hover:bg-blue-100 record-action"><Eye size={15} />Visualizar</button>
+            {can(permissionsConfig.update) && <button type="button" aria-label={`Editar perfil ${row.original.id}`} onClick={() => open("edit", row.original.id)} className="flex min-h-9 items-center gap-1.5 rounded-lg bg-yellow-50 px-3 text-xs font-bold text-j-gray-700 hover:bg-yellow-100 record-action"><Pencil size={15} />Editar</button>}
+            {can(permissionsConfig.delete) && <button type="button" aria-label={`Excluir perfil ${row.original.id}`} onClick={() => open("delete", row.original.id)} className="flex min-h-9 items-center gap-1.5 rounded-lg bg-red-50 px-3 text-xs font-bold text-red-500 hover:bg-red-100 record-action-danger"><Trash2 size={15} />Excluir</button>}
         </div> },
     ];
     return <div className="min-h-full w-full p-3 md:p-4"><div className="flex w-full flex-col gap-4 pb-6">
         <PageHeader id="tour-medical-header" title="Gestão de dados médicos" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Gestão Administrativa", href: "/admin" }, { label: "Dados médicos" }]} />
         {!canRead && <ExportButtons />}
         {!canRead ? <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center"><ShieldX size={42} className="mb-3 text-j-gray-400" /><h3 className="text-lg font-black text-j-blue-800">Acesso não permitido</h3><p className="mt-1 text-sm text-j-gray-600">Seu usuário não possui permissão para consultar dados médicos.</p></section> : <>
-            <div className="flex items-center gap-3"><p className="text-sm text-j-gray-600">Gerencie os perfis médicos de usuários e dependentes ativos.</p></div>
-            <Table.Root data={query.data?.content ?? []} columns={columns} getRowId={profile => String(profile.id)} isLoading={query.isPending} isFetching={query.isFetching} error={query.error ? <div className="flex flex-col gap-3"><p>{query.error.message}</p><Button onClick={() => void query.refetch()}>Tentar novamente</Button></div> : undefined} emptyState="Nenhum perfil médico cadastrado." pagination={{ ...pagination, pageCount: query.data?.totalPages ?? 0, rowCount: query.data?.totalElements, pageSizeOptions: [10, 20, 50], onChange: next => setPagination({ ...next, pageIndex: next.pageSize !== pagination.pageSize ? 0 : next.pageIndex }) }} footer={<Table.Pagination itemLabel="perfil médico" />}>
-                <Table.Header title="Perfis médicos" description="Abra um perfil para consultar os dados completos."><ExportButtons />{can(permissionsConfig.update) && <Button id="tour-medical-create-btn" onClick={() => open("create")} className="h-10 gap-2 px-4 py-0 text-sm"><Plus size={16} />Cadastrar perfil</Button>}</Table.Header>
-                <div id="tour-medical-table"><Table.Content loadingRows={pagination.pageSize} /></div>
+            <Table.Root data={query.data?.content ?? []} columns={columns} getRowId={profile => String(profile.id)} isLoading={query.isPending} isFetching={query.isFetching} error={query.error ? <div className="flex flex-col gap-3"><p>{query.error.message}</p><Button onClick={() => void query.refetch()}>Tentar novamente</Button></div> : undefined} emptyState={<ProfileEmptyPanel icon={HeartPulse} title="Nenhum perfil médico cadastrado." />} pagination={{ ...pagination, pageCount: query.data?.totalPages ?? 0, rowCount: query.data?.totalElements, pageSizeOptions: [10, 20, 50], onChange: next => setPagination({ ...next, pageIndex: next.pageSize !== pagination.pageSize ? 0 : next.pageIndex }) }} footer={<Table.Pagination itemLabel="perfil médico" />}>
+                <Table.Header className="items-stretch"><ExportButtons />{can(permissionsConfig.update) && <Button id="tour-medical-create-btn" onClick={() => open("create")} className="h-10 w-full gap-2 px-4 py-0 text-sm sm:w-auto"><Plus size={16} />Cadastrar perfil</Button>}</Table.Header>
+                <div id="tour-medical-table">{query.isPending ? <ProfileTabLoading tab="medical" title="Dados médicos" /> : <Table.Content />}</div>
             </Table.Root>
         </>}
     </div></div>;

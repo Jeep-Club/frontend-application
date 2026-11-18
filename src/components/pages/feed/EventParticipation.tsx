@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from 'next/link';
 import toast from "react-hot-toast";
 import { BadgeCheck, CalendarCheck, X } from "lucide-react";
 import { cancelMyEventRegistrationAction, getMyEventRegistrationAction, registerForEventAction, requestEventGuestAction } from "@/server/actions/publications/event-registration";
@@ -120,6 +121,7 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
             <span role="status" className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-extrabold ${pendingPayment ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-900"}`}>
                 {pendingPayment ? <CalendarCheck size={17} aria-hidden="true" /> : <BadgeCheck size={17} aria-hidden="true" />}{label}
             </span>
+            {pendingPayment && <Link href="/financeiro" className="cursor-pointer rounded-lg px-3 py-2 font-bold underline focus-visible:outline-2">Ver cobranças e pagamentos</Link>}
             {canCancel && eventStatus === "OPEN" && <button type="button" disabled={isPending} onClick={() => cancel.mutate()} className="cursor-pointer inline-flex min-h-11 items-center gap-2 rounded-xl border border-j-gray-300 px-4 text-sm font-bold text-j-gray-600 transition-colors hover:border-red-300 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:opacity-50">
                 <X size={16} aria-hidden="true" />{cancel.isPending ? "Cancelando..." : "Cancelar inscrição"}
             </button>}
@@ -145,10 +147,10 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
         <p>Não foi possível verificar sua inscrição.</p>
         <button type="button" onClick={() => void registration.refetch()} className="mt-2 min-h-11 cursor-pointer font-bold underline">Tentar novamente</button>
     </div>;
-    if (autoOpenRegistration) return <EventRegistrationModal eventId={eventId} canRequestGuest={canRequestGuest} onClose={onRegistrationClose} onSubmit={(data) => register.mutateAsync(data)} />;
+    if (autoOpenRegistration) return <EventRegistrationModal eventId={eventId} eventTitle={eventTitle} canRequestGuest={canRequestGuest} onClose={onRegistrationClose} onSubmit={(data) => register.mutateAsync(data)} />;
 
     function openRegistrationForm() {
-        setContent(<EventRegistrationModal eventId={eventId} canRequestGuest={canRequestGuest} onSubmit={(data) => register.mutateAsync(data)} />);
+        setContent(<EventRegistrationModal eventId={eventId} eventTitle={eventTitle} canRequestGuest={canRequestGuest} onSubmit={(data) => register.mutateAsync(data)} />);
         setOpen();
     }
 

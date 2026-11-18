@@ -1,5 +1,22 @@
 import { test, expect } from './fixtures';
 
+test('ERR-FOCUS foco fica contido no diálogo e retorna ao link após revalidar Membership', async ({ page }) => {
+    await page.goto('/feed');
+    const link = page.getByRole('link', { name: 'Ver publicação completa: Aviso do clube', exact: true });
+    await link.click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('heading', { name: 'Aviso do clube' })).toBeVisible();
+    for (let i = 0; i < 8; i++) {
+        await page.keyboard.press('Tab');
+        await expect.poll(() => dialog.evaluate(element => element.contains(document.activeElement))).toBe(true);
+    }
+    await page.keyboard.press('Shift+Tab');
+    await expect.poll(() => dialog.evaluate(element => element.contains(document.activeElement))).toBe(true);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(link).toBeFocused();
+});
+
 test('criação interceptada mantém o feed e acesso direto fecha sem histórico', async ({ page, api }) => {
     await api.grant(['NOTICE_CREATE']);
     await page.goto('/feed?type=NOTICE');

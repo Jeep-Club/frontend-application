@@ -26,7 +26,7 @@ export function FeedRegistrationRoute({ id }: { id: number }) {
         {query.isError && <p role="alert">{publicationReadError(query.error).message}</p>}
         {!canRegister && <p role="alert">Você não tem permissão para se inscrever neste evento.</p>}
         {canRegister && query.data && (query.data.type === 'EVENT'
-            ? <EventParticipation eventId={id} eventStatus={query.data.details.status} autoOpenRegistration onRegistrationClose={() => { close(); router.refresh(); }} />
+            ? <EventParticipation eventId={id} eventTitle={query.data.title} eventStatus={query.data.details.status} autoOpenRegistration onRegistrationClose={() => { close(); router.refresh(); }} />
             : <p role="alert">Esta publicação não é um evento.</p>)}
     </dialog>;
 }

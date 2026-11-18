@@ -8,6 +8,9 @@ import type { PublicationFeedItem } from "@/schemas/publications/feed";
 import type { ActionFailure } from "@/utils/http/ActionError";
 import { CalendarDays, ChevronRight, Megaphone, Newspaper, Pencil, Plus, Share2, Wrench } from "lucide-react";
 import { Button } from "@/components/common/button";
+import { usePageTour } from '@/hooks/useTour';
+import { getFeedTourSteps } from '@/config/tourSteps';
+import { TourHelpButton } from '@/components/common/tour/TourHelpButton';
 
 import type { PublicationFeedFilters } from "@/schemas/publications/feed";
 import { parsePublicationFeedFilters, updatePublicationFeedFilters } from "@/utils/publications/feedFilters";
@@ -71,6 +74,12 @@ export default function Feed({ data, error, page = 0 }: { data?: PageResponse<Pu
     const [showFilterHint, setShowFilterHint] = useState(false);
     const [periodOpen, setPeriodOpen] = useState(false);
 
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_feed",
+        steps: getFeedTourSteps,
+        autoStartOnFirstVisit: false,
+    });
+
     useEffect(() => {
         const nav = filterNavRef.current;
         if (!nav) return;
@@ -130,7 +139,16 @@ export default function Feed({ data, error, page = 0 }: { data?: PageResponse<Pu
             <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
                 <div className="flex w-full min-w-0 flex-col gap-5 md:gap-6">
                         <>
-                            <h1 tabIndex={-1} className="sr-only">Mural do clube</h1>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <h1 tabIndex={-1} className="sr-only">Mural do clube</h1>
+                                <div className="ml-auto">
+                                    <TourHelpButton
+                                        id="tour-header-help-btn"
+                                        onClick={restartTour}
+                                        label="Como usar o mural?"
+                                    />
+                                </div>
+                            </div>
 
                             <div className="flex min-w-0 items-center gap-3">
                                 <div className="relative min-w-0 flex-1">
@@ -399,6 +417,7 @@ export default function Feed({ data, error, page = 0 }: { data?: PageResponse<Pu
                                                     {publication.type === "EVENT" && (
                                                         <EventParticipation
                                                             eventId={publication.id}
+                                                            eventTitle={publication.title}
                                                             eventStatus={
                                                                 publication.details
                                                                     .status

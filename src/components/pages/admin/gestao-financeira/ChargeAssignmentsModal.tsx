@@ -23,7 +23,7 @@ interface ChargeAssignmentsModalProps {
 
 function describeAssignment(assignment: ChargeAssignment): string {
     if (assignment.audienceType === "USER") {
-        return `Usuário #${assignment.userId}`;
+        return "Usuário específico";
     }
 
     if (assignment.audienceType === "ROLE") {

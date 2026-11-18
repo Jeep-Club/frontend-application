@@ -60,6 +60,7 @@ Execute na raiz, após instalar as dependências:
 | `npm test -- tests/useTour.spec.ts --runInBand --coverage=false --cache=false` | Exemplo de execução de uma suíte existente |
 | `npm run test:production-errors` | Contrato de erros de Server Actions em modo de produção; veja [o guia](deploy/server-action-errors.md) |
 | `npm run test:coverage -- --runInBand` | Jest com relatório de cobertura em `coverage/` |
+| `npm run test:docs` | Executa Jest + Playwright e gera planilha CSV por execução em `tests/docs/`, mantendo coverage e HTML nativos; [guia e filtros](docs/testing.md#planilha-de-execução-e-cenários-de-erro) |
 | `npm run test:browser` | Pilotos de Table/Storybook e login em Chromium, Firefox e WebKit, nas três larguras |
 | `npm run test:browser -- --project="firefox-*"` | Apenas Firefox nas três larguras; aceita também `chromium-*` e `webkit-*` |
 | `npm run test:browser:report` | Abrir o relatório HTML da última execução Playwright |

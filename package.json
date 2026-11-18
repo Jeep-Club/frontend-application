@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "jest",
     "test:coverage": "jest --coverage",
+    "test:docs": "node scripts/test-docs.mjs",
     "test:browser": "playwright test",
     "test:browser:report": "playwright show-report",
     "test:a11y": "playwright test --project=a11y-*",

@@ -28,27 +28,27 @@ describe("controles de decisão na tela", () => {
         const html = render(["PAYMENT_READ"]);
         expect(html).toContain("Dados do pagamento");
         expect(html).toContain("somente à consulta");
-        expect(html).not.toContain("Confirmar</button>");
-        expect(html).not.toContain("Rejeitar</button>");
+        expect(html).not.toMatch(/>\s*Confirmar(?:<\/span>)?<\/button>/);
+        expect(html).not.toMatch(/>\s*Rejeitar(?:<\/span>)?<\/button>/);
     });
 
     it("mostra confirmar e oculta rejeitar quando só há permissão de confirmação", () => {
         const html = render(["PAYMENT_READ", "PAYMENT_CONFIRM"]);
-        expect(html).toContain("Confirmar</button>");
-        expect(html).not.toContain("Rejeitar</button>");
+        expect(html).toMatch(/>\s*Confirmar(?:<\/span>)?<\/button>/);
+        expect(html).not.toMatch(/>\s*Rejeitar(?:<\/span>)?<\/button>/);
     });
 
     it("mostra rejeitar e oculta confirmar quando só há permissão de rejeição", () => {
         const html = render(["PAYMENT_READ", "PAYMENT_REJECT"]);
-        expect(html).toContain("Rejeitar</button>");
-        expect(html).not.toContain("Confirmar</button>");
+        expect(html).toMatch(/>\s*Rejeitar(?:<\/span>)?<\/button>/);
+        expect(html).not.toMatch(/>\s*Confirmar(?:<\/span>)?<\/button>/);
     });
 
     it.each(["CONFIRMED", "REJECTED", "CANCELED"] as const)("oculta decisões para pagamento %s", status => {
         const html = render(["PAYMENT_READ", "PAYMENT_CONFIRM", "PAYMENT_REJECT"], status);
         expect(html).toContain("já foi analisado ou cancelado");
-        expect(html).not.toContain("Confirmar</button>");
-        expect(html).not.toContain("Rejeitar</button>");
+        expect(html).not.toMatch(/>\s*Confirmar(?:<\/span>)?<\/button>/);
+        expect(html).not.toMatch(/>\s*Rejeitar(?:<\/span>)?<\/button>/);
         if (status === "REJECTED") expect(html).toContain("Comprovante ilegível");
     });
 

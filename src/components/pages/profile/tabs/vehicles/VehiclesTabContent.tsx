@@ -63,8 +63,16 @@ export function VehiclesTabContent() {
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-j-gray-700">Meus veículos</h3>
+            <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
+                        <Car size={22} aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                        <h3 className="text-lg font-extrabold text-j-blue-800">Meus veículos</h3>
+                        <p className="mt-0.5 text-sm text-j-gray-500">Gerencie os veículos cadastrados no seu perfil.</p>
+                    </div>
+                </div>
                 <Button onClick={handleOpenIncludeVehicle} className="h-11 w-24 shrink-0 justify-center whitespace-nowrap sm:w-52">
                     <Plus size={16} />
                     <span className="hidden sm:inline">Incluir Veículo</span>
@@ -73,7 +81,7 @@ export function VehiclesTabContent() {
             </div>
 
             {isLoading && (
-                <ProfileTabLoading label="Carregando veículos..." layout="cards" />
+                <ProfileTabLoading tab="vehicles" />
             )}
 
             {isError && (
@@ -129,23 +137,23 @@ export function VehiclesTabContent() {
                                         <button
                                             type="button"
                                             onClick={() => handleOpenEditVehicle(vehicle.id)}
-                                            className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl bg-yellow-50 px-2 py-2 text-xs font-bold text-j-gray-700 transition-colors hover:bg-yellow-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-500"
+                                            className="flex min-h-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl bg-yellow-50 px-2 py-2 text-xs font-bold text-j-gray-700 transition-colors hover:bg-yellow-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-500 record-action"
                                         >
-                                            <Pencil size={17} className="text-yellow-600" aria-hidden="true" />
+                                            <Pencil size={17} className="text-yellow-600 [:root[data-theme=dark]_&]:text-j-yellow-300" aria-hidden="true" />
                                             Editar
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => handleOpenViewVehicle(vehicle.id)}
-                                            className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl bg-blue-50 px-2 py-2 text-xs font-bold text-j-gray-700 transition-colors hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-700"
+                                            className="flex min-h-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl bg-blue-50 px-2 py-2 text-xs font-bold text-j-gray-700 transition-colors hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-700 record-action"
                                         >
-                                            <Eye size={17} className="text-j-blue-800" aria-hidden="true" />
+                                            <Eye size={17} className="text-j-blue-800 [:root[data-theme=dark]_&]:text-blue-300" aria-hidden="true" />
                                             Visualizar
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => handleOpenDeleteVehicle(vehicle)}
-                                            className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl bg-red-50 px-2 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                                            className="flex min-h-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl bg-red-50 px-2 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 record-action-danger"
                                         >
                                             <Trash2 size={17} aria-hidden="true" />
                                             Excluir
