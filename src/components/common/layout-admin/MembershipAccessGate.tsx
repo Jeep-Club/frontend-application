@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { WalletCards } from "lucide-react";
+import { LoaderCircle, Mountain, WalletCards } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { getMembershipAccessAction } from "@/server/actions/membership/access";
 import { useModal } from "@/providers/ModalProvider";
@@ -85,7 +85,17 @@ export function MembershipAccessGate({ initialAccess, initialPath, children }: P
     }, [access.data, state, setClose]);
 
     if (!canVisit || (!access.isFetchedAfterMount && !canAccessMembershipPage("payment-required", pathname))) {
-        return <main className="flex min-h-dvh items-center justify-center bg-background p-6 text-primary"><p role="status">Verificando acesso…</p></main>;
+        return (
+            <main className="grid min-h-dvh place-items-center bg-background-secondary p-5">
+                <div role="status" className="flex w-full max-w-sm flex-col items-center gap-4 rounded-3xl border border-input-border bg-background px-6 py-8 text-center shadow-xl">
+                    <span className="grid size-12 place-items-center rounded-2xl bg-j-yellow-300 text-[#061e50]">
+                        <Mountain size={25} aria-hidden="true" />
+                    </span>
+                    <p className="text-xl font-extrabold text-primary">Carregando o Jeep Clube</p>
+                    <LoaderCircle size={20} aria-hidden="true" className="text-secondary motion-safe:animate-spin" />
+                </div>
+            </main>
+        );
     }
 
     return (
