@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-export type DashboardMovement = "refunds" | "payments" | "member-charges" | "analysis";
+export type DashboardMovement = "refunds" | "payments" | "member-charges";
 export type DashboardDestination = { tab: "definitions" | "cycles" } | { tab: "movements"; movement: DashboardMovement; status?: string };
 export type DashboardTone = "blue" | "green" | "amber" | "violet";
 export type DashboardQueueGroup = "payments" | "refunds" | "returns";
@@ -8,7 +8,6 @@ export type DashboardQueueGroup = "payments" | "refunds" | "returns";
 const movementStatuses: Record<DashboardMovement, readonly string[]> = {
     "member-charges": ["PENDING", "PAID", "CANCELED"],
     payments: ["PENDING_VALIDATION", "CONFIRMED", "REJECTED", "CANCELED"],
-    analysis: ["PENDING_VALIDATION", "CONFIRMED", "REJECTED", "CANCELED"],
     refunds: ["ELIGIBLE", "REQUESTED", "APPROVED", "REJECTED", "REFUNDED", "EXPIRED", "CANCELED"],
 };
 

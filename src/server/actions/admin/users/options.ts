@@ -10,7 +10,7 @@ export async function listUserOptionsAction(name: string, page = 0) {
     z.number().int().min(0).max(1000000).parse(page);
     const params = new URLSearchParams({
         fields: "ID,NAME",
-        name: search,
+        ...(search ? { name: search } : {}),
         page: String(page),
         size: "20",
     });

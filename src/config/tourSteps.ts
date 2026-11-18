@@ -945,7 +945,7 @@ export function getToolsTourSteps(isMobile: boolean = false): DriveStep[] {
             element: "#tour-tools-actions",
             popover: {
                 title: createStepHeader("Ações da Ferramenta", ICONS.sliders),
-                description: "Utilize os controles para <strong>Visualizar</strong> detalhes, <strong>Editar</strong> dados, <strong>Ativar/Desativar</strong> ou <strong>Excluir</strong> o equipamento.",
+                description: "Utilize os controles para <strong>Visualizar</strong> detalhes, <strong>Editar</strong> dados ou <strong>Excluir</strong> o equipamento.",
                 side: isMobile ? "top" : "left",
                 align: "center",
             },

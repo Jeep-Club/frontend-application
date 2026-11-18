@@ -9,7 +9,7 @@ function form() {
     const body = new FormData();
     body.set("amount", "250.00");
     body.set("paymentMethod", "PIX");
-    body.set("paidAt", "2026-11-13T18:30:00.000Z");
+    body.set("paidAt", "2020-11-13T18:30:00.000Z");
     body.set("notes", " Pagamento de teste ");
     body.set("receiptFile", new File(["%PDF-1.4\ncomprovante sintético"], "comprovante.pdf", { type: "application/pdf" }));
     return body;
@@ -26,7 +26,7 @@ it("submits authenticated multipart to the charge's review queue without a membe
     const body = request.body as FormData;
     expect(body.get("amount")).toBe("250.00");
     expect(body.get("paymentMethod")).toBe("PIX");
-    expect(body.get("paidAt")).toBe("2026-11-13T18:30:00.000Z");
+    expect(body.get("paidAt")).toBe("2020-11-13T18:30:00.000Z");
     expect(body.get("notes")).toBe("Pagamento de teste");
     const file = body.get("receiptFile") as File;
     expect(file.name).toBe("comprovante.pdf");
@@ -55,7 +55,7 @@ it.each([
 });
 
 it.each([
-    { amount: "250.001" }, { paymentMethod: "UNKNOWN" }, { paidAt: "invalid" }, { notes: "x".repeat(501) },
+    { amount: "250.001" }, { paymentMethod: "UNKNOWN" }, { paidAt: "invalid" }, { paidAt: "2999-01-01T00:00:00.000Z" }, { notes: "x".repeat(501) },
 ])("rejects malformed metadata %s", (patch) => {
     expect(paymentReceiptSubmissionSchema.safeParse({ ...Object.fromEntries(form()), ...patch }).success).toBe(false);
 });

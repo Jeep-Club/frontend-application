@@ -22,6 +22,12 @@ const PAYMENT_POLICY_OPTIONS: PaymentAcceptancePolicy[] = [
     "UNTIL_DAYS_AFTER_DUE_DATE",
 ];
 
+const PAYMENT_POLICY_HELP: Record<PaymentAcceptancePolicy, string> = {
+    UNTIL_DUE_DATE: "não aceita comprovante em atraso",
+    AFTER_DUE_DATE: "aceita comprovante em atraso sem prazo final",
+    UNTIL_DAYS_AFTER_DUE_DATE: "aceita comprovante dentro da tolerância definida",
+};
+
 export function ChargeDefinitionFormFields() {
     const { control } = useFormContext<ChargeDefinitionFormData>();
     const paymentAcceptancePolicy = useWatch({ control, name: "paymentAcceptancePolicy" });
@@ -77,7 +83,7 @@ export function ChargeDefinitionFormFields() {
                 <option value="">Selecione</option>
                 {PAYMENT_POLICY_OPTIONS.map((option) => (
                     <option key={option} value={option}>
-                        {PAYMENT_ACCEPTANCE_POLICY_LABEL[option]}
+                        {`${PAYMENT_ACCEPTANCE_POLICY_LABEL[option]} (${PAYMENT_POLICY_HELP[option]})`}
                     </option>
                 ))}
             </Select>

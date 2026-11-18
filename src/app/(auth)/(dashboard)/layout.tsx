@@ -18,7 +18,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     const membershipAccess = await getMembershipAccess();
     const pathname = (await headers()).get("x-route-pathname") ?? "";
     return (
-        <MembershipAccessGate initialAccess={membershipAccess} initialPath={pathname} paymentHistory={children}>
+        <MembershipAccessGate initialAccess={membershipAccess} initialPath={pathname}>
             <DashboardShell fullName={fullName} userId={currentUser?.userId ?? "unknown"} initialProfilePhotoUrl={initialProfilePhotoUrl} onboardingRequired={onboardingRequired}>
                 {children}
             </DashboardShell>

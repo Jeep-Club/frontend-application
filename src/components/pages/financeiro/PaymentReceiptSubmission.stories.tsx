@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { expect, fn } from "storybook/test";
+import { expect, fn, within } from "storybook/test";
 import { PaymentReceiptSubmission } from "./PaymentReceiptSubmission";
 
 const meta = {
@@ -25,12 +25,16 @@ type Story = StoryObj<typeof meta>;
 export const Enviar: Story = {
     play: async ({ canvas, canvasElement, userEvent, args }) => {
         await userEvent.click(canvas.getByRole("button", { name: "Enviar comprovante" }));
-        const input = canvas.getByLabelText(/^Comprovante/);
+        const dialog = await canvas.findByRole("dialog", { name: "Enviar comprovante" });
+        const segments = within(dialog).getAllByRole("spinbutton");
+        segments[0].focus();
+        await userEvent.keyboard("131120201530");
+        const input = within(dialog).getByLabelText(/^Comprovante/);
         if (!(input instanceof canvasElement.ownerDocument.defaultView!.HTMLInputElement)) throw new Error("Campo de arquivo não encontrado");
         await userEvent.upload(input, new File(["%PDF-1.4\ncomprovante de teste"], "comprovante.pdf", { type: "application/pdf" }));
-        await userEvent.click(canvas.getByRole("button", { name: "Enviar para análise" }));
+        await userEvent.click(within(dialog).getByRole("button", { name: "Enviar para análise" }));
         await expect(args.submitAction).toHaveBeenCalledWith(42, expect.any(FormData));
-        await expect(await canvas.findByRole("status")).toHaveTextContent("Aguardando validação da gestão");
+        await expect(await canvas.findByRole("status")).toHaveTextContent("Comprovante em análise");
     },
 };
 

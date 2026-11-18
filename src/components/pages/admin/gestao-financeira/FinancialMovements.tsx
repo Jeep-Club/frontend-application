@@ -3,23 +3,19 @@
 import { useState } from "react";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
-import type { PaymentFilters } from "@/schemas/payments";
-import PaymentsPage from "../payments";
 import { BillingOperations } from "./BillingOperations";
 import { FinancialPage } from "./FinancialPage";
 
-export type MovementView = "refunds" | "payments" | "member-charges" | "analysis";
+export type MovementView = "refunds" | "payments" | "member-charges";
 
 export default function FinancialMovements({ initialMovement, initialStatus }: {
     initialMovement: MovementView;
     initialStatus?: string;
 }) {
     const permissions = useUserStore((state) => state.permissions);
-    const [paymentFilters, setPaymentFilters] = useState<PaymentFilters>({ status: "PENDING_VALIDATION", page: 0, size: 20 });
     const sections = [
         { key: "member-charges", label: "Cobranças", permission: "MEMBER_CHARGE_READ" },
         { key: "payments", label: "Pagamentos", permission: "PAYMENT_READ" },
-        { key: "analysis", label: "Análises", permission: "PAYMENT_READ" },
         { key: "refunds", label: "Reembolsos", permission: "REFUND_READ" },
     ] as const;
     const [selection, setSelection] = useState<MovementView>();
@@ -30,7 +26,7 @@ export default function FinancialMovements({ initialMovement, initialStatus }: {
 
     return (
         <FinancialPage title="Movimentações financeiras">
-            <div id="tour-financial-tabs" role="tablist" aria-label="Tipos de movimentação" className="grid w-full grid-cols-4 gap-1 rounded-xl border border-input-border bg-j-white p-1">
+            <div role="tablist" aria-label="Tipos de movimentação" className="grid w-full grid-cols-3 gap-1 rounded-xl border border-input-border bg-j-white p-1">
                 {sections.map(({ key, label }, index) => (
                     <button
                         key={key}
@@ -61,8 +57,6 @@ export default function FinancialMovements({ initialMovement, initialStatus }: {
             <section id="movement-panel" role="tabpanel" aria-labelledby={`movement-tab-${active}`}>
                 {!canRead(section.permission) ? (
                     <p className="rounded-xl bg-j-white p-4 text-secondary">Você não tem permissão para consultar esta seção.</p>
-                ) : active === "analysis" ? (
-                    <PaymentsPage filters={paymentFilters} embedded onFiltersChange={setPaymentFilters} />
                 ) : (
                     <BillingOperations key={`${active}:${status ?? ""}`} resource={active} initialStatus={status} />
                 )}

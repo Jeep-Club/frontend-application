@@ -1,13 +1,16 @@
 import { getActionFailure, restoreActionError } from '@/utils/http/ActionError';
 import { extractApiErrorMessage,SESSION_EXPIRED_MESSAGE } from '@/utils/http/apiError';
 import { toast } from 'react-hot-toast';
+import { canAccessMembershipPage, PAYMENT_HISTORY_PATH } from '@/utils/membership/access';
 
 /** Shared by query and mutation caches; runs before component error callbacks. */
 export function httpErrorHandler(error: Error) {
     restoreActionError(error);
     const failure = getActionFailure(error);
     if (failure?.status === 402 && failure.code === 'MEMBERSHIP_PAYMENT_REQUIRED') {
-        if (window.location.pathname !== '/financeiro') window.location.assign(new URL('/financeiro', window.location.origin));
+        if (!canAccessMembershipPage("payment-required", window.location.pathname)) {
+            window.location.assign(new URL(PAYMENT_HISTORY_PATH, window.location.origin));
+        }
         return;
     }
     if (failure?.status === 401 || error.message === SESSION_EXPIRED_MESSAGE) {

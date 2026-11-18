@@ -217,7 +217,6 @@ function UserDetailsWorkspace({ user: initialUser, modal }: UserDetailsModalProp
                             <span className="text-xs font-semibold text-j-yellow-300">
                                 Matrícula: {currentUser.membershipNumber ?? "Não associada"}
                             </span>
-                            <span className="text-xs text-j-white/70">ID #{currentUser.id}</span>
                             <span className={twMerge("rounded-full px-2 py-0.5 text-xs font-semibold", USER_STATUS_STYLE[currentUser.status])}>
                                 {USER_STATUS_LABEL[currentUser.status]}
                             </span>
@@ -843,7 +842,7 @@ function UserAccessAndLifecycleSection({
                                     </span>
                                 ) : historyError ? (
                                     <span className="text-j-gray-600">
-                                        Nenhum registro de exclusão física encontrado para o ID #{user.id}.
+                                        Nenhum registro de exclusão física encontrado para este usuário.
                                     </span>
                                 ) : deletionHistory ? (
                                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-4">

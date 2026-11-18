@@ -20,6 +20,9 @@ import { ChargeAssignmentsModal } from "./ChargeAssignmentsModal";
 import { getPermissionNameByCode } from "../roles-permissoe/permissionLabels";
 import { ActionError, getActionFailure } from "@/utils/http/ActionError";
 import { getApiProblem } from "@/utils/http/apiError";
+import { MemberSelector, type MemberOption } from "../MemberSelector";
+import { useUserStore } from "@/stores/userStore";
+import { hasPermission } from "@/utils/permission/hasPermission";
 
 const roleReadName = getPermissionNameByCode("AUTHORIZATION_ROLE_READ")!;
 const assignmentCreateName = getPermissionNameByCode("BILLING_CHARGE_ASSIGNMENT_CREATE")!;
@@ -53,9 +56,11 @@ const AUDIENCE_OPTIONS: Array<{ value: ChargeAudienceType; label: string }> = [
 export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionName, chargeDefinitionStatus }: AddChargeAssignmentModalProps) {
     const { setContent, setClose } = useModal();
     const queryClient = useQueryClient();
+    const permissions = useUserStore((state) => state.permissions);
+    const canReadUsers = hasPermission(permissions, "IDENTITY", "USER_READ");
 
     const [audienceType, setAudienceType] = useState<ChargeAudienceType | "">("");
-    const [userId, setUserId] = useState("");
+    const [user, setUser] = useState<MemberOption | null>(null);
     const [roleId, setRoleId] = useState("");
     const [eventId, setEventId] = useState("");
 
@@ -91,7 +96,8 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
             }
 
             if (audienceType === "USER") {
-                return assignChargeToUserAction(chargeDefinitionId, Number(userId));
+                if (!canReadUsers || !user) throw new Error("Selecione um usuário na lista.");
+                return assignChargeToUserAction(chargeDefinitionId, user.id);
             }
 
             if (audienceType === "ROLE") {
@@ -114,7 +120,7 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
     });
 
     const canSubmit = audienceType === "ALL_MEMBERS"
-        || (audienceType === "USER" && userId.trim() !== "")
+        || (audienceType === "USER" && canReadUsers && user !== null)
         || (audienceType === "ROLE" && roleId !== "")
         || (audienceType === "EVENT_PARTICIPANTS" && eventId.trim() !== "");
 
@@ -152,7 +158,7 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
                     onChange={(event) => {
                         setAudienceType(event.target.value as ChargeAudienceType);
                         mutation.reset();
-                        setUserId("");
+                        setUser(null);
                         setRoleId("");
                         setEventId("");
                     }}
@@ -165,19 +171,13 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
                     ))}
                 </Select.Unregister>
 
-                {audienceType === "USER" && (
-                    <Input
-                        type="number"
-                        min="1"
-                        label="ID do usuário"
-                        name="userId"
-                        placeholder="Ex.: 42"
-                        value={userId}
-                        onChange={(event) => setUserId(event.target.value)}
-                        labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus"
-                    />
-                )}
+                {audienceType === "USER" && (canReadUsers ? (
+                    <MemberSelector value={user} onChange={setUser} disabled={mutation.isPending} />
+                ) : (
+                    <p role="status" className="text-sm text-secondary">
+                        Para pesquisar usuários, solicite a permissão “{getPermissionNameByCode("IDENTITY_USER_READ") ?? "Consultar usuários"}”.
+                    </p>
+                ))}
 
                 {audienceType === "ROLE" && (
                     isLoadingRoles ? (

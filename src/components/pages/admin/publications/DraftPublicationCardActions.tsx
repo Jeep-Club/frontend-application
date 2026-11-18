@@ -15,9 +15,9 @@ export function DraftPublicationCardActions({ publication }: { publication: Publ
     const target = { ...publication, type: publication.type, status: publication.status };
     const config = publicationDraftActions[publication.type];
     const actions = [
-        { action: "edit" as const, label: "Editar", icon: Pencil, className: "bg-yellow-50 text-j-gray-700 hover:bg-yellow-100" },
-        { action: "publish" as const, label: "Publicar", icon: Send, className: "bg-blue-50 text-j-blue-700 hover:bg-blue-100" },
-        { action: "delete" as const, label: "Excluir", icon: Trash2, className: "bg-red-50 text-red-500 hover:bg-red-100" },
+        { action: "edit" as const, label: "Editar", icon: Pencil, className: "bg-yellow-50 text-j-gray-700 hover:bg-yellow-100 record-action" },
+        { action: "publish" as const, label: "Publicar", icon: Send, className: "bg-blue-50 text-j-blue-700 hover:bg-blue-100 record-action" },
+        { action: "delete" as const, label: "Excluir", icon: Trash2, className: "bg-red-50 text-red-500 hover:bg-red-100 record-action-danger" },
     ].filter((entry) => hasPermission(permissions, "PUBLICATIONS", config[entry.action]));
     if (!actions.length) return null;
     return <div aria-label="Ações do rascunho" className={`mt-auto grid gap-2 border-t border-j-gray-200 p-4 ${actions.length === 3 ? "grid-cols-3" : actions.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
