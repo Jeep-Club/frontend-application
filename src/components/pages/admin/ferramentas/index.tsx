@@ -8,6 +8,7 @@ import { Eye, Pencil, Plus, RotateCcw, ShieldX, Trash2, Wrench } from "lucide-re
 import { twMerge } from "tailwind-merge";
 
 import { PageHeader } from "@/components/common/page-header";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
 import { getToolsTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
 import { Button } from "@/components/common/button";
@@ -38,7 +39,7 @@ export default function ToolManagement() {
     const canCreate = hasPermission(permissions, "TOOLS", "TOOL_CREATE");
     const canUpdate = hasPermission(permissions, "TOOLS", "TOOL_UPDATE");
     const canDelete = hasPermission(permissions, "TOOLS", "TOOL_DELETE");
-    usePageTour({
+    const { restartTour } = usePageTour({
         storageKey: "tour_completed_admin_tools",
         steps: getToolsTourSteps,
         autoStartOnFirstVisit: false,
@@ -123,6 +124,16 @@ export default function ToolManagement() {
                         { label: "Gestão Administrativa", href: "/admin" },
                         { label: "Ferramentas" },
                     ]}
+                    actions={
+                        canRead ? (
+                            <TourHelpButton
+                                id="tour-header-help-btn"
+                                onClick={restartTour}
+                                label="Como gerenciar ferramentas?"
+                                className="w-full justify-center sm:w-auto"
+                            />
+                        ) : undefined
+                    }
                 />
 
                 {!canRead ? (

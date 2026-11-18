@@ -3,9 +3,11 @@ import { CheckCircle2, CalendarDays, CircleAlert, CircleDollarSign, ReceiptText 
 import { PageHeader } from "@/components/common/page-header";
 import { listMyMemberChargesAction } from "@/server/actions/billing/memberCharges/listMine";
 import Link from "next/link";
-import { FinanceiroFilters } from "./FinanceiroFilters";
+
+import { FinanceiroFilters, FinanceiroTourHelpButton } from "./FinanceiroFilters";
 import { PaymentReceiptSubmission } from "./PaymentReceiptSubmission";
 import { submitMemberPaymentAction } from "@/server/actions/billing/memberPayments/submit";
+
 
 type FinanceiroSearchParams = {
     status?: string;
@@ -70,11 +72,14 @@ export default async function Financeiro({
         <div className="min-h-full w-full px-3 py-5 pb-10 sm:px-5 lg:px-8">
             <div className="flex w-full flex-col gap-5">
                 <PageHeader
-                    title="Gestão de débitos"
+                    id="tour-member-financial-header"
+                    title="Histórico financeiro"
+
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
                         { label: "Gestão de débitos" },
                     ]}
+                    actions={<FinanceiroTourHelpButton />}
                 />
 
                 <section className="overflow-hidden rounded-2xl border border-input-border bg-background shadow-sm">
@@ -93,6 +98,7 @@ export default async function Financeiro({
                     <div className="space-y-5 p-4 sm:p-6">
                         <FinanceiroFilters initialStatus={status} initialSort={sort} />
 
+                        <div id="tour-member-financial-list">
                         {loadError ? (
                             <div className="flex min-h-56 flex-col items-center justify-center rounded-2xl border border-dashed border-input-border bg-background-secondary p-6 text-center">
                                 <CircleAlert size={30} className="text-j-red-400" aria-hidden="true" />
@@ -144,6 +150,7 @@ export default async function Financeiro({
                                 ))}
                             </div>
                         )}
+                        </div>
                         {!loadError && totalPages > 1 && (
                             <nav aria-label="Paginação da gestão de débitos" className="mt-5 flex items-center justify-between border-t border-input-border pt-4">
                                 <Link

@@ -158,7 +158,7 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
                     onChange={(event) => {
                         setAudienceType(event.target.value as ChargeAudienceType);
                         mutation.reset();
-                        setUserId("");
+                        setUser(null);
                         setRoleId("");
                         setEventId("");
                     }}

@@ -4,6 +4,27 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { ListFilter, LoaderCircle } from "lucide-react";
 
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
+import { getMemberFinancialTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
+
+export function FinanceiroTourHelpButton() {
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_member_financial",
+        steps: getMemberFinancialTourSteps,
+        autoStartOnFirstVisit: false,
+    });
+
+    return (
+        <TourHelpButton
+            id="tour-header-help-btn"
+            onClick={restartTour}
+            label="Como consultar minhas cobranças?"
+            className="w-full justify-center sm:w-auto"
+        />
+    );
+}
+
 interface FinanceiroFiltersProps {
     initialStatus?: MemberChargeStatus;
     initialSort: string;
@@ -38,7 +59,7 @@ export function FinanceiroFilters({ initialStatus, initialSort }: FinanceiroFilt
     }
 
     return (
-        <div className="rounded-2xl border border-input-border bg-background-secondary p-4 sm:p-5">
+        <div id="tour-member-financial-filters" className="rounded-2xl border border-input-border bg-background-secondary p-4 sm:p-5">
             <div className="mb-4 flex items-center gap-2 text-sm font-extrabold text-primary">
                 <ListFilter size={17} className="text-j-blue-800" aria-hidden="true" />
                 Refine suas cobranças

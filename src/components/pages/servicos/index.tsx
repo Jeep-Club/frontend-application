@@ -5,6 +5,9 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { ChevronRight, LoaderCircle, MessageCircle, Store } from "lucide-react";
 import { useModal } from "@/providers/ModalProvider";
 import { Button } from "@/components/common/button";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
+import { getServicesPageTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
 import { PageHeader } from "@/components/common/page-header";
 import { PublicationDetailModal } from "@/components/pages/feed/PublicationDetailModal";
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
@@ -52,6 +55,11 @@ function ServiceCard({ service, onOpen }: { service: ServiceItem; onOpen: (id: n
 
 export default function ServicesPage() {
     const { setContent, setOpen } = useModal();
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_member_services",
+        steps: getServicesPageTourSteps,
+        autoStartOnFirstVisit: false,
+    });
     const query = useInfiniteQuery({
         queryKey: ["publications", "services-page", { type: "SERVICE", size: 12 }],
         queryFn: ({ pageParam }) => listPublicationFeedAction({ type: "SERVICE", page: pageParam, size: 12 }),
@@ -70,10 +78,11 @@ export default function ServicesPage() {
     return <main className="min-h-full w-full px-3 py-4 pb-8 md:px-6 md:py-6">
         <div className="flex w-full flex-col gap-5">
             <div className="space-y-2">
-                <PageHeader title="Serviços" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Serviços" }]} />
+                <PageHeader id="tour-services-header" actions={<TourHelpButton id="tour-header-help-btn" onClick={restartTour} label="Como usar os serviços?" className="w-full justify-center sm:w-auto" />} title="Serviços" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Serviços" }]} />
                 <p className="max-w-2xl text-sm leading-relaxed text-secondary">Encontre serviços oferecidos pela comunidade do Jeep Clube Tamoios e entre em contato com quem publicou.</p>
             </div>
 
+            <div id="tour-services-list" className="flex flex-col gap-5">
             {query.isPending ? <div role="status" className="flex min-h-56 items-center justify-center gap-3 rounded-2xl border border-j-gray-200 bg-j-white text-sm text-j-gray-500"><LoaderCircle size={20} className="animate-spin" aria-hidden="true" />Carregando serviços...</div>
                 : query.isError ? <div role="alert" className="rounded-2xl border border-j-gray-200 bg-j-white p-6 text-center"><p className="text-sm text-j-gray-600">{failure.message}</p><Button className="mt-3" onClick={() => void query.refetch()}>Tentar novamente</Button></div>
                     : services.length === 0 ? <div className="flex min-h-56 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center"><span className="flex size-12 items-center justify-center rounded-2xl bg-j-blue-50 text-j-blue-800"><Store size={22} aria-hidden="true" /></span><h2 className="mt-4 font-extrabold text-j-blue-900">Nenhum serviço publicado</h2><p className="mt-1 max-w-md text-sm text-j-gray-500">Quando houver serviços disponíveis, eles aparecerão aqui.</p></div>
@@ -84,6 +93,7 @@ export default function ServicesPage() {
                             {query.isFetchNextPageError && <div role="alert" className="text-center text-sm text-red-600">{failure.message}</div>}
                             {query.hasNextPage && <div className="flex justify-center"><Button type="button" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()} className="min-w-48">{query.isFetchingNextPage ? <><LoaderCircle size={17} className="animate-spin" aria-hidden="true" />Carregando...</> : "Carregar mais serviços"}</Button></div>}
                         </>}
+            </div>
         </div>
     </main>;
 }

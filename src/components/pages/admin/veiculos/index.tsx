@@ -10,6 +10,7 @@ import { Car,Eye,Filter,Pencil,Plus,ShieldX,Trash2 } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { AdminExport } from "@/components/common/admin-export/AdminExport";
 import { PageHeader } from "@/components/common/page-header";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
 import { getVehiclesTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
 import { ListPagination } from "@/components/common/table/ListPagination";
@@ -37,7 +38,7 @@ export default function VehicleManagement() {
     const canCreate = hasPermission(permissions, "VEHICLES", "VEHICLE_CREATE");
     const canUpdate = hasPermission(permissions, "VEHICLES", "VEHICLE_UPDATE");
     const canDelete = hasPermission(permissions, "VEHICLES", "VEHICLE_DELETE");
-    usePageTour({
+    const { restartTour } = usePageTour({
         storageKey: "tour_completed_admin_vehicles",
         steps: getVehiclesTourSteps,
         autoStartOnFirstVisit: false,
@@ -94,7 +95,16 @@ export default function VehicleManagement() {
                     { label: "Home", href: "/feed" },
                     { label: "Gestão Administrativa", href: "/admin" },
                     { label: "Veículos" },
-                ]} />
+                ]} actions={
+                    canRead ? (
+                        <TourHelpButton
+                            id="tour-header-help-btn"
+                            onClick={restartTour}
+                            label="Como gerenciar veículos?"
+                            className="w-full justify-center sm:w-auto"
+                        />
+                    ) : undefined
+                } />
                 {!canRead ? (
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
                         <ShieldX size={42} className="mb-3 text-j-gray-400" />
