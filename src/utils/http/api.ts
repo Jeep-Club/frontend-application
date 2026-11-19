@@ -62,6 +62,7 @@ export enum HttpAPIRoutes {
     VEHICLES_EDIT_ADMIN = "vehicles/edit/admin",
     VEHICLES_INCLUDE_ADMIN = "vehicles/include/admin",
     VEHICLES_DELETE_ADMIN = "vehicles/delete/admin",
+    VEHICLES_EXPORT_ADMIN = "vehicles/admin/export",
 
     MEDIA_IMAGES = "media/images",
 

@@ -27,10 +27,18 @@ import { CreateVehicleModal } from "./CreateVehicleModal";
 import { DeleteVehicleModal } from "./DeleteVehicleModal";
 import { EditVehicleModal } from "./EditVehicleModal";
 import { VehicleDetailModal } from "./VehicleDetailModal";
+import {
+    VehicleExportFilters,
+    type ExportTargetOption,
+    type VehicleExportTowingFilter,
+} from "./VehicleExportFilters";
 
 const PAGE_SIZE = 10;
-type VehicleExportFilters = { vehicleId: string; ownerId: string; model: string; plate: string; towing: "ALL" | "YES" | "NO"; status: VehicleStatus | "ALL" };
-const EMPTY_EXPORT_FILTERS: VehicleExportFilters = { vehicleId: "", ownerId: "", model: "", plate: "", towing: "ALL", status: "ALL" };
+
+function toggleExportOption(list: ExportTargetOption[], option: ExportTargetOption) {
+    const exists = list.some((item) => item.id === option.id);
+    return exists ? list.filter((item) => item.id !== option.id) : [...list, option];
+}
 
 export default function VehicleManagement() {
     const { setContent, setOpen } = useModal();
@@ -40,6 +48,7 @@ export default function VehicleManagement() {
     const canCreate = hasPermission(permissions, "VEHICLES", "VEHICLE_CREATE");
     const canUpdate = hasPermission(permissions, "VEHICLES", "VEHICLE_UPDATE");
     const canDelete = hasPermission(permissions, "VEHICLES", "VEHICLE_DELETE");
+    const canExport = hasPermission(permissions, "VEHICLES", "VEHICLE_EXPORT");
     const { restartTour } = usePageTour({
         storageKey: "tour_completed_admin_vehicles",
         steps: getVehiclesTourSteps,
@@ -50,8 +59,14 @@ export default function VehicleManagement() {
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(PAGE_SIZE);
-    const [exportFilters, setExportFilters] = useState<VehicleExportFilters>(EMPTY_EXPORT_FILTERS);
+    const [selectedExportVehicles, setSelectedExportVehicles] = useState<ExportTargetOption[]>([]);
+    const [selectedExportOwners, setSelectedExportOwners] = useState<ExportTargetOption[]>([]);
+    const [exportTowing, setExportTowing] = useState<VehicleExportTowingFilter>("ALL");
     const [showExportFilters, setShowExportFilters] = useState(false);
+
+    const activeExportFilterCount =
+        selectedExportVehicles.length + selectedExportOwners.length + (exportTowing !== "ALL" ? 1 : 0);
+    const selectedVehicleIdSet = new Set(selectedExportVehicles.map((item) => item.id));
 
     const query = useQuery({
         queryKey: ["admin", "vehicles", { page, size: pageSize, q: search }],
@@ -122,21 +137,51 @@ export default function VehicleManagement() {
                                     <InputSearch value={search} onSubmit={(value) => { setSearch(value.trim().slice(0, 150)); setPage(0); }} isLoading={isFetching} label="Buscar veículos" placeholder="Buscar por titular, placa, modelo ou apelido..." maxLength={150} />
                                 </div>
                                 <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:flex-wrap">
-                                    <AdminExport label="Exportar veículos" formats={["CSV", "PDF"]} className="w-full sm:w-auto" onExport={(format) => exportAdminVehiclesAction(format, exportFilters)} />
-                                    <Button type="button" aria-expanded={showExportFilters} aria-controls="vehicle-export-filters" onClick={() => setShowExportFilters((shown) => !shown)} className="h-10 w-full gap-2 border border-j-gray-300 bg-j-white px-3 text-xs text-j-blue-800 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700 sm:w-auto sm:text-sm"><Filter size={15} aria-hidden="true" />Filtros da exportação</Button>
+                                    {canExport && (
+                                        <>
+                                            <AdminExport
+                                                label="Exportar veículos"
+                                                formats={["CSV", "PDF"]}
+                                                className="w-full sm:w-auto"
+                                                onExport={(format) =>
+                                                    exportAdminVehiclesAction(format, {
+                                                        vehicleIds: selectedExportVehicles.map((item) => item.id),
+                                                        ownerIds: selectedExportOwners.map((item) => item.id),
+                                                        towing: exportTowing,
+                                                    })
+                                                }
+                                            />
+                                            <Button
+                                                type="button"
+                                                aria-expanded={showExportFilters}
+                                                aria-controls="vehicle-export-filters"
+                                                onClick={() => setShowExportFilters((shown) => !shown)}
+                                                className="h-10 w-full gap-2 border border-j-gray-300 bg-j-white px-3 text-xs text-j-blue-800 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700 sm:w-auto sm:text-sm"
+                                            >
+                                                <Filter size={15} aria-hidden="true" />
+                                                Filtros da exportação
+                                                {activeExportFilterCount > 0 ? ` (${activeExportFilterCount})` : ""}
+                                            </Button>
+                                        </>
+                                    )}
                                     {canCreate && <Button id="tour-vehicles-create-btn" onClick={handleOpenCreate} className="h-10 w-full gap-2 sm:w-auto"><Plus size={16} /><span className="hidden sm:inline">Cadastrar veículo</span><span className="sm:hidden">Cadastrar</span></Button>}
                                 </div>
                             </Table.Header>
-                            {showExportFilters && <fieldset id="vehicle-export-filters" className="grid grid-cols-1 gap-3 border-b border-j-gray-200 bg-j-gray-100/50 p-4 sm:grid-cols-2 lg:grid-cols-3">
-                                <legend className="px-1 text-sm font-bold text-j-blue-800">Filtrar o arquivo exportado</legend>
-                                <label className="min-w-0 text-xs font-semibold text-j-gray-600">ID do veículo<input type="number" min="1" value={exportFilters.vehicleId} onChange={(event) => setExportFilters((filters) => ({ ...filters, vehicleId: event.target.value }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800" /></label>
-                                <label className="min-w-0 text-xs font-semibold text-j-gray-600">ID do usuário proprietário<input type="number" min="1" value={exportFilters.ownerId} onChange={(event) => setExportFilters((filters) => ({ ...filters, ownerId: event.target.value }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800" /></label>
-                                <label className="min-w-0 text-xs font-semibold text-j-gray-600">Marca, modelo ou apelido<input value={exportFilters.model} onChange={(event) => setExportFilters((filters) => ({ ...filters, model: event.target.value }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800" /></label>
-                                <label className="min-w-0 text-xs font-semibold text-j-gray-600">Placa<input value={exportFilters.plate} onChange={(event) => setExportFilters((filters) => ({ ...filters, plate: event.target.value }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800" /></label>
-                                <label className="min-w-0 text-xs font-semibold text-j-gray-600">Guincho/reboque<select value={exportFilters.towing} onChange={(event) => setExportFilters((filters) => ({ ...filters, towing: event.target.value as VehicleExportFilters["towing"] }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800"><option value="ALL">Todos</option><option value="YES">Possui</option><option value="NO">Não possui</option></select></label>
-                                <label className="min-w-0 text-xs font-semibold text-j-gray-600">Situação<select value={exportFilters.status} onChange={(event) => setExportFilters((filters) => ({ ...filters, status: event.target.value as VehicleExportFilters["status"] }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800"><option value="ALL">Todas</option><option value="ACTIVE">Ativo</option><option value="INACTIVE">Inativo</option><option value="ARCHIVED">Arquivado</option></select></label>
-                                <button type="button" onClick={() => setExportFilters(EMPTY_EXPORT_FILTERS)} className="min-h-9 cursor-pointer justify-self-start rounded-lg px-3 text-xs font-bold text-j-blue-800 underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-j-blue-800 sm:col-span-2 lg:col-span-3">Limpar filtros da exportação</button>
-                            </fieldset>}
+                            {canExport && showExportFilters && (
+                                <VehicleExportFilters
+                                    selectedVehicles={selectedExportVehicles}
+                                    selectedOwners={selectedExportOwners}
+                                    towing={exportTowing}
+                                    onToggleVehicle={(vehicle) => setSelectedExportVehicles((current) => toggleExportOption(current, vehicle))}
+                                    onToggleOwner={(owner) => setSelectedExportOwners((current) => toggleExportOption(current, owner))}
+                                    onTowingChange={setExportTowing}
+                                    onClear={() => {
+                                        setSelectedExportVehicles([]);
+                                        setSelectedExportOwners([]);
+                                        setExportTowing("ALL");
+                                    }}
+                                />
+                            )}
                             <div id="tour-vehicles-list">
                             {isLoading && <ProfileTabLoading tab="vehicles" title="Veículos" />}
                             {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"><p>{error.message}</p><Button onClick={() => query.refetch()} disabled={isFetching}>Tentar novamente</Button></div>}
@@ -150,6 +195,24 @@ export default function VehicleManagement() {
                                         {data?.content.map((vehicle, index) => (
                                             <div key={vehicle.id} className="flex flex-col gap-3 p-4 transition-colors hover:bg-blue-50/30 xl:grid xl:grid-cols-[minmax(0,1.2fr)_minmax(120px,0.6fr)_minmax(140px,1fr)_280px] xl:items-center xl:gap-3">
                                                 <div className="flex min-w-0 items-center gap-3">
+                                                    {canExport && (
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedVehicleIdSet.has(vehicle.id)}
+                                                            disabled={vehicle.status !== "ACTIVE"}
+                                                            onChange={() =>
+                                                                setSelectedExportVehicles((current) =>
+                                                                    toggleExportOption(current, {
+                                                                        id: vehicle.id,
+                                                                        label: `${vehicle.nickname?.trim() ? `${vehicle.nickname.trim()} — ` : ""}${vehicle.model} (${maskPlate(vehicle.plate)}) · #${vehicle.id}`,
+                                                                    }),
+                                                                )
+                                                            }
+                                                            aria-label={`Selecionar ${vehicle.model} (${maskPlate(vehicle.plate)}) para exportação`}
+                                                            title={vehicle.status !== "ACTIVE" ? "Apenas veículos ativos podem ser exportados" : "Incluir na seleção da exportação"}
+                                                            className="h-4 w-4 shrink-0 cursor-pointer rounded border-j-gray-300 text-j-blue-800 focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:cursor-not-allowed disabled:opacity-40"
+                                                        />
+                                                    )}
                                                     <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-j-gray-200 bg-j-blue-800 text-j-yellow-300 sm:h-20 sm:w-36">
                                                         {vehicle.photo || vehicle.photos?.length ? (
                                                             <VehiclePhotoCarousel vehicleId={vehicle.id} admin cover={vehicle.photo} photos={vehicle.photos} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="h-full w-full" />

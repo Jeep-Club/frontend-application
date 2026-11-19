@@ -1,56 +1,92 @@
-import { filterAdminVehicleRecords } from "@/utils/admin-export/vehicleFilters";
 import { exportAdminVehiclesAction } from "@/server/actions/admin/vehicles/export";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
-import { getAdminPdfIdentity } from "@/server/utils/adminExportPdf";
-import { readFileSync } from "node:fs";
 
 jest.mock("@/services/fetchWrapper/actionFetchWrapper", () => ({ __esModule: true, default: jest.fn() }));
 jest.mock("@/utils/permission/actionPermissions", () => ({ haveActionPermission: jest.fn() }));
-jest.mock("@/server/utils/adminExportPdf", () => ({ getAdminPdfIdentity: jest.fn() }));
-
-const vehicles = [
-    { id: 1, ownerId: 21, brand: "Jeep", model: "Renegade", nickname: "Trilha", plate: "ABC1D23", towing: true, status: "ACTIVE" as const },
-    { id: 2, ownerId: 21, brand: "Toyota", model: "Hilux", nickname: null, plate: "DEF4G56", towing: false, status: "ACTIVE" as const },
-    { id: 3, ownerId: 32, brand: "Jeep", model: "Compass", nickname: null, plate: "GHI7J89", towing: null, status: "ARCHIVED" as const },
-];
-
-const emptyFilters = { vehicleId: "", ownerId: "", model: "", plate: "", towing: "ALL" as const, status: "ALL" as const };
-
-const listedVehicle = { id: 1, nickname: "Trilha", plate: "ABC1D23", photo: null, modelYear: 2022, model: "Renegade", color: "Azul", status: "ACTIVE", ownerId: 21, ownerName: "Marina Silva" };
-const page = { content: [listedVehicle], totalElements: 1, totalPages: 1, number: 0, size: 50, first: true, last: true, numberOfElements: 1, empty: false };
-const detail = { ...listedVehicle, renavam: "12345678901", brand: "Jeep", manufacturingYear: 2021, seatingCapacity: 5, fuelType: "FLEX", engineDisplacement: 1.8, towing: true, createdAt: "2025-01-01T00:00:00Z", updatedAt: null, disabledAt: null };
 
 beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(haveActionPermission).mockResolvedValue(true);
-    jest.mocked(getAdminPdfIdentity).mockResolvedValue({ exportedBy: "Admin Jeep", seal: `data:image/png;base64,${readFileSync("public/images/jeepclube-emblema.png").toString("base64")}` });
-    jest.mocked(actionFetchWrapper).mockImplementation(async ({ url }) => ({ status: 200, data: String(url).includes("list/admin") ? page : detail } as never));
 });
 
-it("filters exact vehicle/user IDs, partial model and normalized plate", () => {
-    expect(filterAdminVehicleRecords(vehicles, { ...emptyFilters, vehicleId: "1" }).map((vehicle) => vehicle.id)).toEqual([1]);
-    expect(filterAdminVehicleRecords(vehicles, { ...emptyFilters, ownerId: "21", model: "jeep ren", plate: "abc-1d23" }).map((vehicle) => vehicle.id)).toEqual([1]);
+it("requires VEHICLES_VEHICLE_EXPORT permission before calling the API", async () => {
+    jest.mocked(haveActionPermission).mockResolvedValue(false);
+
+    await expect(exportAdminVehiclesAction("CSV")).rejects.toThrow("Acesso não permitido");
+    expect(haveActionPermission).toHaveBeenCalledWith("VEHICLES", "VEHICLE_EXPORT");
+    expect(actionFetchWrapper).not.toHaveBeenCalled();
 });
 
-it("selects vehicles with or without towing and applies status filters", () => {
-    expect(filterAdminVehicleRecords(vehicles, { ...emptyFilters, towing: "YES" }).map((vehicle) => vehicle.id)).toEqual([1]);
-    expect(filterAdminVehicleRecords(vehicles, { ...emptyFilters, towing: "NO", status: "ACTIVE" }).map((vehicle) => vehicle.id)).toEqual([2]);
+it("exports CSV from GET /vehicles/admin/export without filters", async () => {
+    jest.mocked(actionFetchWrapper).mockResolvedValue({
+        status: 200,
+        data: new Blob(["ID;Placa\r\n1;JEP1A11\r\n"], { type: "text/csv;charset=UTF-8" }),
+        contentDisposition: 'attachment; filename="veiculos-2026-11-18.csv"',
+    });
+
+    const file = await exportAdminVehiclesAction("CSV");
+
+    expect(actionFetchWrapper).toHaveBeenCalledWith({
+        url: "vehicles/admin/export?format=CSV",
+        method: "GET",
+        schema: expect.anything(),
+        responseType: "blob",
+        allowedContentTypes: ["text/csv"],
+        cache: "no-store",
+    });
+    expect(file.filename).toBe("veiculos-2026-11-18.csv");
+    expect(file.contentType).toContain("text/csv");
+    expect(Buffer.from(file.base64, "base64").toString("utf8")).toContain("JEP1A11");
 });
 
-it("exports all matching vehicle detail fields to the branded PDF through authorized admin reads", async () => {
-    const file = await exportAdminVehiclesAction("PDF", { ownerId: "21", towing: "YES" });
-    expect(haveActionPermission).toHaveBeenCalledWith("VEHICLES", "VEHICLE_READ");
-    expect(actionFetchWrapper).toHaveBeenCalledWith(expect.objectContaining({ url: "vehicles/list/admin?page=0&size=50" }));
-    expect(actionFetchWrapper).toHaveBeenCalledWith(expect.objectContaining({ url: "vehicles/detail/admin/1" }));
+it("sends deduplicated repeatable vehicleIds, ownerIds and towing=true for PDF export", async () => {
+    jest.mocked(actionFetchWrapper).mockResolvedValue({
+        status: 200,
+        data: new Blob(["%PDF-1.4\n"], { type: "application/pdf" }),
+        contentDisposition: 'attachment; filename="veiculos-2026-11-18.pdf"',
+    });
+
+    const file = await exportAdminVehiclesAction("PDF", {
+        vehicleIds: [1, 3, 1],
+        ownerIds: [3, 4, 3],
+        towing: "YES",
+    });
+
+    expect(actionFetchWrapper).toHaveBeenCalledWith({
+        url: "vehicles/admin/export?format=PDF&vehicleIds=1&vehicleIds=3&ownerIds=3&ownerIds=4&towing=true",
+        method: "GET",
+        schema: expect.anything(),
+        responseType: "blob",
+        allowedContentTypes: ["application/pdf"],
+        cache: "no-store",
+    });
+    expect(file.filename).toBe("veiculos-2026-11-18.pdf");
     expect(file.contentType).toBe("application/pdf");
     expect(Buffer.from(file.base64, "base64").toString("latin1")).toMatch(/^%PDF-/);
 });
 
-it("returns a filtered CSV for users who select CSV", async () => {
-    const file = await exportAdminVehiclesAction("CSV", { towing: "YES" });
-    const csv = Buffer.from(file.base64, "base64").toString("utf8");
-    expect(file.contentType).toContain("text/csv");
-    expect(csv).toContain("ABC1D23");
-    expect(csv).toContain("\"Sim\"");
+it("sends towing=false when NO is selected and falls back to default filename", async () => {
+    jest.mocked(actionFetchWrapper).mockResolvedValue({
+        status: 200,
+        data: new Blob(["ID;Placa\r\n"], { type: "" }),
+    });
+
+    const file = await exportAdminVehiclesAction("CSV", { towing: "NO" });
+
+    expect(actionFetchWrapper).toHaveBeenCalledWith(
+        expect.objectContaining({
+            url: "vehicles/admin/export?format=CSV&towing=false",
+        }),
+    );
+    expect(file.contentType).toBe("text/csv");
+    expect(file.filename).toBe("veiculos.csv");
+});
+
+it("rejects more than 200 unique IDs or invalid IDs before requesting the backend", async () => {
+    const tooMany = Array.from({ length: 201 }, (_, index) => index + 1);
+
+    await expect(exportAdminVehiclesAction("CSV", { vehicleIds: tooMany })).rejects.toThrow("200");
+    await expect(exportAdminVehiclesAction("CSV", { ownerIds: [0] })).rejects.toThrow();
+    expect(actionFetchWrapper).not.toHaveBeenCalled();
 });
