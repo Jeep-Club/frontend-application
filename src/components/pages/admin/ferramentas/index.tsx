@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { AdminExport } from "@/components/common/admin-export/AdminExport";
+import { exportAdminToolsAction } from "@/server/actions/admin/tools/export";
 import { ProfileTabLoading } from "@/components/pages/profile/tabs/ProfileTabLoading";
 import { ProfileEmptyPanel } from "@/components/pages/profile/tabs/ProfileTabEmptyState";
 import { useQuery } from "@tanstack/react-query";
-import { Eye, Pencil, Plus, RotateCcw, ShieldX, Trash2, Wrench } from "lucide-react";
+import { Eye, Pencil, Plus, Power, RotateCcw, ShieldX, Trash2, Wrench } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { PageHeader } from "@/components/common/page-header";
@@ -24,6 +26,7 @@ import { listToolsAdminAction } from "@/server/actions/admin/tools/list";
 import { ToolDetailModal } from "./ToolDetailModal";
 import { IncludeAdminToolModal } from "./IncludeAdminToolModal";
 import { DeleteAdminToolModal } from "./DeleteAdminToolModal";
+import { ToggleAdminToolStatusModal } from "./ToggleAdminToolStatusModal";
 import {
     ADMIN_TOOL_STATUS_FILTER_OPTIONS,
     TOOL_STATUS_BADGE_CLASS,
@@ -37,8 +40,11 @@ export default function ToolManagement() {
     const permissions = useUserStore((state) => state.permissions);
 
     const canRead = hasPermission(permissions, "TOOLS", "TOOL_READ");
+    const canExport = hasPermission(permissions, "TOOLS", "TOOL_EXPORT");
     const canCreate = hasPermission(permissions, "TOOLS", "TOOL_CREATE");
     const canUpdate = hasPermission(permissions, "TOOLS", "TOOL_UPDATE");
+    const canActivate = hasPermission(permissions, "TOOLS", "TOOL_ACTIVATE");
+    const canDeactivate = hasPermission(permissions, "TOOLS", "TOOL_DEACTIVATE");
     const canDelete = hasPermission(permissions, "TOOLS", "TOOL_DELETE");
     const { restartTour } = usePageTour({
         storageKey: "tour_completed_admin_tools",
@@ -197,6 +203,10 @@ export default function ToolManagement() {
                                         </button>
                                     )}
                                 </div>
+                                {canExport && <AdminExport onExport={(format) => exportAdminToolsAction(format, {
+                                    name: nameFilter.trim() || undefined,
+                                    status: statusFilter || undefined,
+                                })} />}
                                 {canCreate && (
                                     <Button
                                         id="tour-tools-create-btn"
@@ -300,7 +310,7 @@ export default function ToolManagement() {
                                                         {TOOL_STATUS_LABEL[tool.status] ?? tool.status}
                                                     </span>
 
-                                                    <div id={index === 0 ? "tour-tools-actions" : undefined} className="grid grid-cols-3 gap-2">
+                                                    <div id={index === 0 ? "tour-tools-actions" : undefined} className="grid grid-cols-4 gap-1">
                                                         <button
                                                             type="button"
                                                             onClick={() => handleOpenDetail(tool.id)}
@@ -328,6 +338,11 @@ export default function ToolManagement() {
                                                                 <span className="hidden sm:inline">Editar</span>
                                                             </button>
                                                         )}
+
+                                                        {(tool.status === "ACTIVE" && canDeactivate || tool.status === "INACTIVE" && canActivate) && <button type="button" aria-label={`${tool.status === "ACTIVE" ? "Inativar" : "Ativar"} ${tool.name}`} onClick={() => {
+                                                            setContent(<ToggleAdminToolStatusModal toolId={tool.id} toolName={tool.name} nextStatus={tool.status === "ACTIVE" ? "DEACTIVATE" : "ACTIVATE"} />);
+                                                            setOpen();
+                                                        }} className="record-action flex min-h-9 cursor-pointer items-center justify-center gap-1 rounded-lg bg-blue-50 px-1 py-2 text-xs font-bold text-j-blue-800 hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2"><Power size={15} aria-hidden="true" /><span className="hidden sm:inline">{tool.status === "ACTIVE" ? "Inativar" : "Ativar"}</span></button>}
 
                                                         {canDelete && !isArchived && (
                                                             <button

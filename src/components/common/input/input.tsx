@@ -26,7 +26,7 @@ export function Input({label, error, name, value, className, labelClassName, err
     
     return (
         <div className="w-full flex flex-col gap-1.5">
-            <div className="flex items-center justify-between gap-3">
+            <div className={twMerge("flex items-center justify-between gap-3", !labelAction && "has-[>label.sr-only]:absolute")}>
                 <label
                     htmlFor={id}
                     className={twMerge("text-xs md:text-sm font-bold text-j-gray-700", labelClassName)}

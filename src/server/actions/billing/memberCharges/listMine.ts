@@ -22,3 +22,16 @@ export async function listMyMemberChargesAction(
 
     return response.data;
 }
+
+export async function countMyOpenMemberChargesAction(): Promise<number> {
+    // The API filters by persisted status, which also includes expired charges.
+    const filters = { status: "PENDING", size: "50" } as const;
+    let count = 0;
+    let totalPages = 1;
+    for (let page = 0; page < totalPages; page++) {
+        const result = await listMyMemberChargesAction({ ...filters, page: String(page) });
+        if (page === 0) totalPages = result.totalPages;
+        count += result.content.filter(charge => charge.effectiveStatus === "PENDING" || charge.effectiveStatus === "OVERDUE").length;
+    }
+    return count;
+}

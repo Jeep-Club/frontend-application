@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation,useQueryClient } from "@tanstack/react-query";
-import { HeartPulse,LoaderCircle,Save,X } from "lucide-react";
+import { Check,LoaderCircle,X } from "lucide-react";
 import { useController,useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
 
@@ -30,9 +30,25 @@ const BLOOD_TYPES: Array<{ value: MedicalProfileBloodType; label: string }> = [
     { value: "O_NEGATIVE", label: "O-" },
 ];
 
-const fieldClassName = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus";
-
 const NOT_APPLICABLE = "Não se aplica";
+
+function MedicalAnswer({ question, hasCondition, onChange }: { question: string; hasCondition: boolean; onChange: (answer: "yes" | "no") => void }) {
+    return <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <span className="w-full text-center text-sm font-bold text-primary sm:w-auto sm:text-left">{question}</span>
+        <div role="group" aria-label={question} className="grid w-full shrink-0 grid-cols-2 gap-1 rounded-lg border border-input-border bg-background-secondary p-1 sm:w-auto">
+            {([['yes', 'Sim'], ['no', 'Não']] as const).map(([value, text]) => {
+                const selected = (value === "yes") === hasCondition;
+                return <button key={value} type="button" aria-pressed={selected} onClick={() => { if (!selected) onChange(value); }} className={`min-h-9 w-full cursor-pointer rounded-md px-4 text-center text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-input-border-focus ${selected ? "bg-button-primary-bg text-button-primary-text" : "text-primary hover:bg-background-tertiary"}`}>{text}</button>;
+            })}
+        </div>
+    </div>;
+}
+
+function NotApplicableLabel() {
+    return <p className="flex w-fit items-center gap-1.5 self-end rounded-md border border-(--success-border) bg-(--success-surface) px-2 py-1 text-xs font-semibold text-(--success-text)">
+        <Check size={14} aria-hidden="true" />{NOT_APPLICABLE}
+    </p>;
+}
 
 function MedicalConditionalField({ name, question, label, placeholder }: {
     name: "allergies" | "chronicConditions" | "continuousMedications" | "observations";
@@ -49,21 +65,13 @@ function MedicalConditionalField({ name, question, label, placeholder }: {
     };
 
     return (
-        <div className="flex flex-col gap-3 rounded-xl border border-j-gray-200 bg-j-white p-4">
-            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                <span className="text-sm font-bold text-j-gray-700">{question}</span>
-                <div className="grid grid-cols-2 gap-1 rounded-lg bg-j-gray-100 p-1">
-                    {([['yes', 'Sim'], ['no', 'Não']] as const).map(([value, text]) => {
-                        const active = value === 'yes' ? hasCondition : !hasCondition;
-                        return <button key={value} type="button" onClick={() => selectAnswer(value)} className={`cursor-pointer rounded-md px-4 py-1.5 text-xs font-extrabold transition-colors ${active ? 'bg-j-blue-800 text-j-white shadow-sm' : 'text-j-gray-500 hover:bg-j-white'}`}>{text}</button>;
-                    })}
-                </div>
-            </div>
+        <div className="flex flex-col gap-3 rounded-xl border border-input-border bg-background p-3 sm:p-4">
+            <MedicalAnswer question={question} hasCondition={hasCondition} onChange={selectAnswer} />
             {hasCondition && (
-                <TextareaRegister name={name} label={label} placeholder={placeholder} maxLength={2000} className={fieldClassName} />
+                <TextareaRegister name={name} label={label} placeholder={placeholder} maxLength={2000} />
             )}
-            {!hasCondition && <p className="text-xs font-semibold text-j-green-600">Marcado como “Não se aplica”.</p>}
-            {fieldState.error && !hasCondition && <p className="text-sm text-j-red-400">{fieldState.error.message}</p>}
+            {!hasCondition && <NotApplicableLabel />}
+            {fieldState.error && !hasCondition && <p className="text-sm text-input-error-text">{fieldState.error.message}</p>}
         </div>
     );
 }
@@ -83,18 +91,15 @@ function HealthInsuranceConditionalField() {
 
     return (
         <FormSection title="Plano de saúde">
-            <div className="flex flex-col justify-between gap-3 rounded-xl border border-j-gray-200 bg-j-white p-4 sm:flex-row sm:items-center">
-                <span className="text-sm font-bold text-j-gray-700">Possui plano de saúde?</span>
-                <div className="grid grid-cols-2 gap-1 rounded-lg bg-j-gray-100 p-1">
-                    <button type="button" onClick={() => selectAnswer('yes')} className={`cursor-pointer rounded-md px-4 py-1.5 text-xs font-extrabold ${hasHealthPlan ? 'bg-j-blue-800 text-j-white shadow-sm' : 'text-j-gray-500'}`}>Sim</button>
-                    <button type="button" onClick={() => selectAnswer('no')} className={`cursor-pointer rounded-md px-4 py-1.5 text-xs font-extrabold ${!hasHealthPlan ? 'bg-j-blue-800 text-j-white shadow-sm' : 'text-j-gray-500'}`}>Não</button>
-                </div>
+            <div className="flex flex-col gap-3 rounded-xl border border-input-border bg-background p-3 sm:p-4">
+                <MedicalAnswer question="Possui plano de saúde?" hasCondition={hasHealthPlan} onChange={selectAnswer} />
+                {!hasHealthPlan && <NotApplicableLabel />}
             </div>
             {hasHealthPlan ? <div className="grid gap-4 sm:grid-cols-2">
-                <InputRegister name="healthInsuranceProvider" label="Operadora" placeholder="Ex.: Unimed" maxLength={120} labelClassName="text-j-gray-700" className={fieldClassName} required />
-                <InputRegister name="healthInsurancePlan" label="Plano" placeholder="Ex.: Nacional" maxLength={120} labelClassName="text-j-gray-700" className={fieldClassName} required />
-                <InputRegister name="healthInsuranceNumber" label="Número da carteirinha" placeholder="Número de identificação" maxLength={80} labelClassName="text-j-gray-700" className={fieldClassName} required />
-            </div> : <p className="text-xs font-semibold text-j-green-600">Marcado como “Não se aplica”.</p>}
+                <InputRegister name="healthInsuranceProvider" label="Operadora" placeholder="Ex.: Unimed" maxLength={120} required />
+                <InputRegister name="healthInsurancePlan" label="Plano" placeholder="Ex.: Nacional" maxLength={120} required />
+                <InputRegister name="healthInsuranceNumber" label="Número da carteirinha" placeholder="Número de identificação" maxLength={80} required />
+            </div> : null}
         </FormSection>
     );
 }
@@ -126,30 +131,25 @@ export function EditMedicalProfileModal({ medicalProfile }: EditMedicalProfileMo
     };
 
     return (
-        <div className="relative flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-y-auto rounded-3xl bg-j-white shadow-2xl">
+        <div className="relative flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-y-auto rounded-3xl border border-input-border bg-background text-primary shadow-2xl">
             <ButtonIcon
                 type="button"
                 onClick={setClose}
+                aria-label="Fechar"
+                disabled={mutation.isPending}
                 title="Fechar"
-                className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"
+                className="absolute right-4 top-4 z-10 rounded-full bg-background-tertiary p-2 text-primary hover:bg-background focus-visible:outline-2 md:right-6 md:top-6"
             >
                 <X size={22} />
             </ButtonIcon>
 
-            <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
-                <div className="flex items-start gap-4">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
-                        <HeartPulse size={21} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
-                            {medicalProfile ? "Editar dados médicos" : "Incluir dados médicos"}
-                        </h2>
-                        <p className="mt-1 text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            Mantenha estes dados atualizados para situações de emergência.
-                        </p>
-                    </div>
-                </div>
+            <header className="border-b border-input-border bg-background-secondary px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
+                <h2 className="text-xl font-extrabold text-primary md:text-2xl">
+                    {medicalProfile ? "Editar dados médicos" : "Incluir dados médicos"}
+                </h2>
+                <p className="mt-1 text-xs leading-relaxed text-secondary md:text-sm">
+                    Mantenha estes dados atualizados para situações de emergência.
+                </p>
             </header>
 
             <Form<MedicalProfileFormData>
@@ -161,13 +161,12 @@ export function EditMedicalProfileModal({ medicalProfile }: EditMedicalProfileMo
             >
                 <MedicalProfileFields />
 
-                <div className="-mx-5 mt-1 flex flex-col-reverse gap-3 border-t border-j-blue-100 bg-j-blue-100/10 px-5 py-5 sm:flex-row sm:justify-end md:-mx-8 md:px-8">
-                    <Button type="button" onClick={setClose} disabled={mutation.isPending} className="border-2 px-5 bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white">
+                <div className="-mx-5 mt-1 flex flex-col-reverse gap-3 border-t border-input-border bg-background-secondary px-5 py-5 sm:flex-row sm:justify-end md:-mx-8 md:px-8">
+                    <Button type="button" onClick={setClose} disabled={mutation.isPending} className="border border-input-border bg-background px-5 text-primary hover:bg-background-tertiary hover:text-primary focus-visible:outline-input-border-focus">
                         Cancelar
                     </Button>
-                    <Button type="submit" isLoading={mutation.isPending} className="gap-2 bg-j-blue-700 px-6 text-j-white hover:bg-j-blue-800 hover:text-j-white">
-                        {mutation.isPending ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}
-                        {mutation.isPending ? "Salvando..." : "Salvar alterações"}
+                    <Button type="submit" isLoading={mutation.isPending} className="gap-2 px-6">
+                        {mutation.isPending ? <><LoaderCircle size={16} className="animate-spin" aria-hidden="true" />Salvando...</> : <><span className="sm:hidden">Salvar</span><span className="hidden sm:inline">Salvar alterações</span></>}
                     </Button>
                 </div>
             </Form>
@@ -177,8 +176,8 @@ export function EditMedicalProfileModal({ medicalProfile }: EditMedicalProfileMo
 
 function FormSection({ title, columns = false, children }: { title: string; columns?: boolean; children: React.ReactNode }) {
     return (
-        <section className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/40 p-4 [&_label]:!text-j-gray-700 md:p-5">
-            <h3 className="border-b border-j-gray-200 pb-3 text-sm font-extrabold text-j-blue-800">{title}</h3>
+        <section className="flex flex-col gap-4 rounded-2xl border border-input-border bg-background-secondary p-3 md:p-5">
+            <h3 className="border-b border-input-border pb-3 text-sm font-extrabold text-(--accent-text)">{title}</h3>
             <div className={columns ? "grid gap-4 sm:grid-cols-2" : "flex flex-col gap-4"}>{children}</div>
         </section>
     );
@@ -193,7 +192,6 @@ export function MedicalProfileFields() {
                         name="bloodType"
                         label="Tipo sanguíneo"
                         required
-                        className={fieldClassName}
                     >
                         <option value="UNKNOWN" disabled>Selecione o tipo sanguíneo</option>
                         {BLOOD_TYPES.map((type) => (
@@ -208,9 +206,9 @@ export function MedicalProfileFields() {
                 <HealthInsuranceConditionalField />
 
                 <FormSection title="Contato de emergência" columns>
-                    <InputRegister name="emergencyContactName" label="Nome" required placeholder="Nome do contato" maxLength={120} labelClassName="text-j-gray-700" className={fieldClassName} />
-                    <InputRegister name="emergencyContactPhone" label="Telefone" required placeholder="(12) 99999-9999" maxLength={20} mask={maskPhoneNumber} labelClassName="text-j-gray-700" className={fieldClassName} />
-                    <InputRegister name="emergencyContactRelationship" label="Parentesco" required placeholder="Ex.: mãe, cônjuge" maxLength={80} labelClassName="text-j-gray-700" className={fieldClassName} />
+                    <InputRegister name="emergencyContactName" label="Nome" required placeholder="Nome do contato" maxLength={120} />
+                    <InputRegister name="emergencyContactPhone" label="Telefone" required placeholder="(12) 99999-9999" maxLength={20} mask={maskPhoneNumber} />
+                    <InputRegister name="emergencyContactRelationship" label="Parentesco" required placeholder="Ex.: mãe, cônjuge" maxLength={80} />
                 </FormSection>
                 <MedicalConditionalField name="observations" question="Possui alguma observação médica adicional?" label="Observações" placeholder="Outras informações importantes" />
 

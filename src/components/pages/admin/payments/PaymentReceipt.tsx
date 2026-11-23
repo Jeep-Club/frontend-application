@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/common/button";
 import { SESSION_EXPIRED_MESSAGE } from "@/utils/http/apiError";
 
-export default function PaymentReceipt({ id }: { id: number }) {
+export default function PaymentReceipt({ id, embedded = false }: { id: number; embedded?: boolean }) {
     const [attempt, setAttempt] = useState(0);
     const [receipt, setReceipt] = useState<{ url: string; type: string } | null>(null);
     const [error, setError] = useState("");
@@ -35,8 +35,8 @@ export default function PaymentReceipt({ id }: { id: number }) {
         };
     }, [id, attempt]);
 
-    return <section className="rounded-2xl border border-j-gray-200 bg-j-white p-4 md:p-6">
-        <h2 className="mb-4 text-lg font-black text-j-blue-800">Comprovante</h2>
+    return <section className={embedded ? undefined : "rounded-2xl border border-j-gray-200 bg-j-white p-4 md:p-6"}>
+        {!embedded && <h2 className="mb-4 text-lg font-black text-j-blue-800">Comprovante</h2>}
         {error ? <div role="alert" className="flex flex-col items-start gap-3 text-red-700"><p>{error}</p><Button onClick={() => { setError(""); setReceipt(null); setAttempt(value => value + 1); }}>Tentar novamente</Button></div>
             : !receipt ? <p role="status" className="text-sm text-j-gray-600">Carregando comprovante...</p>
                 : <>

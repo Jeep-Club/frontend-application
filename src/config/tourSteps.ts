@@ -171,7 +171,7 @@ export const accountNavigationStep: DriveStep = {
     element: "#tour-manage-account-btn",
     popover: {
         title: createStepHeader("Gerenciar Conta", ICONS.user),
-        description: "Acesse Conta pela navegação lateral para atualizar seus dados pessoais, veículos e ficha médica.",
+        description: "Acesse Perfil na parte inferior da navegação lateral para atualizar seus dados pessoais, veículos e ficha médica.",
         side: "right",
         align: "center",
     },
@@ -812,7 +812,7 @@ export function getMedicalProfilesTourSteps(isMobile: boolean = false): DriveSte
             element: "#tour-medical-export",
             popover: {
                 title: createStepHeader("Exportação CSV/PDF e Histórico", ICONS.layers),
-                description: "Exporte os dados médicos em <strong>CSV</strong> ou <strong>PDF</strong> para apoio em trilhas e marque <strong>Histórico de exclusões</strong> quando precisar auditar registros removidos.",
+                description: "Exporte os dados médicos em <strong>CSV</strong> ou <strong>PDF</strong>.",
                 side: "bottom",
                 align: isMobile ? "center" : "end",
             },
@@ -979,8 +979,8 @@ export function getDependentsTourSteps(isMobile: boolean = false): DriveStep[] {
         {
             element: "#tour-dependents-export",
             popover: {
-                title: createStepHeader("Exportação e Histórico", ICONS.layers),
-                description: "Exporte a listagem em <strong>CSV</strong> ou <strong>PDF</strong> institucional, incluindo opcionalmente o histórico de exclusões.",
+                title: createStepHeader("Exportação", ICONS.layers),
+                description: "Exporte a listagem em <strong>CSV</strong> ou <strong>PDF</strong> institucional.",
                 side: "bottom",
                 align: isMobile ? "center" : "end",
             },
@@ -1070,13 +1070,13 @@ export function getAgendaTourSteps(isMobile: boolean = false): DriveStep[] {
 
 export const agendaTourSteps = getAgendaTourSteps(false);
 
-// Tour do Histórico Financeiro do Associado (/financeiro)
+// Tour da Gestão de débitos do associado (/financeiro)
 export function getMemberFinancialTourSteps(isMobile: boolean = false): DriveStep[] {
     return [
         {
             element: "#tour-member-financial-header",
             popover: {
-                title: createStepHeader("Histórico Financeiro", ICONS.wallet, "Membro"),
+                title: createStepHeader("Gestão de débitos", ICONS.wallet, "Membro"),
                 description: "Consulte todas as mensalidades, taxas de eventos e cobranças vinculadas ao seu cadastro de associado.",
                 side: "bottom",
                 align: isMobile ? "center" : "start",

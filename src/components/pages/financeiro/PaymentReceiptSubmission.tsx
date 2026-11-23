@@ -39,7 +39,7 @@ export function PaymentReceiptSubmission({ charge, submitAction }: Props) {
             router.refresh();
         },
     });
-    const unavailable = charge.effectiveStatus === "CANCELED" ? "Cobrança cancelada não aceita comprovante."
+    const unavailable = charge.effectiveStatus === "CANCELED" ? "Sua cobrança foi isentada. Você não precisa mais fazer o pagamento desta cobrança."
         : charge.effectiveStatus === "PAID" ? "Esta cobrança já está paga."
             : charge.effectiveStatus === "EXPIRED" ? "O prazo de envio expirou. Procure a gestão para regularizar esta cobrança." : "";
 

@@ -100,8 +100,11 @@ export const ComPermissaoParaGerenciarMatricula: Story = {
             ).toBe(true);
         }
         if (exportButton.ownerDocument.defaultView!.innerWidth >= 1024) {
-            for (const bounds of [createBounds, searchBounds]) {
-                await expect(exportBounds.top < bounds.bottom && bounds.top < exportBounds.bottom).toBe(true);
+            const searchTypeBounds = canvas.getByRole("combobox", { name: "Buscar por" }).getBoundingClientRect();
+            const statusBounds = canvas.getByRole("combobox", { name: "Status" }).getBoundingClientRect();
+            const exportCenter = exportBounds.top + exportBounds.height / 2;
+            for (const bounds of [createBounds, searchBounds, searchTypeBounds, statusBounds]) {
+                await expect(Math.abs(exportCenter - (bounds.top + bounds.height / 2))).toBeLessThanOrEqual(1);
             }
         }
     },

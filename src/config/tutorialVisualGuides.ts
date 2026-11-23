@@ -123,12 +123,12 @@ export const MEMBER_VISUAL_GUIDES: Record<string, TutorialImageStep[]> = {
     ]),
     "member-financial": createGuideSteps("member-financial", [
         {
-            caption: "1. No menu lateral esquerdo (ou menu ☰ no celular), clique em 'Histórico financeiro'.",
-            alt: "Menu principal destacando o item Histórico financeiro.",
+            caption: "1. No menu lateral esquerdo (ou menu ☰ no celular), clique em 'Gestão de débitos'.",
+            alt: "Menu principal destacando o item Gestão de débitos.",
         },
         {
             caption: "2. Use os filtros de status e ordenação para conferir vencimentos e valores.",
-            alt: "Tela Histórico financeiro destacando os filtros de status e a lista de cobranças.",
+            alt: "Tela Gestão de débitos destacando os filtros de status e a lista de cobranças.",
         },
     ]),
     "member-services": createGuideSteps("member-services", [

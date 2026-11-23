@@ -67,6 +67,6 @@ test("Comprovante: cobranças expiradas e canceladas explicam a indisponibilidad
         await page.goto(storyUrl(id));
         const trigger = page.getByRole("button", { name: "Enviar comprovante", exact: true });
         await expect(trigger).toBeDisabled();
-        await expect(trigger).toHaveAccessibleDescription(id === storyIds.expired ? /prazo de envio expirou/ : /cancelada não aceita/);
+        await expect(trigger).toHaveAccessibleDescription(id === storyIds.expired ? /prazo de envio expirou/ : "Sua cobrança foi isentada. Você não precisa mais fazer o pagamento desta cobrança.");
     }
 });

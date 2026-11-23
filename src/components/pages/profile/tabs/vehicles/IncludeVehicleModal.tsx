@@ -1,5 +1,6 @@
 'use client';
 
+import { MIN_VEHICLE_SEATS, MAX_VEHICLE_SEATS } from "@/schemas/vehicles/seating-capacity";
 import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
 import { InputFile } from "@/components/common/input/file";
@@ -19,7 +20,7 @@ import { maskRenavam } from "@/utils/masks/maskRenavam";
 import { maskYear } from "@/utils/masks/maskYear";
 import { vehiclePhotoKeys } from "@/utils/media/vehiclePhotos";
 import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft,ArrowRight,Car,LoaderCircle,X } from "lucide-react";
+import { ArrowLeft,ArrowRight,LoaderCircle,X } from "lucide-react";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -144,8 +145,8 @@ function VehicleStepsFields({ currentStep, onNext, onBack, onStepChange, isEditM
                 <div className="grid w-full gap-4 sm:grid-cols-2">
                     <InputRegister
                         type="number"
-                        min={1}
-                        max={50}
+                        min={MIN_VEHICLE_SEATS}
+                        max={MAX_VEHICLE_SEATS}
                         label="Assentos"
                         name="seatingCapacity"
                         placeholder="5"
@@ -192,9 +193,9 @@ function VehicleStepsFields({ currentStep, onNext, onBack, onStepChange, isEditM
                     className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:!border-input-border [&>div]:!bg-input-bg"
                 />}
                 {isEditMode && vehicle?.photo && (
-                    <div className="flex items-center gap-3 rounded-xl border border-j-gray-200 bg-j-white p-3">
-                        <VehiclePhotoCarousel cover={vehicle?.photo} photos={vehiclePhotoKeys(vehicle)} alt="Fotos atuais" className="h-32 w-48 shrink-0 rounded-lg" />
-                        <div className="flex flex-col">
+                    <div className="flex min-w-0 flex-col gap-3 rounded-xl border border-j-gray-200 bg-j-white p-3 sm:flex-row sm:items-center">
+                        <VehiclePhotoCarousel cover={vehicle.photo} photos={vehiclePhotoKeys(vehicle)} alt="Fotos atuais" className="aspect-video w-full shrink-0 rounded-lg sm:h-32 sm:w-48" />
+                        <div className="flex min-w-0 flex-col gap-1">
                             <span className="text-xs font-bold text-j-gray-700">Foto atual cadastrada</span>
                             <span className="text-[11px] text-j-gray-500">
                                 As novas fotos serão adicionadas à galeria. A capa atual será mantida.
@@ -325,21 +326,14 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
             </ButtonIcon>
 
             <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
-                <div className="flex items-start gap-4">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
-                        <Car size={20} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
-                            {isEditMode ? "Editar veículo" : "Incluir veículo"}
-                        </h2>
-                        <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            {isEditMode
-                                ? "Atualize os dados do seu jipe."
-                                : "Cadastre o seu jipe pra ele ficar vinculado ao seu perfil no clube."}
-                        </p>
-                    </div>
-                </div>
+                <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                    {isEditMode ? "Editar veículo" : "Incluir veículo"}
+                </h2>
+                <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
+                    {isEditMode
+                        ? "Atualize os dados do seu jipe."
+                        : "Cadastre o seu jipe pra ele ficar vinculado ao seu perfil no clube."}
+                </p>
             </header>
 
             {isEditMode && isLoadingVehicle ? (

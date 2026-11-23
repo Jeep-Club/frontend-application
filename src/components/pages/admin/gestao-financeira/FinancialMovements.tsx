@@ -25,7 +25,7 @@ export default function FinancialMovements({ initialMovement, initialStatus }: {
     const status = selection === undefined ? initialStatus : undefined;
 
     return (
-        <FinancialPage title="Movimentações financeiras">
+        <FinancialPage title="Movimentos">
             <div role="tablist" aria-label="Tipos de movimentação" className="grid w-full grid-cols-3 gap-1 rounded-xl border border-input-border bg-j-white p-1">
                 {sections.map(({ key, label }, index) => (
                     <button

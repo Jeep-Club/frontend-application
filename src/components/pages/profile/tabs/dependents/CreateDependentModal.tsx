@@ -16,7 +16,7 @@ import { removeDependentPhotoAction,saveDependentWithPhotoAction } from '@/serve
 import { maskCPF,unMaskCPF } from '@/utils/masks/maskCPF';
 import { maskPhoneNumber,unMaskPhoneNumber } from '@/utils/masks/maskPhoneNumber';
 import { useMutation,useQueryClient } from '@tanstack/react-query';
-import { HeartPulse,ShieldCheck,UserPlus,X } from 'lucide-react';
+import { HeartPulse,ShieldCheck,X } from 'lucide-react';
 import { useEffect } from 'react';
 import { type DefaultValues,useController,useFormContext,useWatch } from 'react-hook-form';
 import toast from 'react-hot-toast';
@@ -123,7 +123,7 @@ function Fields({ dependent, isEdit, isSaving }: { dependent?: MemberDependent; 
       <InputCheckbox name="consentAccepted" required label="Tenho autorização para cadastrar e tratar os dados deste dependente." className="rounded-lg border border-j-gray-200 bg-j-white p-3 [&>span:last-child]:!text-j-gray-700 [&>span:last-child]:leading-relaxed [&>span:first-of-type]:border-j-gray-300 [&>span:first-of-type]:bg-j-white" />
       {formState.errors.consentAccepted && <p role="alert" className="mt-2 text-xs font-medium text-j-red-500">{formState.errors.consentAccepted.message}</p>}
     </section>
-    <Button type="submit" disabled={formState.isSubmitting || isSaving} className="w-full bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white">{isSaving ? 'Salvando...' : 'Salvar dependente'}</Button>
+    <Button type="submit" disabled={formState.isSubmitting || isSaving} className="w-full bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white">{isSaving ? 'Salvando...' : <><span className="sm:hidden">Salvar</span><span className="hidden sm:inline">Salvar dependente</span></>}</Button>
   </>;
 }
 
@@ -175,7 +175,7 @@ export function CreateDependentModal({ dependent }: { dependent?: MemberDependen
 
   return <div className="relative flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-y-auto rounded-3xl bg-j-white shadow-2xl">
     <ButtonIcon type="button" onClick={setClose} className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2"><X size={21} /></ButtonIcon>
-    <header className="border-b border-j-gray-200 px-4 py-4 pr-16 sm:px-6"><div className="flex items-start gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300"><UserPlus size={20} /></span><div><h2 className="text-lg font-extrabold sm:text-xl text-j-blue-800">{isEdit ? 'Editar dependente' : 'Incluir dependente'}</h2><p className="mt-1 text-xs leading-relaxed text-j-gray-500">{isEdit ? 'Atualize os dados da pessoa vinculada.' : 'Cadastre uma pessoa vinculada à sua associação.'}</p></div></div></header>
+    <header className="border-b border-j-gray-200 px-4 py-4 pr-16 sm:px-6"><h2 className="text-lg font-extrabold sm:text-xl text-j-blue-800">{isEdit ? 'Editar dependente' : 'Incluir dependente'}</h2><p className="mt-1 text-xs leading-relaxed text-j-gray-500">{isEdit ? 'Atualize os dados da pessoa vinculada.' : 'Cadastre uma pessoa vinculada à sua associação.'}</p></header>
     <Form<CreateMemberDependentFormData> schema={isEdit ? editDependentFormSchema : createDependentFormSchema} onSubmit={(data) => mutation.mutateAsync(data)} onError={() => toast.error('Revise os campos destacados antes de salvar.')} formOptions={{ defaultValues: defaults }} className="items-stretch gap-3 px-4 py-4 sm:px-6"><Fields dependent={dependent} isEdit={isEdit} isSaving={mutation.isPending} /></Form>
   </div>;
 }

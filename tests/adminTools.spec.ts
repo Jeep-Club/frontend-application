@@ -1,7 +1,11 @@
+import { readFileSync } from "node:fs";
 import { toActionError } from "@/utils/http/apiError";
 jest.mock("@/services/token/permissions", () => ({}));
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { listToolsAdminAction } from "@/server/actions/admin/tools/list";
+import { exportAdminToolsAction } from "@/server/actions/admin/tools/export";
+import { getAdminPdfIdentity } from "@/server/utils/adminExportPdf";
+import { haveActionPermission } from "@/utils/permission/actionPermissions";
 import { getToolDetailAdminAction } from "@/server/actions/admin/tools/detail";
 import { createToolAdminAction } from "@/server/actions/admin/tools/create";
 import { updateToolAdminAction } from "@/server/actions/admin/tools/update";
@@ -18,6 +22,8 @@ jest.mock("@/services/fetchWrapper/actionFetchWrapper", () => ({
     __esModule: true,
     default: jest.fn(),
 }));
+jest.mock("@/utils/permission/actionPermissions", () => ({ haveActionPermission: jest.fn() }));
+jest.mock("@/server/utils/adminExportPdf", () => ({ getAdminPdfIdentity: jest.fn() }));
 
 const request = jest.mocked(actionFetchWrapper);
 
@@ -26,6 +32,40 @@ beforeEach(() => {
 });
 
 describe("Admin Tools Management", () => {
+    it("requires export permission before fetching the tools", async () => {
+        jest.mocked(haveActionPermission).mockImplementation(async (_, action) => action === "TOOL_READ");
+        await expect(exportAdminToolsAction("CSV")).rejects.toThrow("Acesso não permitido");
+        expect(request).not.toHaveBeenCalled();
+    });
+
+    it("exports every filtered page and protects spreadsheet cells", async () => {
+        jest.mocked(haveActionPermission).mockResolvedValue(true);
+        request
+            .mockResolvedValueOnce({ status: 200, data: { totalPages: 2, content: [{ id: 10, name: "=1+1", userId: 7, status: "ACTIVE" }] } })
+            .mockResolvedValueOnce({ status: 200, data: { totalPages: 2, content: [{ id: 11, name: "Macaco", userId: 8, status: "ACTIVE" }] } });
+
+        const file = await exportAdminToolsAction("CSV", { name: " macaco ", status: "ACTIVE" });
+        expect(request).toHaveBeenCalledTimes(2);
+        expect(request).toHaveBeenLastCalledWith(expect.objectContaining({ url: "admin/tools?size=50&name=macaco&status=ACTIVE&page=1" }));
+        expect(file.filename).toBe("ferramentas.csv");
+        const csv = Buffer.from(file.base64, "base64").toString("utf8");
+        expect(csv).toContain(`"10";"'=1+1";"7";"Ativa"`);
+        expect(csv).toContain(`"11";"Macaco";"8";"Ativa"`);
+    });
+
+    it("generates a PDF for the selected filters", async () => {
+        jest.mocked(haveActionPermission).mockResolvedValue(true);
+        jest.mocked(getAdminPdfIdentity).mockResolvedValue({
+            exportedBy: "Admin Teste",
+            seal: `data:image/png;base64,${readFileSync("public/images/jeepclube-emblema.png").toString("base64")}`,
+        });
+        request.mockResolvedValueOnce({ status: 200, data: { totalPages: 1, content: [{ id: 10, name: "Macaco", userId: 7, status: "ACTIVE" }] } });
+
+        const file = await exportAdminToolsAction("PDF", { status: "ACTIVE" });
+        expect(file.filename).toBe("ferramentas.pdf");
+        expect(Buffer.from(file.base64, "base64").toString("latin1")).toMatch(/^%PDF-/);
+    });
+
     it("registers the tools admin module and route permissions for TOOLS_TOOL_READ", () => {
         const toolsModule = adminModules.find((m) => m.key === "tools");
         expect(toolsModule).toBeDefined();
