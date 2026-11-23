@@ -289,11 +289,11 @@ test('URL inválida desabilita continuação mesmo com páginas no cache', async
 
 for (const status of [400, 500]) {
     test(`falha ${status} do feed oferece recuperação sem vazio`, async ({ page, api }) => {
-        api.feedStatus = status;
+        api.listStatus = status;
         await page.goto('/feed');
         await expect(page.getByRole('button', { name: 'Tentar novamente', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Nenhuma publicação por aqui' })).toHaveCount(0);
-        api.feedStatus = 200;
+        api.listStatus = 200;
         await page.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
         await expect(page.getByRole('link', { name: 'Ver publicação completa: Aviso do clube', exact: true })).toBeVisible();
     });
@@ -321,7 +321,8 @@ test('calendário do feed destaca eventos de todas as páginas e leva à agenda'
     api.eventStartsAt = new Date(now.getFullYear(), now.getMonth(), 10, 12).toISOString();
     api.pages = 2;
     await page.goto('/feed');
-    const sidebar = page.getByRole('complementary', { name: 'Informações do clube' });
+    if (page.viewportSize()!.width < 1024) await page.getByRole('button', { name: 'Abrir painel de eventos, aniversariantes e avisos' }).click();
+    const sidebar = page.getByRole(page.viewportSize()!.width < 1024 ? 'dialog' : 'complementary', { name: 'Informações do clube' });
     await expect.poll(() => api.completed.some(url => url.searchParams.get('type') === 'EVENT' && url.searchParams.get('page') === '1')).toBe(true);
     await expect(sidebar.getByLabel('10: 2 eventos')).toBeVisible();
     await expect(sidebar.getByLabel('Eventos do dia 10')).toHaveCount(0);

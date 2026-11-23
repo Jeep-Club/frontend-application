@@ -25,7 +25,7 @@ type ApiState = {
     registrationErrorCode: string;
     registration: Record<string, unknown> | null;
     likeStatus?: number;
-    calls: URL[]; completed: URL[]; feedStatus: number; eventFeedStatus: number; noticeFeedStatus: number; detailStatus: number; mediaFails: boolean; actions: string[]; delay: number; pages: number; failPage: number; empty: boolean; unauthorizedOnce: boolean; refreshFails: boolean; eventOpen: boolean; eventStartsAt: string | null; grant: (actions: string[]) => Promise<void>; };
+    calls: URL[]; completed: URL[]; feedStatus: number; listStatus: number; eventFeedStatus: number; noticeFeedStatus: number; detailStatus: number; mediaFails: boolean; actions: string[]; delay: number; pages: number; failPage: number; empty: boolean; unauthorizedOnce: boolean; refreshFails: boolean; eventOpen: boolean; eventStartsAt: string | null; grant: (actions: string[]) => Promise<void>; };
 
 /** Synthetic API/session only. Runs real Next Server Functions without using production or weakening the GET-only pilot fixture. */
 export const test = base.extend<{ api: ApiState }>({
@@ -35,7 +35,7 @@ export const test = base.extend<{ api: ApiState }>({
         const sign = (data: object) => new SignJWT({ data }).setProtectedHeader({ alg: 'HS256' }).setExpirationTime('1h').sign(new TextEncoder().encode('playwright-local-session-not-for-production'));
         const appUrl = readLocalUrl('PLAYWRIGHT_APP_URL');
         const grant = async (actions: string[]) => { await context.addCookies([{ name: 'Permissions', value: await sign([{ module: 'PUBLICATIONS', actions }]), url: appUrl.origin, httpOnly: true }]); };
-        const state: ApiState = { registrationErrorCode: 'EVENT_REGISTRATION_NOT_FOUND', notice: { title: publications[0].title, content: publications[0].content }, social: {}, comments: {}, writes: [], uploadedKeys: [], commentsStatus: 200, commentsDelay: 0, idempotentLikes: false, calls: [], completed: [], feedStatus: 200, eventFeedStatus: 200, noticeFeedStatus: 200, detailStatus: 200, mediaFails: false, actions: ['FEED_READ', 'PUBLICATION_READ'], delay: 0, pages: 1, failPage: -1, empty: false, unauthorizedOnce: false, refreshFails: false, eventOpen: false, eventStartsAt: null, registration: null, grant };
+        const state: ApiState = { registrationErrorCode: 'EVENT_REGISTRATION_NOT_FOUND', notice: { title: publications[0].title, content: publications[0].content }, social: {}, comments: {}, writes: [], uploadedKeys: [], commentsStatus: 200, commentsDelay: 0, idempotentLikes: false, calls: [], completed: [], feedStatus: 200, listStatus: 200, eventFeedStatus: 200, noticeFeedStatus: 200, detailStatus: 200, mediaFails: false, actions: ['FEED_READ', 'PUBLICATION_READ'], delay: 0, pages: 1, failPage: -1, empty: false, unauthorizedOnce: false, refreshFails: false, eventOpen: false, eventStartsAt: null, registration: null, grant };
         const errors: string[] = [];
         const forbidden: string[] = [];
         const allowed = [appUrl.origin, readLocalUrl('PLAYWRIGHT_STORYBOOK_URL').origin];
@@ -108,6 +108,7 @@ export const test = base.extend<{ api: ApiState }>({
             if (url.pathname === '/publications/feed') {
                 if (state.delay && url.searchParams.get('type') === 'NOTICE') await new Promise(resolve => setTimeout(resolve, state.delay));
                 if (state.feedStatus !== 200) return failure(state.feedStatus);
+                if (Number(url.searchParams.get('size') ?? 12) === 12 && state.listStatus !== 200) return failure(state.listStatus);
                 if (url.searchParams.get('type') === 'EVENT' && state.eventFeedStatus !== 200) return failure(state.eventFeedStatus);
                 if (url.searchParams.get('type') === 'NOTICE' && state.noticeFeedStatus !== 200) return failure(state.noticeFeedStatus);
                 const number = Number(url.searchParams.get('page') ?? 0);

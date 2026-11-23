@@ -494,7 +494,7 @@ export default function Feed({ data, error, page = 0 }: { data?: PageResponse<Pu
                                 </div>
                             )}
 
-                            {data && <nav aria-label="Páginas do feed" className="flex gap-3">
+                            {filtersResult.success && !error && data && <nav aria-label="Páginas do feed" className="flex gap-3">
                                 {page > 0 && <Button disabled={isPending} onClick={() => changePage(page - 1)}>Publicações anteriores</Button>}
                                 {!data.last && <Button disabled={isPending} onClick={() => changePage(page + 1)}>Próximas publicações</Button>}
                                 <span role="status">Página {page + 1} de {Math.max(1, data.totalPages)}</span>

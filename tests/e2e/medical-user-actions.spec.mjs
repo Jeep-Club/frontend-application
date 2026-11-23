@@ -42,9 +42,9 @@ const selfMedicalModal = page => page.locator('[data-modal-content]').filter({ h
 async function fillMedical(page, modal, contact) {
     await modal.getByRole('combobox', { name: /^Tipo sanguíneo/ }).click();
     await page.getByRole('option', { name: 'A+', exact: true }).click();
-    await modal.getByLabel('Nome', { exact: true }).fill(contact);
-    await modal.getByLabel('Telefone', { exact: true }).fill('12999999999');
-    await modal.getByLabel('Parentesco', { exact: true }).fill('Familiar');
+    await modal.getByRole('textbox', { name: 'Nome', exact: true }).fill(contact);
+    await modal.getByRole('textbox', { name: 'Telefone', exact: true }).fill('12999999999');
+    await modal.getByRole('textbox', { name: 'Parentesco', exact: true }).fill('Familiar');
 }
 
 for (const scenario of cases) {
@@ -57,9 +57,9 @@ for (const scenario of cases) {
         const modal = personalModal(page);
         const name = `Dados pessoais UI ${Date.now()}`;
         await modal.getByLabel(/^Nome completo/).fill(name);
-        await modal.getByLabel('E-mail', { exact: true }).fill(`medical.ui.${Date.now()}@example.test`);
-        await modal.getByLabel('RG', { exact: true }).fill('123456789');
-        await modal.getByLabel('Telefone', { exact: true }).fill('12999999999');
+        await modal.getByRole('textbox', { name: 'E-mail', exact: true }).fill(`medical.ui.${Date.now()}@example.test`);
+        await modal.getByRole('textbox', { name: 'RG', exact: true }).fill(member.cpf.slice(0, 9));
+        await modal.getByRole('textbox', { name: 'Telefone', exact: true }).fill('12999999999');
         fail(scenario, 'PATCH', '/identity/me');
         await modal.getByRole('button', { name: 'Salvar alterações', exact: true }).click();
         if (scenario.key === 'sucesso') {
@@ -68,13 +68,13 @@ for (const scenario of cases) {
             await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
             await page.getByTitle('Editar dados pessoais', { exact: true }).click();
             await expect(modal.getByLabel(/^Nome completo/)).toHaveValue(name);
-            await modal.getByLabel('RG', { exact: true }).fill('');
-            await modal.getByLabel('Telefone', { exact: true }).fill('');
+            await modal.getByRole('textbox', { name: 'RG', exact: true }).fill('');
+            await modal.getByRole('textbox', { name: 'Telefone', exact: true }).fill('');
             await modal.getByRole('button', { name: 'Salvar alterações', exact: true }).click();
             await expect(modal).toHaveCount(0);
             await page.getByTitle('Editar dados pessoais', { exact: true }).click();
-            await expect(modal.getByLabel('RG', { exact: true })).toHaveValue('');
-            await expect(modal.getByLabel('Telefone', { exact: true })).toHaveValue('');
+            await expect(modal.getByRole('textbox', { name: 'RG', exact: true })).toHaveValue('');
+            await expect(modal.getByRole('textbox', { name: 'Telefone', exact: true })).toHaveValue('');
         } else {
             await errorVisible(page, scenario);
             await expect(modal.getByLabel(/^Nome completo/)).toHaveValue(name);
@@ -112,7 +112,7 @@ for (const scenario of cases) {
             await expect(modal.getByLabel('Quais alergias?', { exact: true })).toHaveCount(0);
         } else {
             await errorVisible(page, scenario);
-            await expect(modal.getByLabel('Nome', { exact: true })).toHaveValue(contact);
+            await expect(modal.getByRole('textbox', { name: 'Nome', exact: true })).toHaveValue(contact);
             await expect(modal.getByRole('button', { name: 'Salvar alterações', exact: true })).toBeEnabled();
             expect((await app.api('medical-profiles/me', { token: member.session.accessToken })).emergencyContactName).toBe('Contato sintético');
         }
@@ -179,7 +179,7 @@ for (const operation of ['create', 'edit', 'delete']) for (const scenario of cas
         } else {
             await errorVisible(page, scenario);
             await expect(modal).toBeVisible();
-            if (!deleting) await expect(modal.getByLabel('Nome', { exact: true })).toHaveValue(contact);
+            if (!deleting) await expect(modal.getByRole('textbox', { name: 'Nome', exact: true })).toHaveValue(contact);
             await expect(modal.getByRole('button', { name: deleting ? 'Confirmar exclusão' : 'Salvar alterações', exact: true })).toBeEnabled();
         }
     });

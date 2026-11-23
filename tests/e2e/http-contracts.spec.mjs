@@ -183,7 +183,7 @@ test('503 during refresh keeps the session', async ({ request }) => {
 
 test('real CSV export validates the content type before returning bytes', async ({ request }) => {
     const { result } = await action(request, 'billing/download', ['definitions', 'CSV'], seed.admin);
-    expect(result).toMatchObject({ ok: true, data: { contentType: expect.stringContaining('text/csv'), filename: 'definicoes-atribuicoes.csv', exportedBy: expect.any(String) } });
+    expect(result).toMatchObject({ ok: true, data: { contentType: expect.stringContaining('text/csv'), filename: expect.stringMatching(/^definicoes-atribuicoes-\d{8}-\d{6}\.csv$/), exportedBy: expect.any(String) } });
     expect(Buffer.from(result.data.base64, 'base64').length).toBeGreaterThan(0);
 });
 
