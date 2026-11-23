@@ -8,4 +8,3 @@ test('Ativação de Membership sem token não exibe formulário e orienta reenvi
     await page.getByRole('button', { name: 'Ir para o login' }).click();
     await expect(page).toHaveURL(/\/login$/);
 });
-

@@ -203,5 +203,3 @@ test('convite inválido real e resposta de expiração controlada ocultam a senh
     await expect(page.getByLabel(/^Nova senha/)).toHaveCount(0);
     fault = undefined;
 });
-
-

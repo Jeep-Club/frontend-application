@@ -200,4 +200,3 @@ for (const scenario of errors) {
         else { await expectFailure(page, scenario); await expect(page).toHaveURL(new RegExp(`/admin/users/${account.userId}$`)); await expect(page.getByRole('button', { name: 'Excluir cadastro pendente', exact: true })).toBeEnabled(); }
     });
 }
-

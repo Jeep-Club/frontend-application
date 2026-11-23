@@ -81,4 +81,3 @@ export default function ActivateMembership({ token }: { token: string }) {
         </main>
     );
 }
-
