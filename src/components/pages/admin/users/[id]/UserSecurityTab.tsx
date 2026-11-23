@@ -218,7 +218,7 @@ export function UserSecurityTab({ userId }: { userId: number }) {
                         <p id="security-confirm-description" className="mt-2 text-sm leading-relaxed text-j-gray-600">Deseja realmente {confirmTarget.description}? Esta ação pode impedir que o usuário continue usando o recurso.</p>
                         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                             <Button type="button" disabled={actionMutation.isPending} onClick={() => setConfirmTarget(null)} className="border border-j-gray-200 bg-j-white text-j-gray-700 hover:bg-j-gray-100">Voltar</Button>
-                            <Button type="button" isLoading={actionMutation.isPending} onClick={() => actionMutation.mutate(confirmTarget)} className="bg-j-red-500 text-j-white hover:bg-j-red-600 hover:text-j-white">
+                            <Button type="button" isLoading={actionMutation.isPending} onClick={() => actionMutation.mutate(confirmTarget)} className="bg-green-700 text-white border-green-700 hover:bg-green-800 hover:text-white hover:border-green-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-green-800 focus-visible:text-white">
                                 {actionMutation.isPending ? "Processando..." : "Confirmar"}
                             </Button>
                         </div>
@@ -366,7 +366,7 @@ function RecoveryRequestRow({ request, canCancel, onCancel }: { request: AdminPa
                 <div className="flex flex-wrap items-center gap-2"><strong className="text-sm text-j-blue-800">Pedido #{request.id}</strong><StatusBadge status={request.status} /></div>
                 <RecordFields fields={[["Método", method], ["Criado", formatDate(request.createdAt)], ["Expira", formatDate(request.expiresAt)], ["Resolvido", formatDate(request.resolvedAt)], ["Cancelado", formatDate(request.cancelledAt)]]} />
             </div>
-            {canCancel && request.status === "OPEN" && <Button type="button" onClick={onCancel} className="shrink-0 bg-j-red-500 text-j-white hover:bg-j-red-600 hover:text-j-white">Cancelar pedido</Button>}
+            {canCancel && request.status === "OPEN" && <Button type="button" onClick={onCancel} className="shrink-0 bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white">Cancelar pedido</Button>}
         </article>
     );
 }

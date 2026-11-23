@@ -28,7 +28,7 @@ export function LogoutConfirmationModal({ onConfirm }: { onConfirm: () => Promis
         <h2 id="logout-title" className="text-xl font-extrabold text-j-blue-800">Sair da conta?</h2>
         <p id="logout-description" className="mt-2 text-sm leading-relaxed text-j-gray-500">Sua sessão será encerrada. Para acessar novamente, será necessário fazer login.</p>
         <div className="mt-6 grid grid-cols-2 gap-3">
-            <Button type="button" onClick={setClose} disabled={isPending} className="min-h-11 border border-j-gray-200 bg-j-white text-j-gray-600 hover:bg-j-gray-100 hover:text-j-gray-700">Cancelar</Button>
+            <Button type="button" onClick={setClose} disabled={isPending} className="min-h-11 border bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white">Cancelar</Button>
             <ConfirmButton type="button" onClick={confirm} disabled={isPending} className="min-h-11 gap-2">{isPending ? <><LoaderCircle size={16} className="animate-spin" />Saindo...</> : "Sair"}</ConfirmButton>
         </div>
     </section>;

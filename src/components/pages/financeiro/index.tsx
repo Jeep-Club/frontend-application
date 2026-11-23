@@ -45,8 +45,8 @@ export default async function Financeiro({
     searchParams?: Promise<FinanceiroSearchParams>;
 }) {
     const params = await searchParams;
-    const status = ["PENDING", "PAID", "CANCELED"].includes(params.status ?? "")
-        ? params.status as MemberChargeStatus
+    const status = ["PENDING", "OVERDUE", "EXPIRED", "PAID", "CANCELED"].includes(params.status ?? "")
+        ? params.status as MemberChargeEffectiveStatus
         : undefined;
     const sort = params.sort === "dueDate,asc" ? "dueDate,asc" : "dueDate,desc";
     const requestedPage = Number(params.page);
@@ -56,14 +56,30 @@ export default async function Financeiro({
     let loadError = false;
 
     try {
-        const page = await listMyMemberChargesAction({
-            ...(status ? { status } : {}),
-            page: String(pageNumber),
-            size: "10",
-            sort,
-        });
-        charges = page.content;
-        totalPages = page.totalPages;
+        if (status === "PENDING" || status === "OVERDUE" || status === "EXPIRED") {
+            // A API pagina pelo status persistido; filtre a situação calculada antes de paginar a tela.
+            const firstPage = await listMyMemberChargesAction({ status: "PENDING", page: "0", size: "50", sort });
+            const pendingCharges = [...firstPage.content];
+            for (let nextPage = 1; nextPage < firstPage.totalPages; nextPage += 10) {
+                const batch = await Promise.all(Array.from(
+                    { length: Math.min(10, firstPage.totalPages - nextPage) },
+                    (_, index) => listMyMemberChargesAction({ status: "PENDING", page: String(nextPage + index), size: "50", sort }),
+                ));
+                pendingCharges.push(...batch.flatMap((page) => page.content));
+            }
+            const matching = pendingCharges.filter((charge) => charge.effectiveStatus === status);
+            charges = matching.slice(pageNumber * 10, (pageNumber + 1) * 10);
+            totalPages = Math.ceil(matching.length / 10);
+        } else {
+            const page = await listMyMemberChargesAction({
+                ...(status ? { status } : {}),
+                page: String(pageNumber),
+                size: "10",
+                sort,
+            });
+            charges = page.content;
+            totalPages = page.totalPages;
+        }
     } catch {
         loadError = true;
     }

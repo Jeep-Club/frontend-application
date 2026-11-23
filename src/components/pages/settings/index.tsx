@@ -332,7 +332,7 @@ export default function SettingsPage() {
                             toast("A alteração segura será integrada ao backend.");
                         }}
                     >
-                        <button type="button" onClick={() => setIsChangingPassword(false)} className="mb-5 flex cursor-pointer items-center gap-2 text-xs font-bold text-j-blue-800">
+                        <button type="button" onClick={() => setIsChangingPassword(false)} className="mb-5 flex items-center gap-2 text-xs font-bold bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white cursor-pointer">
                             <ArrowLeft size={16} />
                             Cancelar alteração
                         </button>
@@ -362,10 +362,10 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                            <button type="button" onClick={() => setIsChangingPassword(false)} className="cursor-pointer rounded-lg border border-j-gray-300 px-4 py-2.5 text-sm font-bold text-j-gray-600 hover:bg-j-gray-100">
+                            <button type="button" onClick={() => setIsChangingPassword(false)} className="rounded-lg border px-4 py-2.5 text-sm font-bold bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white cursor-pointer">
                                 Cancelar
                             </button>
-                            <Button type="submit" className="gap-2">
+                            <Button type="submit" className="gap-2 bg-green-700 text-white border-green-700 hover:bg-green-800 hover:text-white hover:border-green-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-green-800 focus-visible:text-white">
                                 <LockKeyhole size={16} />
                                 Confirmar nova senha
                             </Button>

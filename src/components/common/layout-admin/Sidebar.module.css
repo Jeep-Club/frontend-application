@@ -88,8 +88,6 @@
   transition: height var(--sidebar-time) var(--sidebar-ease), opacity var(--sidebar-time) var(--sidebar-ease);
 }
 
-.desktopOnly { display: none; }
-
 .backdrop {
   position: fixed;
   inset: 0;
@@ -109,7 +107,6 @@
   .panel[data-collapsed="true"] .label { max-width: 0; opacity: 0; transform: translateX(-8px); }
   .panel[data-collapsed="true"] .item { gap: 0; justify-content: center; padding-inline: 0; }
   .panel[data-collapsed="true"] .favoritesHeading { height: 0; opacity: 0; }
-  .desktopOnly { display: flex; }
   .closeButton, .backdrop { display: none; }
 }
 

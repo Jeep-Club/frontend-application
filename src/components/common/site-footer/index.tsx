@@ -18,9 +18,9 @@ export default function SiteFooter() {
   ].join(" · ");
 
   return (
-    <footer className="border-t border-white/10 bg-[#272a32] px-6 py-8 text-white print:hidden sm:px-8">
+    <footer className="border-t border-white/10 bg-[#272a32] px-6 pb-8 pt-4 text-white print:hidden sm:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="flex flex-col items-center gap-7 pb-7 md:flex-row md:justify-between md:gap-10">
+        <div className="flex flex-col items-center gap-7 pb-4 md:flex-row md:justify-between md:gap-10">
           <div className="flex items-center gap-3">
             <GiJeep size={30} className="shrink-0 text-yellow-400" aria-hidden="true" />
             <div>
