@@ -18,6 +18,7 @@ interface MemberChargeSummary {
     paymentAllowedUntil: string | null;
     status: MemberChargeStatus;
     effectiveStatus: MemberChargeEffectiveStatus;
+    paymentInReview?: boolean;
 }
 
 interface MemberChargeSearchParams {

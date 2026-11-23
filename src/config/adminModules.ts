@@ -2,6 +2,7 @@ import { publicationManagementAccessActions } from "@/config/publicationManageme
 import {
     Newspaper,
     Car,
+    Network,
     KeyRound,
     UserRoundCheck,
     Users,
@@ -116,7 +117,7 @@ export const adminModules: AdminModuleConfig[] = [
     },
     {
         key: "financial-movements",
-        title: "Movimentações financeiras",
+        title: "Movimentos",
         description: "Consulte cobranças dos associados, pagamentos, análises e reembolsos.",
         href: "/admin/gestao-financeira/movimentacoes",
         icon: WalletCards,
@@ -150,9 +151,9 @@ export const adminModules: AdminModuleConfig[] = [
         key: "dependents",
         title: "Gestão de dependentes",
         description:
-            "Visualize, ative, desative, arquive e exporte os dependentes dos associados.",
+            "Visualize, gerencie e exporte os dependentes dos associados.",
         href: "/admin/dependentes",
-        icon: Users,
+        icon: Network,
         visibilityPermission: {
             module: "DEPENDENTS",
             action: "DEPENDENT_READ",

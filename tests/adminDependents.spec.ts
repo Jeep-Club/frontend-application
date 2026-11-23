@@ -7,6 +7,7 @@ import {
     listDependentsByUserAdminAction,
 } from "@/server/actions/admin/dependents/list";
 import { getDependentDetailAdminAction } from "@/server/actions/admin/dependents/detail";
+import { changeDependentStatusAction, listInactiveDependentsAction } from "@/server/actions/dependents";
 import {
     archiveDependentAdminAction,
     disableDependentAdminAction,
@@ -53,6 +54,14 @@ beforeEach(() => {
 });
 
 describe("Admin Dependents Management", () => {
+    it("changes the member dependent status and lists inactive dependents separately", async () => {
+        jest.mocked(actionFetchWrapper).mockResolvedValueOnce({ status: 200, data: { status: "INACTIVE" } });
+        jest.mocked(actionFetchWrapper).mockResolvedValueOnce({ status: 200, data: [] });
+        await changeDependentStatusAction(7, "disable");
+        await listInactiveDependentsAction();
+        expect(actionFetchWrapper).toHaveBeenNthCalledWith(1, expect.objectContaining({ url: "dependents/7/disable", method: "PATCH" }));
+        expect(actionFetchWrapper).toHaveBeenNthCalledWith(2, expect.objectContaining({ url: "dependents?status=INACTIVE", method: "GET" }));
+    });
     it("registers the dependents admin module and route permissions for DEPENDENTS_DEPENDENT_READ", () => {
         const dependentsModule = adminModules.find((m) => m.key === "dependents");
         expect(dependentsModule).toBeDefined();

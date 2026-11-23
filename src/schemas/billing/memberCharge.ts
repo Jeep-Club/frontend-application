@@ -27,6 +27,7 @@ export const memberChargeSummaryResponseSchema: z.ZodType<MemberChargeSummary> =
         "UNTIL_DAYS_AFTER_DUE_DATE",
     ]),
     paymentAllowedUntil: z.string().nullable(),
+    paymentInReview: z.boolean().optional(),
     status: memberChargeStatusSchema,
     effectiveStatus: memberChargeEffectiveStatusSchema,
 });

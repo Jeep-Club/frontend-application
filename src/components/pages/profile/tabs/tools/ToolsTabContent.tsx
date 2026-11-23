@@ -8,13 +8,13 @@ import { getMediaImageUrl } from '@/utils/media/imageUrl';
 import { useQuery } from "@tanstack/react-query";
 import { Eye,Pencil,Plus,Power,Trash2,Wrench } from "lucide-react";
 import { useState } from "react";
-import { twMerge } from "tailwind-merge";
 import { DeleteToolModal } from "./DeleteToolModal";
 import { IncludeToolModal } from "./IncludeToolModal";
-import { ToggleToolStatusModal } from "./ToggleToolStatusModal";
 import { ViewToolModal } from "./ViewToolModal";
+import { ToggleToolStatusModal } from "./ToggleToolStatusModal";
+import { ProfileEmptyPanel, ProfileStatusSelect, ProfileTabHeader } from "../ProfileTabEmptyState";
+import { ProfileStatusBadge } from "../ProfileStatusBadge";
 import { ProfileTabLoading } from "../ProfileTabLoading";
-import { ProfileTabEmptyState } from "../ProfileTabEmptyState";
 
 const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",
@@ -22,20 +22,22 @@ const STATUS_LABEL: Record<ToolStatus, string> = {
     ARCHIVED: "Arquivada",
 };
 
-const STATUS_BADGE_CLASS: Record<ToolStatus, string> = {
-    ACTIVE: "bg-j-green-100 text-j-green-700",
-    INACTIVE: "bg-j-gray-200 text-j-gray-600",
-    ARCHIVED: "bg-amber-100 text-amber-700",
+const STATUS_FILTER_LABEL: Record<ToolStatus, string> = {
+    ACTIVE: "Ferramentas ativas",
+    INACTIVE: "Ferramentas inativas",
+    ARCHIVED: "Ferramentas arquivadas",
 };
+
 
 export function ToolsTabContent() {
     const { setContent, setOpen } = useModal();
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
+    const [status, setStatus] = useState<ToolStatus>("ACTIVE");
 
     const { data, isLoading, isError, isFetching } = useQuery({
-        queryKey: ["tools", "list", page, pageSize],
-        queryFn: () => listToolsAction({ page, size: pageSize }),
+        queryKey: ["tools", "list", page, pageSize, status],
+        queryFn: () => listToolsAction({ page, size: pageSize, status }),
     });
 
     const handleOpenInclude = () => {
@@ -58,74 +60,64 @@ export function ToolsTabContent() {
         setOpen();
     };
 
-    const handleOpenToggleStatus = (tool: ToolListItem) => {
-        setContent(
-            <ToggleToolStatusModal
-                toolId={tool.id}
-                toolName={tool.name}
-                nextStatus={tool.status === "ACTIVE" ? "DEACTIVATE" : "ACTIVATE"}
-            />
-        );
+    const handleOpenStatus = (tool: ToolListItem) => {
+        setContent(<ToggleToolStatusModal toolId={tool.id} toolName={tool.name} nextStatus={tool.status === "ACTIVE" ? "DEACTIVATE" : "ACTIVATE"} />);
         setOpen();
     };
 
-    if (!isLoading && !isError && data?.content.length === 0) {
-        return <ProfileTabEmptyState
-            icon={Wrench}
-            title="Minhas ferramentas"
-            description="Gerencie as ferramentas cadastradas no seu perfil."
-            emptyTitle="Você ainda não tem ferramentas cadastradas"
-            emptyDescription="Inclua suas ferramentas e mantenha os dados organizados no seu perfil."
-            action={<Button onClick={handleOpenInclude} className="h-11 w-full shrink-0 justify-center whitespace-nowrap rounded-xl px-5"><Plus size={16} /><span>Incluir Ferramenta</span></Button>}
-        />;
-    }
+    const statusFilter = <ProfileStatusSelect aria-label="Situação das ferramentas" value={status} onChange={event => { setStatus(event.target.value as ToolStatus); setPage(0); }}>
+        {Object.entries(STATUS_FILTER_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+    </ProfileStatusSelect>;
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-j-gray-700">Minhas ferramentas</h3>
-                <Button onClick={handleOpenInclude} className="h-11 w-24 shrink-0 justify-center whitespace-nowrap sm:w-52">
-                    <Plus size={16} />
-                    <span className="hidden sm:inline">Incluir Ferramenta</span>
-                    <span className="sm:hidden">Incluir</span>
-                </Button>
-            </div>
+            <ProfileTabHeader
+                filter={statusFilter}
+                icon={Wrench}
+                title="Minhas ferramentas"
+                description="Gerencie as ferramentas cadastradas no seu perfil."
+                action={<Button type="button" onClick={handleOpenInclude} className="h-11 w-full shrink-0 justify-center whitespace-nowrap rounded-xl px-5"><Plus size={16} aria-hidden="true" />Incluir Ferramenta</Button>}
+            />
 
-            {isLoading && (
-                <ProfileTabLoading label="Carregando ferramentas..." layout="rows" />
-            )}
+            {isLoading && <ProfileTabLoading tab="tools" />}
 
             {isError && (
                 <p className="text-sm text-j-red-400">Não foi possível carregar suas ferramentas.</p>
             )}
 
+            {!isLoading && !isError && data?.content.length === 0 && (
+                page > 0
+                    ? <Button type="button" onClick={() => setPage(0)}>Voltar à primeira página</Button>
+                    : <ProfileEmptyPanel icon={Wrench} title={`Nenhuma ferramenta ${STATUS_LABEL[status].toLowerCase()}`} />
+            )}
+
             {!isLoading && !isError && data && data.content.length > 0 && (
                 <>
                     <div className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
-                        <div className="hidden grid-cols-[minmax(0,1fr)_minmax(90px,0.65fr)_360px] gap-4 border-b border-j-gray-200 bg-j-gray-100/70 px-4 py-3 text-[10px] font-extrabold uppercase tracking-wide text-j-gray-400 md:grid">
+                        <div className="hidden grid-cols-[minmax(0,1fr)_minmax(90px,0.65fr)_360px] gap-3 border-b border-j-gray-200 bg-j-gray-100/70 px-4 py-3 text-[10px] font-extrabold uppercase tracking-wide text-j-gray-400 xl:grid">
                             <span>Ferramenta</span>
                             <span className="text-center">Status</span>
                             <span className="text-center">Ações</span>
                         </div>
                         <div className="divide-y divide-j-gray-100">
                             {data.content.map((tool) => (
-                                <div key={tool.id} className="flex flex-col gap-3 p-4 transition-colors hover:bg-blue-50/30 md:grid md:grid-cols-[minmax(0,1fr)_minmax(90px,0.65fr)_360px] md:items-center md:gap-4">
+                                <div key={tool.id} className="flex flex-col gap-3 p-4 transition-colors hover:bg-blue-50/30 [:root[data-theme=dark]_&]:hover:bg-background-secondary xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(90px,0.65fr)_360px] xl:items-center">
                                     <div className="flex min-w-0 items-center gap-3">
                                         {tool.photoStorageKey ? (
                                             // eslint-disable-next-line @next/next/no-img-element
-                                            <img src={getMediaImageUrl(tool.photoStorageKey)} alt={`Foto de ${tool.name}`} className="h-16 w-28 shrink-0 sm:h-20 sm:w-36 rounded-lg border border-j-gray-200 object-cover" />
-                                        ) : <span className="flex h-16 w-28 shrink-0 sm:h-20 sm:w-36 items-center justify-center rounded-lg bg-j-blue-800 text-j-yellow-300"><Wrench size={19} aria-hidden="true" /></span>}
+                                            <img src={getMediaImageUrl(tool.photoStorageKey)} alt={`Foto de ${tool.name}`} className="size-12 shrink-0 rounded-xl border border-j-gray-200 object-cover" />
+                                        ) : <span className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-j-gray-200 bg-j-blue-800 text-j-yellow-300"><Wrench size={19} aria-hidden="true" /></span>}
                                         <div className="min-w-0">
                                             <h4 className="truncate font-extrabold text-j-blue-800" title={tool.name}>{tool.name}</h4>
-                                            <span className={twMerge("mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-bold md:hidden", STATUS_BADGE_CLASS[tool.status])}>{STATUS_LABEL[tool.status]}</span>
+                                            <ProfileStatusBadge status={tool.status} label={STATUS_LABEL[tool.status]} className="mt-1 inline-flex xl:hidden" />
                                         </div>
                                     </div>
-                                    <span className={twMerge("hidden w-fit justify-self-center rounded-full px-2.5 py-1 text-xs font-bold md:inline-flex", STATUS_BADGE_CLASS[tool.status])}>{STATUS_LABEL[tool.status]}</span>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        <button type="button" aria-label={`Visualizar ${tool.name}`} title="Visualizar" onClick={() => handleOpenView(tool.id)} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 transition-colors hover:bg-blue-100"><Eye size={15} aria-hidden="true" /><span className="hidden sm:inline">Visualizar</span></button>
-                                        <button type="button" aria-label={`Editar ${tool.name}`} title="Editar" onClick={() => handleOpenEdit(tool.id)} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-yellow-50 px-2 py-2 text-xs font-bold text-j-gray-700 transition-colors hover:bg-yellow-100"><Pencil size={15} className="text-j-yellow-500" aria-hidden="true" /><span className="hidden sm:inline">Editar</span></button>
-                                        <button type="button" aria-label={`${tool.status === "ACTIVE" ? "Desativar" : "Ativar"} ${tool.name}`} title={tool.status === "ACTIVE" ? "Desativar" : "Ativar"} onClick={() => handleOpenToggleStatus(tool)} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-purple-50 px-2 py-2 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"><Power size={15} aria-hidden="true" /><span className="hidden sm:inline">{tool.status === "ACTIVE" ? "Desativar" : "Ativar"}</span></button>
-                                        <button type="button" aria-label={`Excluir ${tool.name}`} title="Excluir" onClick={() => handleOpenDelete(tool)} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-2 text-xs font-bold text-red-500 transition-colors hover:bg-red-100"><Trash2 size={15} aria-hidden="true" /><span className="hidden sm:inline">Excluir</span></button>
+                                    <ProfileStatusBadge status={tool.status} label={STATUS_LABEL[tool.status]} className="hidden justify-self-center xl:inline-flex" />
+                                    <div className="grid grid-cols-2 gap-1 xl:grid-cols-4">
+                                        <button type="button" aria-label={`Visualizar ${tool.name}`} title="Visualizar" onClick={() => handleOpenView(tool.id)} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 transition-colors hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current record-action"><Eye size={15} className="shrink-0" aria-hidden="true" /><span>Visualizar</span></button>
+                                        <button type="button" aria-label={`Editar ${tool.name}`} title="Editar" onClick={() => handleOpenEdit(tool.id)} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-yellow-50 px-2 py-2 text-xs font-bold text-j-gray-700 transition-colors hover:bg-yellow-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current record-action"><Pencil size={15} className="shrink-0 text-j-yellow-500 record-action-icon" aria-hidden="true" /><span>Editar</span></button>
+                                        {tool.status !== "ARCHIVED" && <button type="button" onClick={() => handleOpenStatus(tool)} aria-label={`${tool.status === "ACTIVE" ? "Inativar" : "Ativar"} ${tool.name}`} className="record-action flex min-h-9 cursor-pointer items-center justify-center gap-1 rounded-lg bg-blue-50 px-1 py-2 text-xs font-bold text-j-blue-800 hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2"><Power size={15} className="shrink-0" aria-hidden="true" /><span>{tool.status === "ACTIVE" ? "Inativar" : "Ativar"}</span></button>}
+                                        <button type="button" aria-label={`Excluir ${tool.name}`} title="Excluir" onClick={() => handleOpenDelete(tool)} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-2 text-xs font-bold text-red-500 transition-colors hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current record-action-danger"><Trash2 size={15} className="shrink-0" aria-hidden="true" /><span>Excluir</span></button>
                                     </div>
                                 </div>
                             ))}

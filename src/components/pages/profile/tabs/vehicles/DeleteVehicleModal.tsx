@@ -5,7 +5,7 @@ import { Button,ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { deleteVehicleMemberAction } from "@/server/actions/vehicles/delete-member";
 import { useMutation,useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle,X } from "lucide-react";
+import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface DeleteVehicleModalProps {
@@ -44,21 +44,14 @@ export function DeleteVehicleModal({ vehicleId, vehicleLabel }: DeleteVehicleMod
             </ButtonIcon>
 
             <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
-                <div className="flex items-start gap-4">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-500/10 text-red-500 shadow-sm">
-                        <AlertTriangle size={20} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
-                            Excluir veículo?
-                        </h2>
-                        <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            Tem certeza que deseja excluir{" "}
-                            <span className="font-bold text-j-blue-800">{vehicleLabel}</span>?
-                            Essa ação não pode ser desfeita.
-                        </p>
-                    </div>
-                </div>
+                <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                    Excluir veículo?
+                </h2>
+                <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
+                    Tem certeza que deseja excluir{" "}
+                    <span className="font-bold text-j-blue-800">{vehicleLabel}</span>?
+                    Essa ação não pode ser desfeita.
+                </p>
             </header>
 
             <div className="flex w-full gap-3 px-5 py-5 md:px-8 md:py-6">
@@ -66,7 +59,7 @@ export function DeleteVehicleModal({ vehicleId, vehicleLabel }: DeleteVehicleMod
                     type="button"
                     onClick={setClose}
                     disabled={mutation.isPending}
-                    className="flex-1 border-2 border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-gray-700"
+                    className="flex-1 border-2 bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white"
                 >
                     Cancelar
                 </Button>

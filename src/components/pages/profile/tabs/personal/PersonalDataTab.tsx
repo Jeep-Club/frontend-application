@@ -13,6 +13,7 @@ import { getMedicalProfileAction } from "@/server/actions/profile/medical-profil
 import { maskCPF,maskDate,maskPhoneNumber } from "@/utils/masks";
 import { EditPersonalDataModal } from "./EditPersonalDataModal";
 import { MembershipCard } from "./MembershipCard";
+import { ProfileTabLoading } from "../ProfileTabLoading";
 import { PersonalDataCard } from "./PersonalDataCard";
 
 const BLOOD_TYPE_LABELS: Record<MedicalProfileBloodType, string | null> = {
@@ -47,11 +48,7 @@ export function PersonalDataTab() {
     });
 
     if (isLoading) {
-        return (
-            <p className="text-sm text-j-gray-400">
-                Carregando dados pessoais...
-            </p>
-        );
+        return <ProfileTabLoading tab="personal" />;
     }
 
     if (isError || !personalData) {

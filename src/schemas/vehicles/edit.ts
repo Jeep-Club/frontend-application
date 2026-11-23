@@ -1,3 +1,4 @@
+import { vehicleSeatingCapacitySchema } from "@/schemas/vehicles/seating-capacity";
 import { vehicleYearSchema } from "@/schemas/vehicles/year";
 import { z } from "zod";
 import { isValidRenavam } from "@/utils/validate/validateRenavam";
@@ -24,10 +25,7 @@ export const editVehicleMemberFormSchema: z.ZodType<EditVehicleMemberFormData> =
     manufacturingYear: vehicleYearSchema,
     modelYear: vehicleYearSchema,
     color: z.string().trim().min(1, { message: "A cor é obrigatória" }).max(30, { message: "A cor deve ter no máximo 30 caracteres" }).refine((value) => !/\d/.test(value), { message: "A cor não pode conter números" }),
-    seatingCapacity: z.string()
-        .min(1, { message: "O nº assentos é obrigatório" })
-        .transform((value) => Number(value))
-        .pipe(z.number().int().min(1, { message: "O nº de assentos deve ser maior que zero" }).max(50, { message: "Capacidade máxima é 50" })),
+    seatingCapacity: vehicleSeatingCapacitySchema,
     fuelType: z.string()
         .min(1, { message: "O combustível é obrigatório" })
         .transform((value) => value as FuelType),

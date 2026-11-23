@@ -1,5 +1,6 @@
 'use client';
 
+import { MIN_VEHICLE_SEATS, MAX_VEHICLE_SEATS } from "@/schemas/vehicles/seating-capacity";
 import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
 import { InputFile } from "@/components/common/input/file";
@@ -177,8 +178,8 @@ function EditVehicleSteps({ currentStep, onNext, onBack, vehicle }: EditVehicleS
                     <div className="grid w-full gap-4 sm:grid-cols-2">
                         <InputRegister
                             type="number"
-                            min={1}
-                            max={50}
+                            min={MIN_VEHICLE_SEATS}
+                            max={MAX_VEHICLE_SEATS}
                             label="Assentos"
                             name="seatingCapacity"
                             placeholder="5"
@@ -225,9 +226,9 @@ function EditVehicleSteps({ currentStep, onNext, onBack, vehicle }: EditVehicleS
                         className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:bg-j-white"
                     />}
                     {vehicle.photo && (
-                        <div className="flex items-center gap-3 rounded-xl border border-j-gray-200 bg-j-white p-3">
-                            <VehiclePhotoCarousel cover={vehicle.photo} photos={vehiclePhotoKeys(vehicle)} alt="Fotos atuais" className="h-32 w-48 shrink-0 rounded-lg" />
-                        <div className="flex flex-col">
+                        <div className="flex min-w-0 flex-col gap-3 rounded-xl border border-j-gray-200 bg-j-white p-3 sm:flex-row sm:items-center">
+                            <VehiclePhotoCarousel cover={vehicle.photo} photos={vehiclePhotoKeys(vehicle)} alt="Fotos atuais" className="aspect-video w-full shrink-0 rounded-lg sm:h-32 sm:w-48" />
+                            <div className="flex min-w-0 flex-col gap-1">
                                 <span className="text-xs font-bold text-j-gray-700">Foto atual cadastrada</span>
                                 <span className="text-[11px] text-j-gray-500">
                                     As novas fotos serão adicionadas à galeria. A capa atual será mantida.

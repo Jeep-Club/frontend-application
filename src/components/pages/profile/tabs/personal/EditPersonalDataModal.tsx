@@ -11,10 +11,8 @@ import { updateProfilePhotoAction } from "@/server/actions/profile/update-photo"
 import {
 	CalendarDays,
 	Camera,
-	Save,
 	ShieldCheck,
 	UserRound,
-	UserRoundPen,
 	X,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -136,27 +134,17 @@ export function EditPersonalDataModal({
             </ButtonIcon>
 
             <header className="border-b border-j-gray-200 px-4 py-4 pr-14 md:px-6 md:py-5 md:pr-20">
-                <div className="flex items-start gap-3">
-                    <span className="flex h-9 w-9 shrink-0 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-j-yellow-300 text-j-blue-800 shadow-sm">
-                        <UserRoundPen
-                            size={20}
-                        />
-                    </span>
+                <h2 className="text-lg font-extrabold text-j-blue-800 md:text-2xl">
+                    Editar dados pessoais
+                </h2>
 
-                    <div>
-                        <h2 className="text-lg font-extrabold text-j-blue-800 md:text-2xl">
-                            Editar dados pessoais
-                        </h2>
-
-                        <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            Atualize suas informações e
-                            sua foto de perfil.
-                        </p>
-                    </div>
-                </div>
+                <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
+                    Atualize suas informações e
+                    sua foto de perfil.
+                </p>
             </header>
 
-            <div className="mx-4 mt-3 grid grid-cols-2 gap-2 rounded-xl border border-j-gray-200 bg-j-gray-100 p-2 md:mx-6 md:mt-4 md:p-3">
+            <div className="mx-4 mt-3 grid grid-cols-1 gap-2 rounded-xl border border-j-gray-200 bg-j-gray-100 p-2 sm:grid-cols-2 md:mx-6 md:mt-4 md:p-3">
                 <ReadOnlyField
                     label="CPF"
                     value={formatCpf(
@@ -305,7 +293,7 @@ export function EditPersonalDataModal({
                     className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus"
                 />
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <InputRegister
                         type="date"
                         label="Data de nascimento"
@@ -324,7 +312,7 @@ export function EditPersonalDataModal({
                     />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <InputRegister
                         type="email"
                         label="E-mail"
@@ -345,11 +333,11 @@ export function EditPersonalDataModal({
                     />
                 </div>
 
-                <div className="-mx-4 mt-1 flex flex-row items-center justify-end gap-2 border-t border-j-gray-200 bg-j-gray-100 px-4 py-3 md:-mx-6 md:px-6">
+                <div className="-mx-4 mt-1 grid grid-cols-2 gap-2 border-t border-j-gray-200 bg-j-gray-100 px-4 py-3 sm:grid-cols-[repeat(2,10rem)] sm:justify-end md:-mx-6 md:px-6">
                     <Button
                         type="button"
                         onClick={setClose}
-                        className="border-2 border-j-gray-200 bg-j-white px-5 text-j-gray-600 hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-gray-700"
+                        className="h-11 justify-center border-2 border-red-700 bg-red-700 px-2 py-0 text-white hover:border-red-800 hover:bg-red-800 hover:text-white focus-visible:bg-red-800 focus-visible:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         Cancelar
                     </Button>
@@ -357,10 +345,9 @@ export function EditPersonalDataModal({
                     <Button
                         type="submit"
                         disabled={isSaving}
-                        className="gap-2 px-6"
+                        className="h-11 justify-center px-2 py-0"
                     >
-                        <Save size={16} />
-                        {isSaving ? "Salvando..." : "Salvar alterações"}
+                        {isSaving ? "Salvando..." : <><span className="sm:hidden">Salvar</span><span className="hidden sm:inline">Salvar alterações</span></>}
                     </Button>
                 </div>
             </Form>

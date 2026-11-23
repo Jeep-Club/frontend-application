@@ -16,7 +16,7 @@ const tagStyle = "px-3 py-1 text-xs font-bold rounded-md";
 export default function AdminMedicalProfilePage({ canUpdate, medicalProfile }: Props) {
   return (
     <div className="bg-slate-100 min-h-screen p-10">
-      <div className="max-w-7xl mx-auto flex flex-col gap-10">
+      <div className="flex flex-col gap-10">
         
         {/* Main Page Title - in the style of "Avisos" */}
         <h1 className="text-4xl font-bold text-slate-800 text-center mb-6">

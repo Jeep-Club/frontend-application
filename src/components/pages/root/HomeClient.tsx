@@ -52,6 +52,14 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
       doneBtnText: "Entendido ✓",
       skipMissingElement: true,
       steps: getHomeTourSteps(),
+      onDestroyed: () => {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("tour_completed_home", "true");
+          if (typeof window.dispatchEvent === "function") {
+            window.dispatchEvent(new Event("tour:progress-updated"));
+          }
+        }
+      },
     });
 
     driverRef.current = driverObj;
@@ -64,7 +72,6 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
   useEffect(() => {
     const forcedTarget = sessionStorage.getItem(FORCE_START_TOUR_KEY);
     if (forcedTarget === "/" || forcedTarget === "tour_completed_home") {
-      sessionStorage.removeItem(FORCE_START_TOUR_KEY);
       const timer = setTimeout(() => {
         handleHomeTour();
       }, 150);

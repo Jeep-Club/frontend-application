@@ -11,7 +11,7 @@ export const publications = [
     { id: 3, type: 'SERVICE', title: 'Serviço anunciado', details: { amount: 150, contactPhone: '12999999999' } },
 ].map(item => ({ ...item, authorUserId: 7, content: '<p>Conteúdo completo para os associados.</p>', publishedAt: instant, primaryImage: { storageKey: key, position: 0, primary: true }, likeCount: 0, commentCount: 0, likedByMe: false }));
 
-type ApiState = { calls: URL[]; completed: URL[]; feedStatus: number; detailStatus: number; mediaFails: boolean; actions: string[]; delay: number; pages: number; failPage: number; empty: boolean; unauthorizedOnce: boolean; refreshFails: boolean; eventOpen: boolean; eventStartsAt: string | null; grant: (actions: string[]) => Promise<void>; };
+type ApiState = { calls: URL[]; completed: URL[]; feedStatus: number; eventFeedStatus: number; detailStatus: number; mediaFails: boolean; actions: string[]; delay: number; pages: number; failPage: number; empty: boolean; unauthorizedOnce: boolean; refreshFails: boolean; eventOpen: boolean; eventStartsAt: string | null; registration: Record<string, unknown> | null; grant: (actions: string[]) => Promise<void>; };
 
 /** Synthetic API/session only. Runs real Next Server Functions without using production or weakening the GET-only pilot fixture. */
 export const test = base.extend<{ api: ApiState }>({
@@ -21,7 +21,7 @@ export const test = base.extend<{ api: ApiState }>({
         const sign = (data: object) => new SignJWT({ data }).setProtectedHeader({ alg: 'HS256' }).setExpirationTime('1h').sign(new TextEncoder().encode('playwright-local-session-not-for-production'));
         const appUrl = readLocalUrl('PLAYWRIGHT_APP_URL');
         const grant = async (actions: string[]) => { await context.addCookies([{ name: 'Permissions', value: await sign([{ module: 'PUBLICATIONS', actions }]), url: appUrl.origin, httpOnly: true }]); };
-        const state: ApiState = { calls: [], completed: [], feedStatus: 200, detailStatus: 200, mediaFails: false, actions: ['FEED_READ', 'PUBLICATION_READ'], delay: 0, pages: 1, failPage: -1, empty: false, unauthorizedOnce: false, refreshFails: false, eventOpen: false, eventStartsAt: null, grant };
+        const state: ApiState = { calls: [], completed: [], feedStatus: 200, eventFeedStatus: 200, detailStatus: 200, mediaFails: false, actions: ['FEED_READ', 'PUBLICATION_READ'], delay: 0, pages: 1, failPage: -1, empty: false, unauthorizedOnce: false, refreshFails: false, eventOpen: false, eventStartsAt: null, registration: null, grant };
         const errors: string[] = [];
         const forbidden: string[] = [];
         const allowed = [appUrl.origin, readLocalUrl('PLAYWRIGHT_STORYBOOK_URL').origin];
@@ -39,6 +39,7 @@ export const test = base.extend<{ api: ApiState }>({
             if (url.pathname === '/publications/feed') {
                 if (state.delay && url.searchParams.get('type') === 'NOTICE') await new Promise(resolve => setTimeout(resolve, state.delay));
                 if (state.feedStatus !== 200) return failure(state.feedStatus);
+                if (url.searchParams.get('type') === 'EVENT' && state.eventFeedStatus !== 200) return failure(state.eventFeedStatus);
                 const number = Number(url.searchParams.get('page') ?? 0);
                 if (number === state.failPage) return failure(500);
                 const size = Number(url.searchParams.get('size') ?? 20);
@@ -54,12 +55,39 @@ export const test = base.extend<{ api: ApiState }>({
                 const { primaryImage, ...detail } = item;
                 return json({ ...detail, details: state.eventOpen && detail.type === 'EVENT' ? { ...detail.details, status: 'OPEN' } : detail.details, images: [primaryImage, { storageKey: key.replace('0000.jpg', '0001.jpg'), position: 1, primary: false }] });
             }
+            if (/^\/events\/\d+\/registrations\/me$/.test(url.pathname) && request.method === 'GET') {
+                if (!state.registration) return json({ status: 404, code: 'EVENT_REGISTRATION_NOT_FOUND', detail: 'Nenhuma inscrição encontrada.' }, 404);
+                return json(state.registration);
+            }
+            if (/^\/events\/\d+\/registrations$/.test(url.pathname) && request.method === 'POST') {
+                const body = JSON.parse(await new Promise<string>(resolve => { let value = ''; request.on('data', chunk => { value += chunk; }); request.on('end', () => resolve(value)); })) as { allocations?: unknown[] };
+                state.registration = { id: 33, eventId: 2, userId: 7, status: 'PENDING_PAYMENT', allocations: body.allocations ?? [], createdAt: instant, confirmedAt: null, cancelledAt: null, unallocatedDependentIds: [] };
+                return json(state.registration);
+            }
+            if (url.pathname === '/vehicles/list/member' && request.method === 'GET') {
+                const content = [{ id: 17, nickname: 'Jipe sintético', plate: 'ABC1D23', photo: null, modelYear: 2020, model: 'Jeep', color: 'Verde', status: 'ACTIVE' }];
+                return json({ content, totalElements: 1, totalPages: 1, number: 0, size: 50, first: true, last: true, numberOfElements: 1, empty: false });
+            }
+            if (url.pathname === '/dependents' && request.method === 'GET') return json([]);
             if (url.pathname === '/media/images') {
                 if (state.mediaFails) return failure(404);
                 response.writeHead(200, { 'Content-Type': 'image/png' });
                 return response.end(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64'));
             }
             if (url.pathname === '/identity/me') return json({ id: 7, name: 'Associado sintético', cpf: '12345678909', birthDate: '1995-05-12', email: null, rg: null, phoneNumber: null, profilePhotoStorageKey: null, status: 'ACTIVE', createdAt: instant, updatedAt: null, disabledAt: null });
+            if (url.pathname === '/billing/me/member-charges') {
+                const charges = Array.from({ length: 56 }, (_, index) => ({
+                    id: index + 1, userId: 7, chargeDefinitionId: 1, chargeCycleId: index + 1, finalAmount: 100,
+                    dueDate: '2026-11-01', paymentAcceptancePolicy: 'AFTER_DUE_DATE', paymentAllowedUntil: null,
+                    status: index < 54 ? 'PENDING' : index === 54 ? 'PAID' : 'CANCELED',
+                    effectiveStatus: index < 52 ? 'PENDING' : index === 52 ? 'OVERDUE' : index === 53 ? 'EXPIRED' : index === 54 ? 'PAID' : 'CANCELED',
+                })).filter(charge => !url.searchParams.has('status') || charge.status === url.searchParams.get('status'));
+                const size = Number(url.searchParams.get('size') ?? 10);
+                const number = Number(url.searchParams.get('page') ?? 0);
+                const content = charges.slice(number * size, (number + 1) * size);
+                const totalPages = Math.ceil(charges.length / size);
+                return json({ content, totalElements: charges.length, totalPages, number, size, first: number === 0, last: number + 1 >= totalPages, numberOfElements: content.length, empty: content.length === 0 });
+            }
             if (url.pathname === '/authentication/refresh') {
                 if (state.refreshFails) return failure(401);
                 return json({ accessToken: 'synthetic-refreshed', refreshToken: 'synthetic-refresh', expiresInSeconds: 3600 });

@@ -42,7 +42,7 @@ export function MedicalProfileTab() {
     };
 
     if (isLoading) {
-        return <ProfileTabLoading label="Carregando perfil médico..." layout="medical" />;
+        return <ProfileTabLoading tab="medical" />;
     }
 
     if (isError) {

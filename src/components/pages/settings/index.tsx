@@ -20,10 +20,10 @@ import {
     Smartphone,
     Sun,
     UserRound,
-    WalletCards,
+    CircleDollarSign,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import styles from "./SettingsPage.module.css";
@@ -33,7 +33,9 @@ import { twMerge } from "tailwind-merge";
 
 import { Button } from "@/components/common/button";
 import { PageHeader } from "@/components/common/page-header";
-import { resetAllTours } from "@/hooks/useTour";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
+import { getChangePasswordTourSteps, getSettingsTourSteps } from "@/config/tourSteps";
+import { resetAllTours, usePageTour } from "@/hooks/useTour";
 
 type SectionKey = "account" | "activity" | "notifications" | "privacy" | "preferences" | "help";
 type OptionKey =
@@ -89,7 +91,7 @@ const SECTIONS: SettingSection[] = [
         options: [
             { key: "event-history", label: "Histórico de eventos", description: "Inscrições e participações", icon: CalendarCheck },
             { key: "account-activity", label: "Atividade da conta", description: "Alterações feitas no cadastro", icon: ListChecks },
-            { key: "financial-history", label: "Histórico financeiro", description: "Pagamentos e cobranças", icon: WalletCards },
+            { key: "financial-history", label: "Gestão de débitos", description: "Pagamentos e cobranças", icon: CircleDollarSign },
         ],
     },
     {
@@ -174,14 +176,22 @@ function Toggle({
 
 export default function SettingsPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const initialOption = searchParams.get("option");
+    const isPasswordDeepLink = initialOption === "password";
     const isDesktop = useMediaQuery("(min-width: 1024px)");
     const panelRef = useRef<HTMLDivElement>(null);
     const hasNavigated = useRef(false);
     const [direction, setDirection] = useState<"forward" | "back">("forward");
     const [sectionKey, setSectionKey] = useState<SectionKey>("account");
-    const [optionKey, setOptionKey] = useState<OptionKey>("personal-data");
-    const [mobileLevel, setMobileLevel] = useState<MobileLevel>("sections");
+    const [optionKey, setOptionKey] = useState<OptionKey>(isPasswordDeepLink ? "password" : "personal-data");
+    const [mobileLevel, setMobileLevel] = useState<MobileLevel>(isPasswordDeepLink ? "editor" : "sections");
     const { theme, setTheme, saveTheme } = useTheme();
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_settings",
+        steps: isPasswordDeepLink ? getChangePasswordTourSteps : getSettingsTourSteps,
+        autoStartOnFirstVisit: false,
+    });
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [preferences, setPreferences] = useState({
         events: true,
@@ -306,7 +316,7 @@ export default function SettingsPage() {
                                 </ul>
                             </div>
 
-                            <Button type="button" onClick={() => setIsChangingPassword(true)} className="mt-6 gap-2">
+                            <Button id="tour-settings-change-password-btn" type="button" onClick={() => setIsChangingPassword(true)} className="mt-6 gap-2">
                                 <LockKeyhole size={16} />
                                 Alterar minha senha
                             </Button>
@@ -322,7 +332,7 @@ export default function SettingsPage() {
                             toast("A alteração segura será integrada ao backend.");
                         }}
                     >
-                        <button type="button" onClick={() => setIsChangingPassword(false)} className="mb-5 flex cursor-pointer items-center gap-2 text-xs font-bold text-j-blue-800">
+                        <button type="button" onClick={() => setIsChangingPassword(false)} className="mb-5 flex items-center gap-2 text-xs font-bold bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white cursor-pointer">
                             <ArrowLeft size={16} />
                             Cancelar alteração
                         </button>
@@ -352,10 +362,10 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                            <button type="button" onClick={() => setIsChangingPassword(false)} className="cursor-pointer rounded-lg border border-j-gray-300 px-4 py-2.5 text-sm font-bold text-j-gray-600 hover:bg-j-gray-100">
+                            <button type="button" onClick={() => setIsChangingPassword(false)} className="rounded-lg border px-4 py-2.5 text-sm font-bold bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white cursor-pointer">
                                 Cancelar
                             </button>
-                            <Button type="submit" className="gap-2">
+                            <Button type="submit" className="gap-2 bg-green-700 text-white border-green-700 hover:bg-green-800 hover:text-white hover:border-green-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-green-800 focus-visible:text-white">
                                 <LockKeyhole size={16} />
                                 Confirmar nova senha
                             </Button>
@@ -398,7 +408,7 @@ export default function SettingsPage() {
                         <p className="text-sm leading-relaxed text-j-gray-500">
                             Consulte as cobranças, mensalidades, pagamentos e comprovantes vinculados à sua conta.
                         </p>
-                        <Button type="button" onClick={() => router.push("/financeiro")} className="mt-5 gap-2">Abrir histórico financeiro<ChevronRight size={16} /></Button>
+                        <Button type="button" onClick={() => router.push("/financeiro")} className="mt-5 gap-2">Abrir gestão de débitos<ChevronRight size={16} /></Button>
                     </div>
                 );
             case "notification-types":
@@ -440,9 +450,21 @@ export default function SettingsPage() {
     return (
         <div className="min-h-full w-full p-3 pb-8 md:p-4">
             <div className="flex w-full flex-col gap-6">
-                <PageHeader title="Configurações" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Configurações" }]} />
+                <PageHeader
+                    id="tour-settings-header"
+                    title="Configurações"
+                    breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Configurações" }]}
+                    actions={
+                        <TourHelpButton
+                            id="tour-header-help-btn"
+                            onClick={restartTour}
+                            label="Como configurar minha conta?"
+                            className="w-full justify-center sm:w-auto"
+                        />
+                    }
+                />
 
-                <div ref={panelRef} className="scroll-mt-3 rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+                <div id="tour-settings-panel" ref={panelRef} className="scroll-mt-3 rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                     <div className="sticky top-0 z-10 flex min-h-16 items-center gap-2 rounded-t-2xl border-b border-j-gray-200 bg-j-white/95 px-3 py-2 backdrop-blur-sm lg:hidden">
                         {mobileLevel !== "sections" && <button
                             type="button"
@@ -460,7 +482,7 @@ export default function SettingsPage() {
                     </div>
                     <div className="overflow-clip rounded-b-2xl lg:rounded-2xl">
                         <div key={`${mobileLevel}:${sectionKey}:${optionKey}`} data-direction={direction} className={twMerge(styles.pageTransition, "grid min-h-[min(65dvh,32rem)] w-full items-stretch lg:min-h-[calc(100dvh-10.5rem)] lg:grid-cols-[240px_290px_minmax(0,1fr)]")}>
-                            <aside data-settings-panel="sections" className={twMerge("border-j-gray-200 bg-j-blue-800 p-3 lg:block lg:border-r", mobileLevel !== "sections" && "hidden")}>
+                            <aside id="tour-settings-sections" data-settings-panel="sections" className={twMerge("border-j-gray-200 bg-j-blue-800 p-3 lg:block lg:border-r", mobileLevel !== "sections" && "hidden")}>
                                 <div className="px-3 pb-4 pt-2 text-j-white">
                                     <h2 tabIndex={-1} className="text-base font-black outline-none">Configurações</h2>
                                     <p className="mt-1 text-xs text-j-white/60">Escolha uma categoria</p>
@@ -470,7 +492,7 @@ export default function SettingsPage() {
                                         const Icon = item.icon;
                                         const active = item.key === sectionKey;
                                         return (
-                                            <button key={item.key} data-settings-key={item.key} aria-current={active ? "true" : undefined} type="button" onClick={() => chooseSection(item)} className={twMerge(styles.navigationButton, "flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-left", active ? "bg-j-yellow-300 text-j-blue-800" : "text-j-white/75 hover:bg-j-blue-700 hover:text-j-white")}>
+                                            <button id={item.key === "account" ? "tour-settings-section-account" : undefined} key={item.key} data-settings-key={item.key} aria-current={active ? "true" : undefined} type="button" onClick={() => chooseSection(item)} className={twMerge(styles.navigationButton, "flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-left", active ? "bg-j-yellow-300 text-j-blue-800" : "text-j-white/75 hover:bg-j-blue-700 hover:text-j-white")}>
                                                 <Icon size={18} className="shrink-0" /><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{item.label}</span><span className={twMerge("block truncate text-[11px]", active ? "text-j-blue-700" : "text-j-white/65")}>{item.description}</span></span><ChevronRight size={15} className="shrink-0" />
                                             </button>
                                         );
@@ -488,7 +510,7 @@ export default function SettingsPage() {
                                         const Icon = item.icon;
                                         const active = item.key === option.key;
                                         return (
-                                            <button key={item.key} data-settings-key={item.key} aria-current={active ? "true" : undefined} type="button" onClick={() => chooseOption(item)} className={twMerge(styles.navigationButton, "flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-xl border p-3 text-left transition-colors", active ? "border-j-blue-800 bg-j-white text-j-blue-800 shadow-sm" : "border-transparent text-j-gray-600 hover:border-j-gray-200 hover:bg-j-white")}>
+                                            <button id={item.key === "password" ? "tour-settings-option-password" : undefined} key={item.key} data-settings-key={item.key} aria-current={active ? "true" : undefined} type="button" onClick={() => chooseOption(item)} className={twMerge(styles.navigationButton, "flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-xl border p-3 text-left transition-colors", active ? "border-j-blue-800 bg-j-white text-j-blue-800 shadow-sm" : "border-transparent text-j-gray-600 hover:border-j-gray-200 hover:bg-background-tertiary")}>
                                                 <Icon size={18} className="shrink-0" /><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{item.label}</span><span className="block text-xs text-j-gray-500">{item.description}</span></span><ChevronRight size={15} className="shrink-0" />
                                             </button>
                                         );

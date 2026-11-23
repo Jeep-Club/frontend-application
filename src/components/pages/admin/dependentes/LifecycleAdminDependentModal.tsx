@@ -39,9 +39,9 @@ const ACTION_CONFIG: Record<
         successMessage: "Dependente ativado com sucesso!",
     },
     DISABLE: {
-        title: "Desativar dependente?",
-        verb: "desativar",
-        buttonText: "Desativar",
+        title: "Inativar dependente?",
+        verb: "inativar",
+        buttonText: "Inativar",
         pendingText: "Desativando...",
         successMessage: "Dependente desativado com sucesso!",
         note: "O dependente permanecerá no cadastro operacional com o CPF reservado, mas não poderá ser editado pelo titular enquanto estiver inativo.",
@@ -147,7 +147,7 @@ export function LifecycleAdminDependentModal({
                     type="button"
                     onClick={setClose}
                     disabled={mutation.isPending}
-                    className="flex-1 border-2 border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-gray-700"
+                    className="flex-1 border-2 bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white"
                 >
                     Cancelar
                 </Button>

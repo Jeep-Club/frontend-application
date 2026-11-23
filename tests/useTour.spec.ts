@@ -14,7 +14,15 @@ import {
     getRolesTourSteps,
     getVehiclesTourSteps,
     getToolsTourSteps,
+    getDependentsTourSteps,
+    getAgendaTourSteps,
+    getMemberFinancialTourSteps,
+    getServicesPageTourSteps,
+    getSettingsTourSteps,
+    getMembershipApplyTourSteps,
+    getForgotPasswordTourSteps,
     getTutorialsPageTourSteps,
+    getContextualHelpLabel,
     resolveRouteTourSteps,
     adminStep,
     welcomeStep,
@@ -22,6 +30,8 @@ import {
     mobileMenuStep,
     sidebarStep,
 } from "@/config/tourSteps";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { filterTutorials, TUTORIAL_CATALOG } from "@/components/pages/tutoriais";
 import { FORCE_START_TOUR_KEY, getTourStorageKey, requestTourStart } from "@/hooks/useTour";
 
@@ -32,7 +42,7 @@ describe("Tour Configuration & Logic", () => {
         expect(steps[1]).toMatchObject(sidebarStep);
         expect(steps[steps.length - 1]).toMatchObject(completionStep);
         expect(steps.map((step) => step.element)).toEqual([
-            undefined, "#tour-sidebar", "#tour-nav-feed", "#tour-avatar-container", undefined,
+            undefined, "#tour-sidebar", "#tour-nav-feed", "#tour-manage-account-btn", undefined,
         ]);
     });
 
@@ -40,7 +50,7 @@ describe("Tour Configuration & Logic", () => {
         const steps = getTourSteps(true, false);
         expect(steps.find((step) => step.element === "#tour-admin-link")).toMatchObject(adminStep);
         expect(steps.map((step) => step.element)).toEqual([
-            undefined, "#tour-sidebar", "#tour-nav-feed", "#tour-admin-link", "#tour-avatar-container", undefined,
+            undefined, "#tour-sidebar", "#tour-nav-feed", "#tour-admin-link", "#tour-manage-account-btn", undefined,
         ]);
     });
 
@@ -49,68 +59,42 @@ describe("Tour Configuration & Logic", () => {
         expect(steps[1]).toMatchObject(mobileMenuStep);
         expect(steps.find((step) => step.element === "#tour-admin-link")).toMatchObject(adminStep);
         expect(steps.map((step) => step.element)).toEqual([
-            undefined, "#tour-mobile-menu-btn", "#tour-nav-feed", "#tour-admin-link", "#tour-avatar-container", undefined,
+            undefined, "#tour-mobile-menu-btn", "#tour-nav-feed", "#tour-admin-link", "#tour-manage-account-btn", undefined,
         ]);
     });
 
     it("não deve incluir administração no mobile sem acesso administrativo", () => {
         const steps = getTourSteps(false, true);
         expect(steps.map((step) => step.element)).toEqual([
-            undefined, "#tour-mobile-menu-btn", "#tour-nav-feed", "#tour-avatar-container", undefined,
+            undefined, "#tour-mobile-menu-btn", "#tour-nav-feed", "#tour-manage-account-btn", undefined,
         ]);
     });
 
-    it.each([false, true])("deve sincronizar menus pelos callbacks (mobile=%s)", (isMobile) => {
+    it.each([false, true])("deve sincronizar a navegação da conta pelos callbacks (mobile=%s)", (isMobile) => {
         const setMobileMenuOpen = jest.fn();
         const steps = getTourSteps(true, isMobile, setMobileMenuOpen);
         const feed = steps.find((step) => step.element === "#tour-nav-feed")!;
         const admin = steps.find((step) => step.element === "#tour-admin-link")!;
-        const avatar = steps.find((step) => step.element === "#tour-avatar-container")!;
+        const account = steps.find((step) => step.element === "#tour-manage-account-btn")!;
         const completion = steps[steps.length - 1];
-        const events = new EventTarget();
-        const openAvatar = jest.fn();
-        const closeAvatar = jest.fn();
-        events.addEventListener("tour:open-avatar-menu", openAvatar);
-        events.addEventListener("tour:close-avatar-menu", closeAvatar);
-        const originalWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
-        Object.defineProperty(globalThis, "window", { configurable: true, value: events });
-
-        try {
-            if (isMobile) {
-                const menu = steps[1];
-                expect(menu.onDeselected).toEqual(expect.any(Function));
-                menu.onDeselected!(undefined, menu, {} as never);
-                expect(setMobileMenuOpen.mock.calls).toEqual([[true]]);
-                setMobileMenuOpen.mockClear();
-            }
-
-            for (const step of [feed, admin]) {
-                expect(step.onHighlightStarted).toEqual(expect.any(Function));
-                step.onHighlightStarted!(undefined, step, {} as never);
-                expect(setMobileMenuOpen.mock.calls).toEqual(isMobile ? [[true]] : []);
-                setMobileMenuOpen.mockClear();
-            }
-
-            expect(avatar.onHighlightStarted).toEqual(expect.any(Function));
-            avatar.onHighlightStarted!(undefined, avatar, {} as never);
-            expect(setMobileMenuOpen.mock.calls).toEqual(isMobile ? [[false]] : []);
-            expect(openAvatar).toHaveBeenCalledTimes(1);
-            expect(closeAvatar).not.toHaveBeenCalled();
+        if (isMobile) {
+            const menu = steps[1];
+            expect(menu.onDeselected).toEqual(expect.any(Function));
+            menu.onDeselected!(undefined, menu, {} as never);
+            expect(setMobileMenuOpen.mock.calls).toEqual([[true]]);
             setMobileMenuOpen.mockClear();
-
-            expect(avatar.onDeselected).toEqual(expect.any(Function));
-            avatar.onDeselected!(undefined, avatar, {} as never);
-            expect(closeAvatar).toHaveBeenCalledTimes(1);
-
-            expect(completion.onHighlightStarted).toEqual(expect.any(Function));
-            completion.onHighlightStarted!(undefined, completion, {} as never);
-            expect(setMobileMenuOpen.mock.calls).toEqual(isMobile ? [[false]] : []);
-            expect(closeAvatar).toHaveBeenCalledTimes(2);
-            expect(openAvatar).toHaveBeenCalledTimes(1);
-        } finally {
-            if (originalWindow) Object.defineProperty(globalThis, "window", originalWindow);
-            else Reflect.deleteProperty(globalThis, "window");
         }
+
+        for (const step of [feed, admin, account]) {
+            expect(step.onHighlightStarted).toEqual(expect.any(Function));
+            step.onHighlightStarted!(undefined, step, {} as never);
+            expect(setMobileMenuOpen.mock.calls).toEqual(isMobile ? [[true]] : []);
+            setMobileMenuOpen.mockClear();
+        }
+
+        expect(completion.onHighlightStarted).toEqual(expect.any(Function));
+        completion.onHighlightStarted!(undefined, completion, {} as never);
+        expect(setMobileMenuOpen.mock.calls).toEqual(isMobile ? [[false]] : []);
     });
 
     it("deve separar as chaves do localStorage entre administrador e membro comum", () => {
@@ -243,18 +227,76 @@ describe("Tour Configuration & Logic", () => {
             "#tour-tools-actions",
             "#tour-header-help-btn",
         ]);
+
+        expect(getDependentsTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-dependents-header",
+            "#tour-dependents-export",
+            "#tour-dependents-filters",
+            "#tour-dependents-list",
+            "#tour-dependents-actions",
+            "#tour-header-help-btn",
+        ]);
+    });
+
+    it("deve retornar os passos dos novos tutoriais de Agenda (/agenda), Financeiro (/financeiro), Serviços (/servicos), Configurações (/configuracoes), Solicitação (/membership/apply) e Recuperação de Senha (/forgot-password)", () => {
+        expect(getAgendaTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-agenda-header",
+            "#tour-agenda-controls",
+            "#tour-agenda-calendar",
+            "#tour-header-help-btn",
+        ]);
+
+        expect(getMemberFinancialTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-member-financial-header",
+            "#tour-member-financial-filters",
+            "#tour-member-financial-list",
+            "#tour-header-help-btn",
+        ]);
+
+        expect(getServicesPageTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-services-header",
+            "#tour-services-list",
+            "#tour-header-help-btn",
+        ]);
+
+        expect(getSettingsTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-settings-header",
+            "#tour-settings-sections",
+            "#tour-settings-panel",
+            "#tour-header-help-btn",
+        ]);
+
+        expect(getMembershipApplyTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-apply-card",
+            "#tour-apply-personal",
+            "#tour-apply-message",
+            "#tour-apply-submit",
+        ]);
+
+        expect(getForgotPasswordTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-forgot-card",
+            "#tour-forgot-cpf",
+            "#tour-forgot-back",
+        ]);
     });
 
     it("deve resolver dinamicamente os passos do tutorial conforme a rota atual", () => {
         expect(resolveRouteTourSteps("/", { canAccessAdmin: false })).toEqual(getHomeTourSteps());
         expect(resolveRouteTourSteps("/login", { canAccessAdmin: false, isMobile: true })).toEqual(getLoginTourSteps(true));
+        expect(resolveRouteTourSteps("/membership/apply", { canAccessAdmin: false })).toEqual(getMembershipApplyTourSteps(false));
+        expect(resolveRouteTourSteps("/forgot-password", { canAccessAdmin: false })).toEqual(getForgotPasswordTourSteps(false));
         expect(resolveRouteTourSteps("/profile", { canAccessAdmin: false })).toEqual(getProfileTourSteps(false));
+        expect(resolveRouteTourSteps("/agenda", { canAccessAdmin: false })).toEqual(getAgendaTourSteps(false));
+        expect(resolveRouteTourSteps("/financeiro", { canAccessAdmin: false })).toEqual(getMemberFinancialTourSteps(false));
+        expect(resolveRouteTourSteps("/servicos", { canAccessAdmin: false })).toEqual(getServicesPageTourSteps(false));
+        expect(resolveRouteTourSteps("/configuracoes", { canAccessAdmin: false })).toEqual(getSettingsTourSteps(false));
         expect(resolveRouteTourSteps("/tutoriais", { canAccessAdmin: false })).toEqual(getTutorialsPageTourSteps(false));
         expect(resolveRouteTourSteps("/admin", { canAccessAdmin: true })).toEqual(getAdminPanelTourSteps(false));
         expect(resolveRouteTourSteps("/admin/dados-medicos", { canAccessAdmin: true })).toEqual(getMedicalProfilesTourSteps(false));
         expect(resolveRouteTourSteps("/admin/pagamentos", { canAccessAdmin: true })).toEqual(getPaymentsTourSteps(false));
         expect(resolveRouteTourSteps("/admin/gestao-financeira", { canAccessAdmin: true })).toEqual(getFinancialTourSteps(false));
         expect(resolveRouteTourSteps("/admin/gestao-publicacoes", { canAccessAdmin: true })).toEqual(getPublicationsTourSteps(false));
+        expect(resolveRouteTourSteps("/admin/publications", { canAccessAdmin: true })).toEqual(getPublicationsTourSteps(false));
         expect(resolveRouteTourSteps("/admin/users", { canAccessAdmin: true })).toEqual(getUsersTourSteps(false));
         expect(resolveRouteTourSteps("/admin/users", { canAccessAdmin: true, tab: "applications" })).toEqual(getMembershipApplicationsTourSteps(false));
         expect(resolveRouteTourSteps("/admin/roles-permissoes", { canAccessAdmin: true })).toEqual(getRolesTourSteps(false));
@@ -273,8 +315,19 @@ describe("Tour Configuration & Logic", () => {
         expect(memberResults.every((item) => item.category === "member")).toBe(true);
         expect(memberResults.map((item) => item.id)).toEqual([
             "feed-home",
+            "member-vehicles",
+            "member-medical",
             "profile-account",
+            "member-dependents",
+            "member-tools",
+            "member-agenda",
+            "member-financial",
+            "member-services",
+            "member-settings",
+            "member-change-password",
+            "member-password-recovery",
             "public-landing-home",
+            "member-membership-apply",
             "tutorials-hub",
         ]);
 
@@ -284,7 +337,47 @@ describe("Tour Configuration & Logic", () => {
             "como faço para cadastrar meu veículo 4x4",
             "all",
         );
-        expect(vehicleQueryResults[0]?.id).toBe("profile-account");
+        expect(vehicleQueryResults[0]?.id).toBe("member-vehicles");
+
+        const aondeQueryResults = filterTutorials(
+            TUTORIAL_CATALOG,
+            memberPermissions,
+            "aonde eu cadastro meu veiculo",
+            "all",
+        );
+        expect(aondeQueryResults[0]?.id).toBe("member-vehicles");
+
+        const synonymCarQuery = filterTutorials(
+            TUTORIAL_CATALOG,
+            memberPermissions,
+            "onde coloco meu carro",
+            "all",
+        );
+        expect(synonymCarQuery[0]?.id).toBe("member-vehicles");
+
+        const typoVehicleQuery = filterTutorials(
+            TUTORIAL_CATALOG,
+            memberPermissions,
+            "como cadastrar veiclo",
+            "all",
+        );
+        expect(typoVehicleQuery[0]?.id).toBe("member-vehicles");
+
+        expect(
+            filterTutorials(TUTORIAL_CATALOG, memberPermissions, "ficha medica", "all")[0]?.id,
+        ).toBe("member-medical");
+        expect(
+            filterTutorials(TUTORIAL_CATALOG, memberPermissions, "baixar carteirinha", "all")[0]?.id,
+        ).toBe("profile-account");
+        expect(
+            filterTutorials(TUTORIAL_CATALOG, memberPermissions, "calendario de trilhas", "all")[0]?.id,
+        ).toBe("member-agenda");
+        expect(
+            filterTutorials(TUTORIAL_CATALOG, memberPermissions, "ver minha mensalidade", "all")[0]?.id,
+        ).toBe("member-financial");
+        expect(
+            filterTutorials(TUTORIAL_CATALOG, memberPermissions, "esqueci minha senha", "all")[0]?.id,
+        ).toBe("member-password-recovery");
 
         const adminPermissions: PermissionModule[] = [
             { module: "VEHICLES", actions: ["VEHICLE_READ"] },
@@ -307,11 +400,58 @@ describe("Tour Configuration & Logic", () => {
         expect(paymentDoubtResults[0]?.id).toBe("admin-payments");
     });
 
+    it("deve possuir imagens desktop e mobile existentes para todos os tutoriais de associados", () => {
+        const memberTutorials = TUTORIAL_CATALOG.filter((item) => item.category === "member");
+        expect(memberTutorials.length).toBeGreaterThan(0);
+
+        for (const tutorial of memberTutorials) {
+            expect(tutorial.imageSteps?.length).toBeGreaterThan(0);
+            for (const step of tutorial.imageSteps ?? []) {
+                const desktopFile = path.join(process.cwd(), "public", step.desktopSrc.replace(/^\//, ""));
+                const mobileFile = path.join(process.cwd(), "public", step.mobileSrc.replace(/^\//, ""));
+                expect(existsSync(desktopFile)).toBe(true);
+                expect(existsSync(mobileFile)).toBe(true);
+                expect(step.caption.trim().length).toBeGreaterThan(0);
+                expect(step.alt.trim().length).toBeGreaterThan(0);
+            }
+        }
+    });
+
+    it("deve retornar frases contextuais e compactas no botão de ajuda conforme a página", () => {
+        expect(getContextualHelpLabel("/feed")).toEqual({
+            full: "Ajuda com o mural?",
+            compact: "Ajuda: Mural",
+        });
+        expect(getContextualHelpLabel("/profile")).toEqual({
+            full: "Ajuda com seu perfil?",
+            compact: "Ajuda: Perfil",
+        });
+        expect(getContextualHelpLabel("/agenda")).toEqual({
+            full: "Ajuda com a agenda?",
+            compact: "Ajuda: Agenda",
+        });
+        expect(getContextualHelpLabel("/financeiro")).toEqual({
+            full: "Ajuda com financeiro?",
+            compact: "Ajuda: Financeiro",
+        });
+        expect(getContextualHelpLabel("/configuracoes")).toEqual({
+            full: "Ajuda com configurações?",
+            compact: "Ajuda: Ajustes",
+        });
+        expect(getContextualHelpLabel("/admin/users", "applications")).toEqual({
+            full: "Ajuda com solicitações?",
+            compact: "Ajuda: Pedidos",
+        });
+        expect(getContextualHelpLabel("/rota-desconhecida")).toEqual({
+            full: "Precisa de ajuda?",
+            compact: "Ajuda?",
+        });
+    });
+
     it("deve retornar os passos da página /tutoriais e registrar o alvo no sessionStorage ao solicitar início de tutorial", () => {
         expect(getTutorialsPageTourSteps(false).map((step) => step.element)).toEqual([
             "#tour-tutorials-header",
             "#tour-tutorials-search",
-            "#tour-tutorials-categories",
             "#tour-tutorials-results",
             "#tour-tutorials-start-btn",
             "#tour-header-help-btn",

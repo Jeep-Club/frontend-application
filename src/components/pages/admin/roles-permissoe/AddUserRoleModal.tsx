@@ -89,7 +89,7 @@ export function AddUserRoleModal({ userId, userName, currentRoleIds }: AddUserRo
                             type="button"
                             onClick={() => setPendingRole(null)}
                             disabled={mutation.isPending}
-                            className="flex-1 border-2 border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-gray-700"
+                            className="flex-1 border-2 bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white"
                         >
                             Cancelar
                         </Button>
@@ -97,7 +97,7 @@ export function AddUserRoleModal({ userId, userName, currentRoleIds }: AddUserRo
                             type="button"
                             onClick={() => mutation.mutate(pendingRole)}
                             disabled={mutation.isPending}
-                            className="flex-1 bg-green-700 text-white hover:bg-green-800 hover:text-white"
+                            className="flex-1 bg-green-700 text-white border-green-700 hover:bg-green-800 hover:text-white hover:border-green-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-green-800 focus-visible:text-white"
                         >
                             {mutation.isPending ? "Atribuindo..." : "Confirmar"}
                         </Button>

@@ -207,7 +207,7 @@ export function UserMembershipNumberModal({ user, onLoad, onSave, onSuccess }: U
                             type="button"
                             onClick={setClose}
                             disabled={isSaving}
-                            className="border border-j-gray-300 bg-j-white text-j-gray-700 hover:bg-j-gray-100 hover:text-j-gray-900"
+                            className="border bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white"
                         >
                             Cancelar
                         </Button>

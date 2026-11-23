@@ -8,6 +8,7 @@ import { Eye, ShieldX } from "lucide-react";
 import { listPaymentsAction } from "@/server/actions/payments";
 import { Button } from "@/components/common/button";
 import { PageHeader } from "@/components/common/page-header";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
 import { getPaymentsTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
 import { ListPagination } from "@/components/common/table/ListPagination";
@@ -30,7 +31,7 @@ export default function PaymentsPage({
     const [isNavigating, startTransition] = useTransition();
     const permissions = useUserStore(state => state.permissions);
     const canRead = hasPermission(permissions, paymentPermissions.module, paymentPermissions.read);
-    usePageTour({
+    const { restartTour } = usePageTour({
         storageKey: "tour_completed_admin_payments",
         steps: getPaymentsTourSteps,
         autoStartOnFirstVisit: false,
@@ -59,7 +60,16 @@ export default function PaymentsPage({
                     { label: "Home", href: "/feed" },
                     { label: "Gestão Administrativa", href: "/admin" },
                     { label: "Análise de pagamentos" },
-                ]} />}
+                ]} actions={
+                    canRead ? (
+                        <TourHelpButton
+                            id="tour-header-help-btn"
+                            onClick={restartTour}
+                            label="Como analisar pagamentos?"
+                            className="w-full justify-center sm:w-auto"
+                        />
+                    ) : undefined
+                } />}
                 {!canRead ? (
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
                         <ShieldX size={42} className="mb-3 text-j-gray-400" />
@@ -103,7 +113,7 @@ export default function PaymentsPage({
                                                         <td className="px-4 py-4">{methodLabels[payment.paymentMethod]}</td>
                                                         <td className="whitespace-nowrap px-4 py-4">{formatDate(payment.paidAt)}</td>
                                                         <td className="px-4 py-4"><PaymentStatusBadge status={payment.status} /></td>
-                                                        <td className="px-4 py-4"><Link id={index === 0 ? "tour-payments-detail-btn" : undefined} href={`/admin/pagamentos/${payment.id}`} aria-label={`Analisar pagamento ${payment.id}`} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-j-blue-700 hover:bg-blue-100"><Eye size={16} /> Detalhes</Link></td>
+                                                        <td className="px-4 py-4"><Link id={index === 0 ? "tour-payments-detail-btn" : undefined} href={`/admin/pagamentos/${payment.id}`} aria-label={`Analisar pagamento ${payment.id}`} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-j-blue-700 hover:bg-blue-100 record-action"><Eye size={16} /> Detalhes</Link></td>
                                                     </tr>)}
                                                 </tbody>
                                             </table>
