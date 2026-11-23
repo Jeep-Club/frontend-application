@@ -78,6 +78,11 @@ expected-fail, infraestrutura e proteção contra fórmulas em células de CSV.
   Erros específicos são simulados por um proxy local; os demais dados e contratos
   vêm da API local. Esses testes não cobrem todas as actions da aplicação.
 
+  Ao usar um build Next isolado via `JEEP_PLAYWRIGHT`/`JEEP_PLAYWRIGHT_ID`, informe
+  seu diretório em `E2E_NEXT_BUILD_DIR`. Os testes que invocam Server Actions por
+  HTTP precisam ler o manifesto do mesmo build servido, evitando referências
+  antigas de `.next/server/server-reference-manifest.json`.
+
 ## Feed e detalhe de publicações (WEB-224)
 
 O feed usa leitura no servidor e filtros/paginação na URL. As rotas `/feed/new`,

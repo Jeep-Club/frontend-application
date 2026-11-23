@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
-import { Button as AriaButton, Dialog, DialogTrigger, Popover } from "react-aria-components";
+import { Button as AriaButton, Dialog, DialogTrigger, Modal, ModalOverlay, Popover } from "react-aria-components";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
 import type { ActionFailure } from "@/utils/http/ActionError";
-import { CalendarDays, ChevronRight, Megaphone, Newspaper, Pencil, Plus, Share2, Wrench } from "lucide-react";
+import { CalendarDays, ChevronRight, Menu, Megaphone, Newspaper, Pencil, Plus, Share2, Wrench } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { usePageTour } from '@/hooks/useTour';
 import { getFeedTourSteps } from '@/config/tourSteps';
@@ -219,6 +219,19 @@ export default function Feed({ data, error, page = 0 }: { data?: PageResponse<Pu
 
                                 </div>
 
+                                <DialogTrigger>
+                                    <AriaButton aria-label="Abrir painel de eventos, aniversariantes e avisos" className="flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full border border-input-border text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-input-border-focus lg:hidden"><Menu size={20} aria-hidden="true" /></AriaButton>
+                                    <ModalOverlay isDismissable className="fixed inset-0 z-[100] flex justify-end bg-black/60">
+                                        <Modal className="h-dvh w-[min(24rem,100%)] overflow-y-auto bg-background p-4">
+                                            <Dialog aria-label="Informações do clube" className="outline-none">
+                                                {({ close }) => <>
+                                                    <AriaButton onPress={close} className="mb-4 min-h-11 cursor-pointer rounded-lg border border-input-border px-4 font-bold text-primary focus-visible:outline-2 focus-visible:outline-input-border-focus">Fechar painel lateral</AriaButton>
+                                                    <div onClickCapture={event => { if ((event.target as Element).closest('a[href]')) close(); }}><FeedSidebar /></div>
+                                                </>}
+                                            </Dialog>
+                                        </Modal>
+                                    </ModalOverlay>
+                                </DialogTrigger>
                                 <DialogTrigger isOpen={periodOpen} onOpenChange={setPeriodOpen}>
                                     <AriaButton aria-label="Filtrar por período" className={`flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full border border-input-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-input-border-focus ${publishedFrom || publishedTo ? 'bg-button-primary-bg text-button-primary-text' : 'bg-background text-primary hover:bg-background-tertiary'}`}><CalendarDays size={21} aria-hidden="true" /></AriaButton>
                                     <Popover placement="bottom end" className="z-[100] w-[min(38rem,calc(100vw-2rem))] outline-none"><Dialog aria-label="Filtrar publicações por período" className="outline-none"><FeedPeriodFilters publishedFrom={params.get('publishedFrom') ?? undefined} publishedTo={params.get('publishedTo') ?? undefined} onApply={period => { applyFilters({ type, ...period }); setPeriodOpen(false); }} /></Dialog></Popover>
@@ -488,7 +501,7 @@ export default function Feed({ data, error, page = 0 }: { data?: PageResponse<Pu
                             </nav>}
                         </>
                 </div>
-                <FeedSidebar />
+                <div className="hidden lg:block"><FeedSidebar /></div>
             </div>
         </div>
     );

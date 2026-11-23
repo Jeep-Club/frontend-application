@@ -76,7 +76,7 @@ test.beforeAll(async () => {
     test.setTimeout(120000);
     seed = await seedLocalContracts();
     console.log(`Local mock records: user=${seed.userId}, tool=${seed.tool.id}, otherOwnerTool=${seed.adminTool.id}`);
-    manifest = JSON.parse(await fs.readFile('.next/server/server-reference-manifest.json', 'utf8'));
+    manifest = JSON.parse(await fs.readFile(`${process.env.E2E_NEXT_BUILD_DIR || '.next'}/server/server-reference-manifest.json`, 'utf8'));
     api = http.createServer(async (req, res) => {
         try {
             const chunks = [];

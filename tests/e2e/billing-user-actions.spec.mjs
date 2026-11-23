@@ -52,7 +52,10 @@ for (const operation of ['create', 'update', 'archive']) for (const scenario of 
 
 for (const scenario of scenarios) {
     test(`BILLING gerar ciclo: ${scenario.key}`, annotate('generateChargeCycle', 'Gerar cobrança', scenario, scenario.key === 'sucesso' ? 'Confirma a geração do ciclo de cobrança.' : 'Exibe aviso de erro e mantém o código e vencimento para nova tentativa.', 'billing/chargeCycles/generate', 'generateChargeCycleAction'), async ({ page }) => {
-        const record = await definition(); await openDefinitions(page);
+        const record = await definition();
+        const member = await app.member();
+        await app.api(`billing/charge-definitions/${record.id}/assignments/users/${member.userId}`, { method: 'POST', token: app.admin.accessToken });
+        await openDefinitions(page);
         await page.getByRole('button', { name: `Gerar cobrança para ${record.name}`, exact: true }).click();
         const code = `UI-CYCLE-${Date.now()}`;
         await modal(page).getByLabel(/^Código do ciclo/).fill(code);
@@ -96,13 +99,13 @@ for (const operation of ['confirm', 'reject']) for (const scenario of scenarios)
         const card = page.getByRole('article').filter({ has: page.getByText(`#${charge.id}`, { exact: true }) });
         await card.getByRole('button', { name: operation === 'confirm' ? 'Confirmar pagamento' : 'Rejeitar pagamento', exact: true }).click();
         const dialog = page.getByRole('dialog', { name: operation === 'confirm' ? 'Confirmar pagamento' : 'Rejeitar pagamento', exact: true });
-        if (operation === 'reject') await dialog.getByLabel('Motivo da rejeição', { exact: true }).fill('Comprovante ilegível no teste.');
+        if (operation === 'reject') await dialog.getByRole('textbox', { name: 'Motivo da rejeição', exact: true }).fill('Comprovante ilegível no teste.');
         // Read details first; only the mutation response is failed.
         await expect(dialog.getByRole('button', { name: 'Confirmar operação', exact: true })).toBeEnabled();
         const paymentId = (await dialog.getByRole('heading').textContent()).match(/#(\d+)/)[1];
         if (scenario.key !== 'sucesso') app.fail({ ...scenario, method: 'PATCH', path: `/billing/member-payments/${paymentId}/${operation}`, detail: message });
         await dialog.getByRole('button', { name: 'Confirmar operação', exact: true }).click();
         if (scenario.key === 'sucesso') await expect(toast(page).filter({ hasText: 'Operação concluída.' })).toBeVisible();
-        else { await failed(page, scenario); await expect(dialog.getByRole('alert')).toContainText(scenario.network ? /conectar ao servidor|internet/i : message); await expect(dialog.getByRole('button', { name: 'Confirmar operação', exact: true })).toBeEnabled(); if (operation === 'reject') await expect(dialog.getByLabel('Motivo da rejeição', { exact: true })).toHaveValue('Comprovante ilegível no teste.'); }
+        else { await failed(page, scenario); await expect(dialog.getByRole('alert')).toContainText(scenario.network ? /conectar ao servidor|internet/i : message); await expect(dialog.getByRole('button', { name: 'Confirmar operação', exact: true })).toBeEnabled(); if (operation === 'reject') await expect(dialog.getByRole('textbox', { name: 'Motivo da rejeição', exact: true })).toHaveValue('Comprovante ilegível no teste.'); }
     });
 }

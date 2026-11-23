@@ -190,7 +190,7 @@ test('root and read-only users view medical details without calling a nonexisten
 });
 
 async function callServerAction(request, module, exportedName, args, session) {
-    const manifest = JSON.parse(await fs.readFile('.next/server/server-reference-manifest.json', 'utf8'));
+    const manifest = JSON.parse(await fs.readFile(`${process.env.E2E_NEXT_BUILD_DIR || '.next'}/server/server-reference-manifest.json`, 'utf8'));
     const entry = Object.entries(manifest.node).find(([, item]) => item.filename === `src/server/actions/${module}.ts` && item.exportedName === exportedName);
     expect(entry, `${module}#${exportedName}`).toBeDefined();
     const response = await request.post(`${baseURL}/login`, {

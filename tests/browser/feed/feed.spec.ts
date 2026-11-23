@@ -43,15 +43,10 @@ test('agenda mantém resumo e detalhe compartilhado por provider', async ({ page
 test('criação contextual existente continua disponível sem executar escrita', async ({ page, api }) => {
     await api.grant(['FEED_READ', 'NOTICE_CREATE']);
     await page.goto('/feed?type=NOTICE');
-    if (page.viewportSize()!.width < 1024) {
-        await page.getByRole('button', { name: 'Criar publicação', exact: true }).click();
-        await page.getByRole('menuitem', { name: 'Publicar aviso' }).click();
-    } else {
-        await page.getByRole('button', { name: 'Postar', exact: true }).click();
-        await page.getByRole('dialog').getByRole('button', { name: 'Publicar aviso' }).click();
-    }
-    await expect(page.getByRole('dialog').getByRole('heading', { name: 'Divulgar aviso' })).toBeVisible();
-    await page.getByRole('dialog').getByRole('button', { name: 'Fechar', exact: true }).click();
+    await page.getByRole('button', { name: 'Criar aviso', exact: true }).click();
+    await expect(page).toHaveURL(/\/feed\/new\?type=NOTICE/);
+    await expect(page.getByRole('dialog').getByRole('heading', { name: 'Criar aviso' })).toBeVisible();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancelar', exact: true }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page).toHaveURL(/type=NOTICE/);
 });
@@ -100,9 +95,11 @@ test('sidebar distingue erro de consulta e usa tamanho solicitado', async ({ pag
 });
 
 test('sidebar interrompe paginação em erro e recupera sem toasts duplicados', async ({ page, api }) => {
-    api.feedStatus = 503;
+    api.eventFeedStatus = 503;
+    api.noticeFeedStatus = 503;
     await page.goto('/feed');
-    const sidebar = page.getByRole('complementary', { name: 'Informações do clube' });
+    if (page.viewportSize()!.width < 1024) await page.getByRole('button', { name: 'Abrir painel de eventos, aniversariantes e avisos' }).click();
+    const sidebar = page.getByRole(page.viewportSize()!.width < 1024 ? 'dialog' : 'complementary', { name: 'Informações do clube' });
     await expect(sidebar.getByRole('button', { name: 'Tentar eventos novamente' })).toBeVisible();
     await expect(sidebar.getByRole('button', { name: 'Tentar avisos novamente' })).toBeVisible();
     const count = () => api.calls.filter(url => url.pathname === '/publications/feed' && url.searchParams.get('type') === 'EVENT').length;
@@ -111,7 +108,7 @@ test('sidebar interrompe paginação em erro e recupera sem toasts duplicados', 
     const initialRequests = count();
     expect(initialRequests).toBeGreaterThan(0);
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-    api.feedStatus = 200;
+    api.eventFeedStatus = 200;
     await sidebar.getByRole('button', { name: 'Tentar eventos novamente' }).click();
     await expect(sidebar.getByRole('button', { name: 'Tentar eventos novamente' })).toHaveCount(0);
     await expect.poll(count).toBe(initialRequests + 1);
@@ -157,7 +154,16 @@ test('período exato, tipos, deep link e retorno preservam contexto', async ({ p
     await expect(page.getByRole('dialog').getByText('Serviço anunciado', { exact: true })).toBeVisible();
 });
 
-for (const [status, message] of [[402, 'Acesso restrito pela Membership.'], [403, 'Acesso negado'], [404, 'Publicação não encontrada'], [503, 'temporariamente indisponível']] as const) {
+test('detalhe 402 encaminha aos débitos sem expor a publicação ou encerrar a sessão', async ({ page, api }) => {
+    api.detailStatus = 402;
+    await page.goto('/feed/1');
+    await expect(page).toHaveURL(/\/financeiro$/);
+    expect(api.calls.some(url => url.pathname === '/publications/1')).toBe(true);
+    await expect(page.getByText('Conteúdo completo para os associados.', { exact: true })).toHaveCount(0);
+    expect((await page.context().cookies()).some(cookie => cookie.name === 'AuthAccessToken')).toBe(true);
+});
+
+for (const [status, message] of [[403, 'Acesso negado'], [404, 'Publicação não encontrada'], [503, 'temporariamente indisponível']] as const) {
     test(`detalhe ${status} não vira vazio nem logout`, async ({ page, api }) => {
         api.detailStatus = status;
         await page.goto('/feed/1');

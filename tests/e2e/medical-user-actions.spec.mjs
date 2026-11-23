@@ -56,7 +56,7 @@ for (const scenario of cases) {
         await page.getByTitle('Editar dados pessoais', { exact: true }).click();
         const modal = personalModal(page);
         const name = `Dados pessoais UI ${Date.now()}`;
-        await modal.getByLabel('Nome completo', { exact: true }).fill(name);
+        await modal.getByLabel(/^Nome completo/).fill(name);
         await modal.getByLabel('E-mail', { exact: true }).fill(`medical.ui.${Date.now()}@example.test`);
         await modal.getByLabel('RG', { exact: true }).fill('123456789');
         await modal.getByLabel('Telefone', { exact: true }).fill('12999999999');
@@ -67,7 +67,7 @@ for (const scenario of cases) {
             await expect(modal).toHaveCount(0);
             await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
             await page.getByTitle('Editar dados pessoais', { exact: true }).click();
-            await expect(modal.getByLabel('Nome completo', { exact: true })).toHaveValue(name);
+            await expect(modal.getByLabel(/^Nome completo/)).toHaveValue(name);
             await modal.getByLabel('RG', { exact: true }).fill('');
             await modal.getByLabel('Telefone', { exact: true }).fill('');
             await modal.getByRole('button', { name: 'Salvar alterações', exact: true }).click();
@@ -77,7 +77,7 @@ for (const scenario of cases) {
             await expect(modal.getByLabel('Telefone', { exact: true })).toHaveValue('');
         } else {
             await errorVisible(page, scenario);
-            await expect(modal.getByLabel('Nome completo', { exact: true })).toHaveValue(name);
+            await expect(modal.getByLabel(/^Nome completo/)).toHaveValue(name);
             await expect(modal.getByRole('button', { name: 'Salvar alterações', exact: true })).toBeEnabled();
             expect((await app.api('identity/me', { token: member.session.accessToken })).name).toBe(member.name);
         }

@@ -2,6 +2,7 @@ import { createPublicationSchema, eventLocalDateTime, publicationFormSchema } fr
 import { createPublicationAction } from "@/server/actions/publications/create";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
+import { pendingServiceRequestSchema } from "@/schemas/publications/admin";
 
 jest.mock("@/services/fetchWrapper/actionFetchWrapper", () => ({ __esModule: true, default: jest.fn() }));
 jest.mock("@/utils/permission/actionPermissions", () => ({ haveActionPermission: jest.fn() }));
@@ -11,6 +12,10 @@ const eventForm = { type: "EVENT", title: "Evento", content: "Conteúdo", photos
 
 describe("Criação de publicações", () => {
     beforeEach(() => { jest.resetAllMocks(); });
+    it('valida o solicitante de serviço pelo requestedByUserId retornado pelo backend', () => {
+        expect(pendingServiceRequestSchema.safeParse({ ...base, id: 1, requestedByUserId: 7, status: 'PENDING' }).success).toBe(true);
+        expect(pendingServiceRequestSchema.safeParse({ ...base, id: 1, authorUserId: 7, status: 'PENDING' }).success).toBe(false);
+    });
     it('valida DTO completo e estado DRAFT na resposta de criação', async () => {
         jest.mocked(haveActionPermission).mockResolvedValue(true);
         jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 201, data: { id: 1 } });
