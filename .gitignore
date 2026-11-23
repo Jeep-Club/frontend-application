@@ -20,6 +20,14 @@
 # next.js
 /.next/
 /.next-playwright/
+/.next-playwright-*/
+/build-e2e.log
+/playwright-install.log
+/playwright-discovery.log
+/profile-smoke.log
+/user-actions-smoke.log
+/test-results-profile-smoke/
+/test-results-user-actions-smoke/
 /out/
 
 # production
@@ -53,3 +61,8 @@ next-env.d.ts
 
 # Storybook
 debug-storybook.log*
+
+# Artefatos locais de testes e diagnóstico
+/test-artifacts/
+/*.log
+/test-results-*/

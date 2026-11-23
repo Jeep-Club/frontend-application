@@ -4,12 +4,18 @@ Os comandos disponíveis ficam no [README](../README.md). Este guia descreve o a
 
 ## Planilha de execução e cenários de erro
 
-`npm run test:docs` executa Jest e Playwright sequencialmente e gera
-`tests/docs/<início-ISO>-<id>/resultados.csv`, `jest.json`, `playwright.json` e
-`execucao.json`. A pasta é ignorada pelo Git. Sem filtros, executa as suítes
-completas configuradas; exige o mesmo ambiente e navegadores do Playwright normal.
-  O coverage nativo do Jest fica em `tests/docs/<execução>/coverage/` e o relatório Playwright em `tests/docs/<execução>/playwright-report/`
-(HTML, capturas e traces ligados ao resultado). Não é necessário instalar biblioteca
+`npm run test:docs` executa o Jest completo, todos os projetos Playwright de navegador
+e a suíte E2E com backend local. Gera uma pasta nova em `tests/docs/<início-ISO>-<id>/`,
+sem ZIP, com `index.html`, `resultados.csv`, `inventario-acoes.json`,
+`resultados-completos.json` e `execucao.json`. A pasta é ignorada pelo Git.
+Os relatórios Jest ficam em `jest/` (resultados JSON, HTML de resultados, log e
+coverage HTML/LCOV/JSON/Cobertura). Os relatórios nativos Playwright ficam em
+`playwright-*/` (HTML, JSON, logs, screenshots e traces de falhas).
+Sem filtros, os grupos de navegador rodam dois por vez com Next, API sintética e
+diretório de build próprios; compartilham apenas o Storybook de leitura. Os testes
+de contrato/UI com API real rodam depois desses grupos, usando o backend local.
+Exige build de produção atualizado, backend isolado ativo e navegadores instalados.
+Não é necessário instalar biblioteca
 de planilhas: CSV UTF-8 com BOM, separador `;` e campos escapados abre no Excel.
 
 Exemplo focado nos erros do feed, mantendo **todo o Jest**:
@@ -24,7 +30,7 @@ encerramento automático de servidores não funciona, pode-se iniciar o Next de
 testes separadamente com o ambiente sintético da configuração e definir
 `JEEP_TEST_EXTERNAL_SERVER=1` para o config `feed-local`. Não usar API real.
 
-As primeiras colunas descrevem a tela, erro simulado, comportamento esperado e resultado.
+As primeiras colunas descrevem a tela, ação do usuário, erro simulado, comportamento esperado e resultado.
 Informações técnicas, incluindo caminho relativo a `/tests` e SHA do commit, ficam ao final.
 **Quem fez** significa **autor do commit HEAD**, não identidade comprovada do
 executor. Os metadados vêm do checkout Git (inclusive offline), não de uma consulta
@@ -38,13 +44,18 @@ O comando gera a planilha mesmo em falha e termina com código diferente de zero
 se houver falha, instabilidade, skip ou relatório ausente; não transforma ausência
 de evidência em aprovação. Cada execução usa arquivos novos, sem importar JSON antigo.
 
-Os casos documentados ficam em `tests/test-docs-cases.json`, identificados pelo
-texto do título e motor de teste (IDs `ERR-*` nos testes novos). A planilha inclui
-apenas cenários com descrição revisada e falhas de infraestrutura; os relatórios JSON
-contêm os resultados completos. Amplie esse cadastro ao documentar novos fluxos.
-Os testes de erro usam APIs sintéticas e cobrem restrição, não encontrado,
-indisponibilidade, falha de curtida, preservação de comentário, rede e credenciais.
-Não comprovam autorização ou persistência do backend real.
+O inventário completo fica em `tests/user-action-inventory.json`: cada ação/variante
+tem tela, fonte, consumidor e cenários de interface. Todas as linhas do inventário
+entram no CSV, inclusive lacunas `NAO EXECUTADO`. Anotações Playwright `user-action`
+identificam fonte, export, erro e comportamento esperado; ações multiplexadas também
+exigem `actionId` ou `variant` correspondente para atribuir a evidência. O campo
+`match` de um cenário aponta a um teste existente que comprova aquele comportamento.
+O cadastro legado `tests/test-docs-cases.json` acrescenta cenários documentados e
+falhas de infraestrutura. A aprovação Jest não é usada para aprovar interação E2E.
+`execucao.json` registra totais, cobertura do inventário e lacunas. Os relatórios JSON
+guardam todos os testes executados, além das linhas de ações exibidas na planilha.
+Os pilotos de feed/publicações usam API sintética; os novos E2E de interface usam
+API local real com proxy de falhas controladas. Nenhum deles comprova produção.
 
 `ERR-FOCUS` também verifica o retorno de foco após a revalidação de Membership:
 o shell já autorizado fica oculto/inert durante a espera, preservando a rota
@@ -264,3 +275,29 @@ Ao entregar uma alteração, informe arquivos/escopo, comandos realmente executa
 `list-management.spec.ts` cobre consulta por ID fora do feed, validação, ausência de suporte a título global, filtros desabilitados, ordenação de eventos, período publicado, limpeza e alternância Lista/Grade sem refetch. `list-stories.spec.ts` e `list-stories.a11y.spec.ts` exercitam as composições isoladas nos dois temas; o axe do catálogo não inclui o shell administrativo nem valida autorização no backend. A fixture aplica os limites temporais do feed aos dados sintéticos e registra os parâmetros da ordenação, sem comprovar a consulta JPA implantada.
 
 As stories de cobranças têm QueryClient próprio e dados sintéticos. O mock de `publications/events.ts` no preview impede avaliar autenticação e transporte exclusivos de servidor no navegador do Storybook; não é usado na aplicação Next nem nas fixtures autenticadas.
+
+## Requisitos de entrega dos testes e relatórios de ações do usuário
+
+Esta seção define o aceite da entrega completa solicitada. A existência dos relatórios atuais não comprova o atendimento destes requisitos.
+
+- Inventariar **todas as ações disponíveis ao usuário em todas as telas**, relacionando cada controle/formulário à action correspondente. Incluir login, logout, recuperação e troca de senha, consultas, botões de cadastro, edição, exclusão, confirmações, cancelamentos, uploads, downloads e demais operações existentes. A cobertura não pode se limitar aos testes de contrato HTTP, às ações do feed ou aos cenários já cadastrados nos metadados do CSV.
+- Criar e executar testes E2E com Playwright que acionem a interface real: preencher formulários, clicar nos controles e verificar o efeito visível. Chamadas diretas a endpoints ou Server Actions são evidência complementar e não substituem o teste da interação do usuário.
+- Configurar, iniciar e usar o backend local com banco e dados sintéticos isolados. Simular as falhas necessárias de forma controlada, mantendo rastreável quais respostas vieram do backend e quais foram simuladas.
+- Para cada ação, verificar o sucesso e **todas as respostas de erro aplicáveis**, em cenários separados. Uma ação pode exigir vários casos: dados inválidos/400, falta de permissão/403, recurso inexistente/404, conflito/409, falha de rede, indisponibilidade e sessão expirada, conforme seu contrato. Verificar também preservação dos dados preenchidos, possibilidade de nova tentativa e ausência de efeitos indevidos quando aplicável.
+- Descrever a expectativa no nível da interface. Exemplos: “Sem permissão para visualizar usuário → exibe a página de não encontrado”, quando esse for o comportamento definido; “Problema de rede → exibe toast de erro de rede”; “Cadastro rejeitado → exibe toast com a mensagem e mantém os campos”; “Sessão expirada sem renovação → encerra a sessão e encaminha ao login”. Distinguir toast de permissão, toast de validação, página de erro e logout; não resumir todos como “retorna erro”.
+- Investigar falhas e adequar testes/configuração ao contrato comprovado. Não enfraquecer assertions, omitir cenários ou marcar como aprovado um comportamento que não foi executado. Registrar defeitos reais e impedimentos ainda abertos.
+
+O CSV deve conter **todas as ações do inventário e seus cenários**, com uma linha por combinação de ação e resposta esperada. Não entregar apenas as oito linhas anteriores, apenas testes aprovados ou apenas casos presentes no cadastro de metadados. Cenários ainda sem teste ou sem execução devem aparecer como `NAO EXECUTADO`, com a lacuna identificada; falhas devem permanecer como `NAO`. A quantidade de ações e cenários do inventário deve ser conferida com a planilha para detectar omissões.
+
+As primeiras colunas devem ser `Tela`, `Ação do usuário`, `Erro simulado` (ou “Sem erro” para sucesso), `Resposta esperada` e `Resultado`. Os textos precisam permitir a revisão por quem usa a aplicação. Informações técnicas — motor, projeto, caso de teste, arquivo fonte, detalhes de falha e metadados Git — ficam ao final; o ID do commit fica entre as últimas colunas. Caminhos exibidos na planilha devem ser relativos à raiz do projeto, como `/tests/...` para fontes de teste, sem caminhos absolutos da máquina.
+
+A entrega para envio deve ser **uma pasta dentro de `tests/docs/`**, identificada pela execução, sem compactação ZIP. Essa pasta deve conter:
+
+- O CSV completo das ações e cenários, inclusive falhas e não executados.
+- Os relatórios gerados pelo Jest, incluindo resultados JSON e a cobertura completa em HTML (`index.html` e todos os arquivos auxiliares), LCOV e demais formatos configurados. Um JSON isolado não atende ao requisito.
+- Os relatórios gerados pelo Playwright, incluindo HTML, JSON e os anexos produzidos pela execução, como screenshots, traces e evidências de falha. Preservar os arquivos auxiliares e os caminhos dos anexos ao copiar a pasta.
+- A identificação da execução, comandos/seleção utilizados, totais de testes e cenários, resultados, limitações e lacunas de cobertura, com os dados técnicos ao final do resumo.
+
+A pasta deve reunir artefatos da mesma rodada de validação, sem misturar resultados antigos para aparentar cobertura completa. Conferir seu conteúdo e a abertura dos relatórios antes da entrega. A entrega só está completa quando todas as ações estiverem representadas no CSV e houver evidência dos respectivos testes; lacunas precisam permanecer explícitas até serem resolvidas.
+
+Artefatos locais de diagnóstico anteriores ficam em `test-artifacts/`, ignorado pelo Git. Os arquivos de testes-fonte permanecem em `tests/` e devem ser versionados.

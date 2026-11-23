@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { csvField, toCsv, normalizeJest, normalizePlaywright, parseArgs, relativeTestPath } from '../../scripts/test-docs.mjs';
+import { csvField, toCsv, normalizeJest, normalizePlaywright, parseArgs, relativeTestPath, reconcileActions } from '../../scripts/test-docs.mjs';
 
 test('CSV uses BOM, quoted semicolon fields and formula-safe spreadsheet values', () => {
     assert.equal(csvField('  =SUM(1;2)'), '"\'  =SUM(1;2)"');
@@ -9,7 +9,7 @@ test('CSV uses BOM, quoted semicolon fields and formula-safe spreadsheet values'
     assert.equal(csvField('+x'), '"\'+x"');
     assert.equal(csvField('a;"b"\nc'), '"a;""b""\nc"');
     const csv = toCsv([{ title: 'Teste', actual: 'OK', documented: true, screen: '/feed', simulatedError: 'Sem acesso', response: 'Exibe erro', file: 'C:/projeto/tests/feed.spec.ts' }], { author: '=danger' });
-    assert.ok(csv.startsWith('\uFEFF"Tela";"Erro simulado";"Resposta esperada";"Resultado"'));
+    assert.ok(csv.startsWith('\uFEFF"Tela";"Ação do usuário";"Erro simulado";"Resposta esperada";"Resultado"'));
     assert.ok(csv.includes('Exibe erro'));
     assert.ok(csv.includes('/tests/feed.spec.ts'));
     assert.ok(!csv.includes('C:/projeto'));
@@ -17,6 +17,16 @@ test('CSV uses BOM, quoted semicolon fields and formula-safe spreadsheet values'
     assert.equal(relativeTestPath('/tests/feed.spec.ts'), '/tests/feed.spec.ts');
     assert.equal(relativeTestPath('feed/errors.spec.ts', 'Playwright'), '/tests/browser/feed/errors.spec.ts');
     assert.ok(csv.includes('"\'=danger"'));
+});
+
+test('inventory includes every scenario and never upgrades missing UI evidence with a unit test', () => {
+    const inventory = [{ id: 'create', screen: '/cadastro', action: 'Cadastrar', source: '/src/server/actions/create.ts', exportName: 'create', consumer: '/src/form.tsx', scenarios: [
+        { error: 'Sem erro', response: 'Exibe confirmação' }, { error: 'Sem permissão', response: 'Exibe aviso' },
+    ] }];
+    const evidence = { engine: 'Playwright', source: inventory[0].source, exportName: 'create', simulatedError: 'Sem erro', actual: 'OK', title: 'UI cadastra', project: 'chrome' };
+    assert.deepEqual(reconcileActions(inventory, [evidence]).map(row => row.actual), ['OK', 'NAO EXECUTADO']);
+    assert.deepEqual(reconcileActions(inventory, [{ ...evidence, engine: 'Jest' }]).map(row => row.actual), ['NAO EXECUTADO', 'NAO EXECUTADO']);
+    assert.deepEqual(reconcileActions(inventory, [evidence, { ...evidence, actual: 'NAO' }]).map(row => row.actual), ['NAO', 'NAO EXECUTADO']);
 });
 
 test('Jest separates success, failure, pending and uncollected suite errors', () => {
