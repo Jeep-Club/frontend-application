@@ -40,7 +40,7 @@ const personalModal = page => page.locator('[data-modal-content]').filter({ has:
 const selfMedicalModal = page => page.locator('[data-modal-content]').filter({ has: page.getByRole('heading', { name: /^(Editar|Incluir) dados médicos$/ }) });
 
 async function fillMedical(page, modal, contact) {
-    await modal.getByRole('combobox', { name: /^Tipo sanguíneo/ }).click();
+    await modal.getByRole('combobox', { name: /Tipo sanguíneo/ }).click();
     await page.getByRole('option', { name: 'A+', exact: true }).click();
     await modal.getByRole('textbox', { name: 'Nome', exact: true }).fill(contact);
     await modal.getByRole('textbox', { name: 'Telefone', exact: true }).fill('12999999999');
