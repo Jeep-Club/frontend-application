@@ -93,6 +93,7 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
         match: "any",
         permissions: [
             { module: "BILLING", actions: ["CHARGE_DEFINITION_READ"] },
+            { module: "BILLING", actions: ["CHARGE_DEFINITION_HISTORY_READ"] },
             { module: "BILLING", actions: ["CHARGE_CYCLE_READ"] },
         ],
     },
