@@ -23,9 +23,35 @@ test('conta mantém o painel dentro da tela e rola apenas o conteúdo', async ({
 
 test('navegação para conta mantém painel fixo no viewport', async ({ page }) => {
     await page.goto('/feed');
+    await expect(page.getByRole('button', { name: 'Atualizar publicações' })).toBeVisible();
+    const sidebar = page.locator('nav[aria-label="Menu principal"]');
+    await sidebar.evaluate(element => element.setAttribute('data-navigation-test', 'original'));
+    const { promise: accessCheck, resolve: releaseAccessCheck } = Promise.withResolvers<void>();
+    await page.route('**/profile', async route => {
+        if (route.request().method() === 'POST') await accessCheck;
+        await route.continue();
+    });
     const link = page.locator('#tour-avatar-container');
-    await link.click();
+    try {
+        await link.click();
+        await expect(page).toHaveURL(/\/profile$/);
+        const loader = page.getByRole('status').filter({ hasText: 'Carregando o Jeep Clube' });
+        await expect(loader).toBeVisible();
+        await expect.poll(() => loader.evaluate(element => {
+            const card = element.getBoundingClientRect();
+            const content = element.closest('[data-dashboard-scroll]')!;
+            const area = content.getBoundingClientRect();
+            const footer = content.querySelector('footer')!.getBoundingClientRect();
+            return Math.max(
+                Math.abs((card.left + card.right) / 2 - (area.left + area.right) / 2),
+                Math.abs((card.top + card.bottom) / 2 - (area.top + footer.top) / 2),
+            );
+        })).toBeLessThanOrEqual(1);
+    } finally {
+        releaseAccessCheck();
+    }
     await expect(page.getByRole('heading', { name: 'Carteirinha digital' })).toBeVisible();
+    await expect(sidebar).toHaveAttribute('data-navigation-test', 'original');
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - document.documentElement.clientHeight)).toBe(0);
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
