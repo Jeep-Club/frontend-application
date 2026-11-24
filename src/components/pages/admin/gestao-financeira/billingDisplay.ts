@@ -9,6 +9,10 @@ export const billingLabels: Record<string, string> = {
     ACTIVE: "Ativa", INACTIVE: "Inativa", ALL_MEMBERS: "Todos os associados", USER: "Usuário específico", ROLE: "Cargo", EVENT_PARTICIPANTS: "Participantes do evento",
 };
 export const fieldLabels: Record<string, string> = {
+    userName: "Titular", membershipNumber: "Matrícula", chargeCycleCode: "Referência do ciclo",
+    confirmedByUserName: "Confirmado por", rejectedByUserName: "Rejeitado por",
+    createdByUserName: "Criado por", requestedByUserName: "Solicitado por", approvedByUserName: "Aprovado por",
+    refundedByUserName: "Devolvido por", canceledByUserName: "Cancelado por",
     id: "Código do registro", chargeDefinitionId: "Código da definição", chargeCycleId: "Código do ciclo", memberChargeId: "Código da cobrança", memberPaymentId: "Código do pagamento",
     code: "Referência", dueDate: "Vencimento", status: "Situação", effectiveStatus: "Situação atual", amount: "Valor", originalAmount: "Valor original", finalAmount: "Valor final",
     paymentMethod: "Forma de pagamento", paymentAcceptancePolicy: "Política de pagamento", paymentAllowedUntil: "Pagamento permitido até", latePaymentGraceDays: "Tolerância (dias)",
@@ -17,6 +21,11 @@ export const fieldLabels: Record<string, string> = {
     chargeDefinitionNameSnapshot: "Nome na geração", chargeDefinitionDescriptionSnapshot: "Descrição na geração", chargeDefinitionDefaultAmountSnapshot: "Valor na geração", chargeDefinitionRecurrenceTypeSnapshot: "Recorrência na geração", chargeDefinitionRequiredSnapshot: "Obrigatória na geração", chargeDefinitionPaymentAcceptancePolicySnapshot: "Política na geração", chargeDefinitionLatePaymentGraceDaysSnapshot: "Tolerância na geração (dias)",
     generatedByUserId: "Gerado por (usuário)", canceledByUserId: "Cancelado por (usuário)", finishedByUserId: "Finalizado por (usuário)", archivedByUserId: "Arquivado por (usuário)", confirmedByUserId: "Confirmado por (usuário)", rejectedByUserId: "Rejeitado por (usuário)", createdByUserId: "Criado por (usuário)", requestedByUserId: "Solicitado por (usuário)", approvedByUserId: "Aprovado por (usuário)", refundedByUserId: "Reembolsado por (usuário)",
 };
+
+export function linkedChargeLabel(record: { memberChargeId: number; chargeDefinitionNameSnapshot?: string | null }) {
+    return record.chargeDefinitionNameSnapshot || `Cobrança #${record.memberChargeId}`;
+}
+
 export function displayBillingValue(key: string, value: unknown): string {
     if (value == null || value === "") return "—";
     if (typeof value === "boolean") return value ? "Sim" : "Não";
