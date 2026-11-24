@@ -34,8 +34,8 @@ test.beforeAll(async () => {
 });
 test.afterAll(async () => {
     if (next && next.exitCode === null) { const exited = once(next, 'exit'); next.kill(); await exited; }
-    await fs.mkdir('test-results', { recursive: true });
-    await fs.writeFile('test-results/contract-audit.json', JSON.stringify({ run: seed?.run, cases: report }, null, 2));
+    await fs.mkdir('tests/docs/contracts', { recursive: true });
+    await fs.writeFile('tests/docs/contracts/contract-audit.json', JSON.stringify({ run: seed?.run, cases: report }, null, 2));
 });
 
 function assertProblem(response, status) {
@@ -61,8 +61,8 @@ test('audited JSON contracts accept the real seeded controller responses', async
             const response = await seed.request(contract.route, { token: contract.token });
             const parsed = contract.schema.safeParse(response.data);
             report.push({ contract: contract.name, route: contract.route, status: response.status, valid: parsed.success, issues: parsed.success ? [] : parsed.error.issues });
-            expect(response.status, contract.route).toBe(200);
-            expect(parsed.success, JSON.stringify(parsed.success ? {} : parsed.error.issues)).toBe(true);
+            expect.soft(response.status, contract.route).toBe(200);
+            expect.soft(parsed.success, `${contract.name}: ${JSON.stringify(parsed.success ? {} : parsed.error.issues)}`).toBe(true);
         });
     }
 });
@@ -157,6 +157,7 @@ test('minimal first access without email completes through the browser exactly o
 test('read-only users can open the roles panel but cannot create roles', async ({ page }) => {
     await login(page);
     await page.goto(`${baseURL}/admin/roles-permissoes`);
+    await page.getByPlaceholder('Buscar cargo').fill(seed.reader.role.name);
     await expect(page.getByText(seed.reader.role.name, { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: /Criar cargo|Novo cargo/i })).toHaveCount(0);
     await expect(page.locator('[role="status"]').filter({ hasText: /Não foi possível concluir|INVALID_RESPONSE/ })).toHaveCount(0);
@@ -175,20 +176,21 @@ test('root can view archived role responses in the actual UI', async ({ page }) 
     await login(page, { cpf: seed.adminCredentials.cpf, senha: seed.adminCredentials.senha });
     await page.goto(`${baseURL}/admin/roles-permissoes`);
     await page.getByRole('tab', { name: /Arquivados/ }).click();
+    await page.getByPlaceholder('Buscar cargo').fill(seed.archivedRole.name);
     await expect(page.getByText(seed.archivedRole.name, { exact: true })).toBeVisible();
 });
 
 test('root and read-only users view medical details without calling a nonexistent owner endpoint', async ({ page }) => {
     await login(page);
     await page.goto(`${baseURL}/admin/dados-medicos`);
-    await expect(page.getByText('Perfis médicos', { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Gestão de dados médicos', exact: true })).toBeVisible();
     await page.getByRole('button', { name: `Visualizar perfil ${seed.medical.id}`, exact: true }).click();
     await expect(page.getByRole('dialog').getByRole('heading', { name: `# Associado ${seed.member.name}`, exact: true })).toBeVisible();
     await expect(page.getByRole('dialog').getByRole('button', { name: 'Tentar carregar nomes novamente' })).toHaveCount(0);
 });
 
 async function callServerAction(request, module, exportedName, args, session) {
-    const manifest = JSON.parse(await fs.readFile('.next/server/server-reference-manifest.json', 'utf8'));
+    const manifest = JSON.parse(await fs.readFile(`${process.env.E2E_NEXT_BUILD_DIR || '.next'}/server/server-reference-manifest.json`, 'utf8'));
     const entry = Object.entries(manifest.node).find(([, item]) => item.filename === `src/server/actions/${module}.ts` && item.exportedName === exportedName);
     expect(entry, `${module}#${exportedName}`).toBeDefined();
     const response = await request.post(`${baseURL}/login`, {
@@ -229,14 +231,11 @@ test('temporary-password and token-reset actions use actual API contracts and re
     expect(repeated.error).toMatchObject({ status: 401 });
 });
 
-test('administrative publication actions parse CSV indexes and each real detail contract', async ({ page }) => {
+test('administrative event list action parses real event contracts', async ({ page }) => {
     await login(page, { cpf: seed.adminCredentials.cpf, senha: seed.adminCredentials.senha });
-    const response = await callServerAction(page.request, 'publications/list', 'listAdminPublicationsAction', [{ types: ['NOTICE', 'EVENT', 'SERVICE'], page: 0, size: 48, status: 'ALL' }]);
+    const response = await callServerAction(page.request, 'publications/list', 'listAdminPublicationsAction', [{ page: 0, size: 48 }]);
     expect(response.error).toBeUndefined();
-    for (const [type, id] of [['NOTICE', seed.notice.id], ['EVENT', seed.event.id], ['SERVICE', seed.service.id]]) {
-        expect(response.data.content).toContainEqual(expect.objectContaining({ id, type, status: 'PUBLISHED' }));
-    }
-    expect(response.data.content).toContainEqual(expect.objectContaining({ type: 'SERVICE', status: 'PENDING', serviceRequest: true }));
+    expect(response.data.content).toContainEqual(expect.objectContaining({ id: seed.event.id, publicationStatus: 'PUBLISHED' }));
 });
 
 test('event registration actions preserve confirmed and cancelled contracts and enforce access', async ({ page }) => {

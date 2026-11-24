@@ -41,7 +41,19 @@
     ".next-playwright/types/**/*.ts",
     ".next-playwright/dev/types/**/*.ts",
     ".next/dev/dev/types/**/*.ts",
-    ".next-playwright/dev/dev/types/**/*.ts"
+    ".next-playwright/dev/dev/types/**/*.ts",
+    ".next-playwright-group-2/types/**/*.ts",
+    ".next-playwright-group-2/dev/types/**/*.ts",
+    ".next-playwright-group-3/types/**/*.ts",
+    ".next-playwright-group-3/dev/types/**/*.ts",
+    ".next-playwright-group-1/types/**/*.ts",
+    ".next-playwright-group-1/dev/types/**/*.ts",
+    ".next-playwright-group-0/types/**/*.ts",
+    ".next-playwright-group-0/dev/types/**/*.ts",
+    ".next-playwright-membership-activation/types/**/*.ts",
+    ".next-playwright-membership-activation/dev/types/**/*.ts",
+    ".next-playwright-membership-integration/types/**/*.ts",
+    ".next-playwright-membership-integration/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

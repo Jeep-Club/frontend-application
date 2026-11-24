@@ -45,7 +45,7 @@ export const adminModules: AdminModuleConfig[] = [
         description: "Consulte e gerencie os dados médicos de usuários e dependentes.",
         href: "/admin/dados-medicos",
         icon: HeartPulse,
-        visibilityPermission: { module: "HEALTH", action: "MEDICAL_PROFILE_READ" },
+        visibilityPermission: { module: "HEALTH", action: "MEDICAL_PROFILE_READ", alternativeActions: ["MEDICAL_PROFILE_EXPORT"] },
     },
     {
         key: "publication-management",
@@ -92,6 +92,7 @@ export const adminModules: AdminModuleConfig[] = [
         visibilityPermission: {
             module: "AUTHORIZATION",
             action: "ROLE_READ",
+            alternativeActions: ["PERMISSION_READ", "USER_ROLE_READ"],
         },
     },
     {

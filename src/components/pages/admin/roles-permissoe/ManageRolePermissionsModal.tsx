@@ -38,6 +38,7 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
     const queryClient = useQueryClient();
     const userPermissions = useUserStore((state) => state.permissions);
     const canAssign = hasPermission(userPermissions, 'AUTHORIZATION', 'PERMISSION_ASSIGN');
+    const canRead = hasPermission(userPermissions, 'AUTHORIZATION', 'PERMISSION_READ');
     const canRevoke = hasPermission(userPermissions, 'AUTHORIZATION', 'PERMISSION_REVOKE');
     const isProtected = roleKind === 'ROOT';
     const [draftIds, setDraftIds] = useState<Set<number> | null>(null);
@@ -48,8 +49,8 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
     const [saveError, setSaveError] = useState('');
     const rolePermissionsQueryKey = ['authorization', 'roles', roleId, 'permissions'];
 
-    const { data: catalog, isLoading: isLoadingCatalog, isError: isCatalogError, refetch: reloadCatalog } = useQuery({ queryKey: ['authorization', 'permissions'], queryFn: listPermissionsAction });
-    const { data: rolePermissions, isLoading: isLoadingRolePermissions, isError: isRolePermissionsError, refetch: reloadRolePermissions } = useQuery({ queryKey: rolePermissionsQueryKey, queryFn: () => listRolePermissionsAction(roleId) });
+    const { data: catalog, isLoading: isLoadingCatalog, isError: isCatalogError, refetch: reloadCatalog } = useQuery({ queryKey: ['authorization', 'permissions'], queryFn: listPermissionsAction, enabled: canRead });
+    const { data: rolePermissions, isLoading: isLoadingRolePermissions, isError: isRolePermissionsError, refetch: reloadRolePermissions } = useQuery({ queryKey: rolePermissionsQueryKey, queryFn: () => listRolePermissionsAction(roleId), enabled: canRead });
     const administrativeCatalog = useMemo(() => getAdministrativePermissions(catalog ?? []), [catalog]);
     const assignedIds = useMemo(() => new Set(getAdministrativePermissions(rolePermissions ?? []).map((permission) => permission.id)), [rolePermissions]);
     const selectedIds = draftIds ?? assignedIds;
@@ -139,6 +140,7 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
         savingRef.current = false;
     };
 
+    if (!canRead) return <section role="alert">Você não tem permissão para consultar o catálogo.</section>;
     return <section className={styles.panel} role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <ButtonIcon type="button" onClick={setClose} disabled={isSaving} aria-label="Fechar" className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800">
             <X className="h-5 w-5 md:h-[22px] md:w-[22px]" />

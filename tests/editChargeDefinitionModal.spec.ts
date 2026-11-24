@@ -63,7 +63,7 @@ beforeEach(() => {
         setClose: close, setOpen: jest.fn(), openFromTrigger: jest.fn(), setContent: jest.fn(), content: null, ref: { current: null },
     });
     jest.mocked(useQueryClient).mockReturnValue({ invalidateQueries } as unknown as ReturnType<typeof useQueryClient>);
-    jest.mocked(useMutation).mockReturnValue({ mutateAsync, isPending: false } as unknown as ReturnType<typeof useMutation>);
+    jest.mocked(useMutation).mockReturnValue({ mutate: mutateAsync, mutateAsync, isPending: false } as unknown as ReturnType<typeof useMutation>);
     queryState();
 });
 

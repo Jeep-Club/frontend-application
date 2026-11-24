@@ -429,7 +429,7 @@ export default function RolesPermissions() {
                                                         Ver permissões
                                                     </button>
                                                 )}
-                                                {role.status !== "ARCHIVED" && (canAssignPermission || canRevokePermission) && (
+                                                {role.status !== "ARCHIVED" && canReadPermission && (canAssignPermission || canRevokePermission) && (
                                                     <button
                                                         type="button"
                                                         onClick={(event) => handleOpenManageRolePermissions(event.currentTarget, role)}

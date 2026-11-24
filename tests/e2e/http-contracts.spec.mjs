@@ -5,16 +5,39 @@ import { once } from 'node:events';
 import { spawn } from 'node:child_process';
 import { seedLocalContracts } from './seed-local.mjs';
 import { readActionFrame } from './action-wire.mjs';
+import { SignJWT } from 'jose';
+import { deflateRawSync } from 'node:zlib';
 
-// No shared Playwright configuration: this suite can be merged alongside the other branch.
-// Run after npm run build: npx playwright test tests/e2e/http-contracts.spec.mjs --workers=1
+// Run after npm run build: npm run test:e2e:contracts
 // Uses the installed Chrome; E2E_BROWSER_CHANNEL can select another installed channel.
 test.use({ channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
-test.describe.configure({ mode: 'serial' });
 let seed, api, next, baseURL, manifest;
 let scenario;
 let calls = [];
 let logs = '';
+const sessionCookies = new WeakMap();
+
+// Use the actual grants from the local API, as the real login does. Access tokens
+// alone omit the signed permission/operator cookies required by protected actions.
+async function cookiesFor(session) {
+    if (!sessionCookies.has(session)) {
+        const get = route => fetch(`${seed.apiURL}/${route}`, { headers: { Authorization: `Bearer ${session.accessToken}` } }).then(response => {
+            if (!response.ok) throw new Error(`Unable to load authenticated context: ${route}`);
+            return response.json();
+        });
+        const [identity, authorization, authenticated] = await Promise.all([get('identity/me'), get('authorization/me'), get('authentication/me')]);
+        const modules = new Map();
+        for (const code of authorization.authorities) {
+            const [module, ...action] = code.split('_');
+            modules.set(module, [...(modules.get(module) ?? []), action.join('_')]);
+        }
+        const sign = data => new SignJWT({ data }).setProtectedHeader({ alg: 'HS256' }).setExpirationTime('1h').sign(new TextEncoder().encode('local-contract-tests-signing-secret'));
+        const permissions = await sign({ encoding: 'deflate-v1', value: deflateRawSync(Buffer.from(JSON.stringify([...modules].map(([module, actions]) => ({ module, actions }))))).toString('base64url') });
+        const me = await sign({ userName: identity.name, userId: identity.id, profilePhotoStorageKey: identity.profilePhotoStorageKey, sessionId: authenticated.sessionId, sessionActive: authenticated.sessionActive, expires: new Date(Date.now() + authenticated.expiresInSeconds * 1000).toISOString() });
+        sessionCookies.set(session, `AuthAccessToken=${session.accessToken}; AuthRefreshToken=${session.refreshToken}; AccessTokenExpiration=${new Date(Date.now() + 60000).toISOString()}; Permissions=${permissions}; Me=${me}`);
+    }
+    return sessionCookies.get(session);
+}
 
 function send(res, status, body, type = 'application/problem+json') {
     res.writeHead(status, { 'Content-Type': type });
@@ -26,7 +49,7 @@ async function action(request, module, args, session = seed.session) {
     const entries = Object.entries(manifest.node).filter(([, entry]) => entry.filename === `src/server/actions/${module}.ts`);
     expect(entries).toHaveLength(1);
     const headers = { 'Next-Action': entries[0][0], 'Content-Type': 'text/plain;charset=UTF-8', Accept: 'text/x-component' };
-    if (session) headers.Cookie = `AuthAccessToken=${session.accessToken}; AuthRefreshToken=${session.refreshToken}; AccessTokenExpiration=${new Date(Date.now() + 60000).toISOString()}`;
+    if (session) headers.Cookie = await cookiesFor(session);
     const response = await request.post(`${baseURL}/login`, { headers, data: JSON.stringify(args) });
     const body = await response.text();
     expect(body).not.toContain('An error occurred in the Server Components render');
@@ -53,7 +76,7 @@ test.beforeAll(async () => {
     test.setTimeout(120000);
     seed = await seedLocalContracts();
     console.log(`Local mock records: user=${seed.userId}, tool=${seed.tool.id}, otherOwnerTool=${seed.adminTool.id}`);
-    manifest = JSON.parse(await fs.readFile('.next/server/server-reference-manifest.json', 'utf8'));
+    manifest = JSON.parse(await fs.readFile(`${process.env.E2E_NEXT_BUILD_DIR || '.next'}/server/server-reference-manifest.json`, 'utf8'));
     api = http.createServer(async (req, res) => {
         try {
             const chunks = [];
@@ -67,7 +90,8 @@ test.beforeAll(async () => {
             if (scenario?.refresh && req.headers.authorization !== 'Bearer renewed-access') return send(res, 401, problem(401, 'INVALID_ACCESS_TOKEN'));
             if (scenario && (!scenario.routePrefix || req.url.startsWith(scenario.routePrefix))) return send(res, scenario.status, scenario.body ?? problem(scenario.status, scenario.code), scenario.type);
             const response = await fetch(`${seed.apiURL}${req.url}`, { method: req.method, headers: { ...req.headers, host: new URL(seed.apiURL).host }, ...(['GET', 'HEAD'].includes(req.method) ? {} : { body: Buffer.concat(chunks) }) });
-            res.writeHead(response.status, { 'Content-Type': response.headers.get('content-type') || 'application/octet-stream' });
+            res.writeHead(response.status, { 'Content-Type': response.headers.get('content-type') || 'application/octet-stream',
+                ...(response.headers.get('content-disposition') ? { 'Content-Disposition': response.headers.get('content-disposition') } : {}) });
             res.end(Buffer.from(await response.arrayBuffer()));
         } catch (error) { send(res, 502, problem(502, 'E2E_PROXY_FAILURE')); console.error(error.message); }
     });
@@ -118,7 +142,7 @@ test('real 403 for another owner keeps the session', async ({ request }) => {
 test('real 409 for an archived tool keeps its conflict message', async ({ request }) => {
     const archived = await fetch(`${seed.apiURL}/tools/${seed.adminTool.id}/archive`, { method: 'PATCH', headers: { Authorization: `Bearer ${seed.admin.accessToken}` } });
     expect(archived.status).toBe(200);
-    const { result, response } = await action(request, 'tools/activate', [seed.adminTool.id], seed.admin);
+    const { result, response } = await action(request, 'tools/update', [seed.adminTool.id, { name: 'Não editar ferramenta arquivada', description: null }], seed.admin);
     expect(result).toMatchObject({ ok: false, error: { status: 409 } });
     expect(result.error.message.length).toBeGreaterThan(0);
     expectSessionPreserved(response);
@@ -159,13 +183,13 @@ test('503 during refresh keeps the session', async ({ request }) => {
 
 test('real CSV export validates the content type before returning bytes', async ({ request }) => {
     const { result } = await action(request, 'billing/download', ['definitions', 'CSV'], seed.admin);
-    expect(result).toMatchObject({ ok: true, data: { contentType: expect.stringContaining('text/csv'), filename: 'financeiro-definitions.csv' } });
+    expect(result).toMatchObject({ ok: true, data: { contentType: expect.stringContaining('text/csv'), filename: expect.stringMatching(/^definicoes-atribuicoes-\d{8}-\d{6}\.csv$/), exportedBy: expect.any(String) } });
     expect(Buffer.from(result.data.base64, 'base64').length).toBeGreaterThan(0);
 });
 
 test('PDF export preserves bytes', async ({ request }) => {
     scenario = { status: 200, type: 'application/pdf', body: '%PDF-1.4\ncontract-test' };
-    const { result } = await action(request, 'billing/download', ['definitions', 'PDF']);
+    const { result } = await action(request, 'billing/download', ['definitions', 'PDF'], seed.admin);
     expect(result.ok).toBe(true);
     expect(Buffer.from(result.data.base64, 'base64').toString()).toBe(scenario.body);
 });
@@ -173,7 +197,7 @@ test('PDF export preserves bytes', async ({ request }) => {
 for (const status of [409, 200]) {
     test(`JSON export error with HTTP ${status} never becomes a file`, async ({ request }) => {
         scenario = { status, body: problem(409, 'CONFLICT') };
-        const { result } = await action(request, 'billing/download', ['definitions', 'PDF']);
+        const { result } = await action(request, 'billing/download', ['definitions', 'PDF'], seed.admin);
         expect(result).toMatchObject({ ok: false, error: { code: 'CONFLICT', message: problem(409, 'CONFLICT').detail } });
         expect(JSON.stringify(result)).not.toContain('base64');
     });
@@ -181,7 +205,7 @@ for (const status of [409, 200]) {
 
 test('unexpected HTML is rejected instead of downloaded', async ({ request }) => {
     scenario = { status: 200, type: 'text/html', body: '<html>private proxy failure</html>' };
-    const { result } = await action(request, 'billing/download', ['definitions', 'PDF']);
+    const { result } = await action(request, 'billing/download', ['definitions', 'PDF'], seed.admin);
     expect(result).toMatchObject({ ok: false, error: { code: 'INVALID_RESPONSE' } });
     expect(JSON.stringify(result)).not.toMatch(/base64|private proxy/);
 });

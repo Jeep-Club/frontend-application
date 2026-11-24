@@ -11,7 +11,7 @@ const localOrigins = ["APP_URL", "PLAYWRIGHT_APP_URL"]
 
 const nextConfig: NextConfig = {
   // Keep the isolated browser-test server independent of an already running dev server.
-  distDir: process.env.JEEP_PLAYWRIGHT === '1' ? '.next-playwright' : '.next',
+  distDir: process.env.JEEP_PLAYWRIGHT === '1' ? `.next-playwright${process.env.JEEP_PLAYWRIGHT_ID ? `-${process.env.JEEP_PLAYWRIGHT_ID.replace(/[^a-z0-9-]/gi, '')}` : ''}` : '.next',
   allowedDevOrigins: [
     ...localOrigins,
     "*.app.github.dev",

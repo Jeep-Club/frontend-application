@@ -21,7 +21,8 @@ export const eventUpdateSchema = noticeUpdateSchema.extend({ charges: eventCharg
 export type AdminEvent = z.infer<typeof adminEventSchema>;
 export type AdminNotice = z.infer<typeof adminNoticeSchema>;
 export type AdminService = z.infer<typeof adminServiceSchema>;
-export const pendingServiceRequestSchema = adminPublicationSchema.omit({ status: true }).extend({
+export const pendingServiceRequestSchema = adminPublicationSchema.omit({ status: true, authorUserId: true }).extend({
+    requestedByUserId: publicationIdSchema,
     status: z.literal('PENDING'),
 });
 

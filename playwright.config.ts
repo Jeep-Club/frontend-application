@@ -12,7 +12,7 @@ export default defineConfig({
   retries: 0,
   timeout: 60_000,
   expect: { timeout: 15_000 },
-  outputDir: "test-results",
+  outputDir: process.env.TEST_DOCS_OUTPUT ? `${process.env.TEST_DOCS_OUTPUT}/test-results` : "test-results",
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: appUrl.origin,
@@ -43,7 +43,7 @@ export default defineConfig({
   }))],
   webServer: [
     {
-      command: "npm run dev",
+      command: `node node_modules/next/dist/bin/next dev --hostname ${appUrl.hostname} --port ${appUrl.port}`,
       url: new URL("/login", appUrl).href,
       timeout: 180_000,
       reuseExistingServer: false,
@@ -57,10 +57,10 @@ export default defineConfig({
       },
     },
     {
-      command: "npm run storybook -- --ci --no-open",
+      command: `node node_modules/storybook/dist/bin/dispatcher.js dev --host ${storybookUrl.hostname} --port ${storybookUrl.port} --ci --no-open --disable-telemetry`,
       url: new URL("/index.json", storybookUrl).href,
       timeout: 180_000,
-      reuseExistingServer: false,
+      reuseExistingServer: process.env.PLAYWRIGHT_EXTERNAL_STORYBOOK === '1',
       env: { STORYBOOK_URL: storybookUrl.origin },
     },
   ],

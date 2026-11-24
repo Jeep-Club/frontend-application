@@ -10,7 +10,7 @@ export default {
     ],
     // Configuração para gerar o relatório de cobertura (Teste Estrutural)
     collectCoverage: true,
-    coverageDirectory: 'coverage',
+    coverageDirectory: 'tests/docs/coverage',
     collectCoverageFrom: [
         // 'src/**/*.ts',
         'src/utils/masks/**/*.ts',

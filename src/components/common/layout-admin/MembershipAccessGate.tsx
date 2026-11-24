@@ -15,7 +15,7 @@ interface Props {
     children: ReactNode;
 }
 
-const RestrictedMembershipContext = createContext({ restricted: false, showNotice: () => {} });
+const RestrictedMembershipContext = createContext({ restricted: false, checking: false, showNotice: () => {} });
 export const useRestrictedMembership = () => useContext(RestrictedMembershipContext);
 
 export function useRestrictedNavigation() {
@@ -84,8 +84,12 @@ export function MembershipAccessGate({ initialAccess, initialPath, children }: P
         if (access.data) previousAccess.current = state;
     }, [access.data, state, setClose]);
 
-    if (!canVisit || (!access.isFetchedAfterMount && !canAccessMembershipPage("payment-required", pathname))) {
-        return (
+    const loading = !canVisit || (!access.isFetchedAfterMount && !canAccessMembershipPage("payment-required", pathname));
+    // Keep a previously authorized route mounted but hidden/inert during recheck.
+    // Unmounting the shell here discards intercepted-route state and focus history.
+    // A definitive denial still removes the content until the allowed destination loads.
+    const retainChildren = canVisit || (access.isPending && initialAccess === 'allowed');
+    const loadingView = (
             <main className="grid min-h-dvh place-items-center bg-background-secondary p-5">
                 <div role="status" className="flex w-full max-w-sm flex-col items-center gap-4 rounded-3xl border border-input-border bg-background px-6 py-8 text-center shadow-xl">
                     <span className="grid size-12 place-items-center rounded-2xl bg-j-yellow-300 text-[#061e50]">
@@ -96,11 +100,11 @@ export function MembershipAccessGate({ initialAccess, initialPath, children }: P
                 </div>
             </main>
         );
-    }
 
     return (
-        <RestrictedMembershipContext.Provider value={{ restricted: state !== "allowed", showNotice: () => setNoticeRequest((count) => count + 1) }}>
-            {children}
+        <RestrictedMembershipContext.Provider value={{ restricted: state !== "allowed", checking: loading, showNotice: () => setNoticeRequest((count) => count + 1) }}>
+            {loading && loadingView}
+            <div hidden={loading} inert={loading} className={loading ? 'hidden' : 'contents'}>{retainChildren ? children : null}</div>
             {!access.isPending && state !== "allowed" && (pathname === PAYMENT_HISTORY_PATH || noticeRequest > 0) && (
                 <MembershipDebtNotice key={`${state}:${pathname}:${noticeRequest}`} unavailable={state === "unavailable"} retry={() => void access.refetch()} />
             )}

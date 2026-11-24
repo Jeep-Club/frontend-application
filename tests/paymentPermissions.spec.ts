@@ -20,7 +20,7 @@ describe("visibilidade e acesso à análise de pagamentos", () => {
 
     it("exibe o módulo e o painel administrativo para quem tem apenas leitura de pagamentos", () => {
         const permissions = [{ module: "BILLING", actions: ["PAYMENT_READ"] }];
-        expect(getAvailableAdminModules(permissions).map(module => module.href)).toEqual(["/admin/pagamentos", "/admin/gestao-financeira"]);
+        expect(getAvailableAdminModules(permissions).map(module => module.href)).toEqual(["/admin/gestao-financeira", "/admin/gestao-financeira/movimentacoes"]);
         expect(hasAnyAdminAccess(permissions)).toBe(true);
     });
 
@@ -37,7 +37,7 @@ describe("visibilidade e acesso à análise de pagamentos", () => {
         await expect(haveRoutePermissions({ pathname: "/admin/pagamentos", permissionsToken: "signed", onCatch: jest.fn() })).resolves.toBe(false);
 
         const combined = [...permissions, { module: "BILLING", actions: ["PAYMENT_READ"] }];
-        expect(getAvailableAdminModules(combined).map(module => module.href)).toEqual(["/admin/pagamentos", "/admin/publications", "/admin/gestao-financeira"]);
+        expect(getAvailableAdminModules(combined).map(module => module.href)).toEqual(["/admin/publications", "/admin/gestao-financeira", "/admin/gestao-financeira/movimentacoes"]);
     });
 
     it("nega a gestão de publicações para quem tem apenas leitura de pagamentos", async () => {

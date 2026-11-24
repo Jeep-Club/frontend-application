@@ -29,4 +29,4 @@ export const publicationManagementSections = [
 export const publicationManagementReadActions = publicationManagementSections.flatMap(
     (section) => section.readActions,
 );
-export const publicationManagementAccessActions = [...publicationManagementReadActions, ...publicationCreationTypes.map((entry) => entry.action)];
+export const publicationManagementAccessActions = [...publicationManagementReadActions, ...publicationCreationTypes.map((entry) => entry.action), "EXPORT"];

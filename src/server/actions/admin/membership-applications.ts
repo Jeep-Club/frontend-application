@@ -39,7 +39,8 @@ export async function approveMembershipApplicationWithLinkAction(id: number) {
         method: 'POST',
         schema: accessLinkApprovalSchema,
     });
-    return result.data;
+    // The API returns a bearer link once; the administrative UI only needs the user ID.
+    return { userId: result.data.userId };
 }
 
 export async function resendMembershipActivationLinkAction(id: number) {
