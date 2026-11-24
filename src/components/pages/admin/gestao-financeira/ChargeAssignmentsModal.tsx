@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle,LoaderCircle,Plus,Power,PowerOff,X } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
 import { Button,ButtonIcon } from "@/components/common/button";
@@ -23,7 +23,7 @@ interface ChargeAssignmentsModalProps {
 
 function describeAssignment(assignment: ChargeAssignment): string {
     if (assignment.audienceType === "USER") {
-        return "Usuário específico";
+        return assignment.userName?.trim() || "Nome do usuário indisponível";
     }
 
     if (assignment.audienceType === "ROLE") {
@@ -31,7 +31,7 @@ function describeAssignment(assignment: ChargeAssignment): string {
     }
 
     if (assignment.audienceType === "EVENT_PARTICIPANTS") {
-        return `Participantes do evento #${assignment.eventId}`;
+        return assignment.eventTitle?.trim() || "Título do evento indisponível";
     }
 
     return CHARGE_AUDIENCE_TYPE_LABEL.ALL_MEMBERS;
@@ -43,6 +43,7 @@ export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionNam
     const permissions = useUserStore((state) => state.permissions);
     const canCreate = hasPermission(permissions, "BILLING", "CHARGE_ASSIGNMENT_CREATE");
     const canUpdate = hasPermission(permissions, "BILLING", "CHARGE_ASSIGNMENT_UPDATE");
+    const headingId = useId();
     const [page, setPage] = useState(0);
 
     const { data, isLoading, error, refetch, isFetching } = useQuery({
@@ -51,12 +52,13 @@ export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionNam
     });
 
     const assignments = data?.content ?? [];
+    const definitionName = assignments.find(assignment => assignment.chargeDefinitionName?.trim())?.chargeDefinitionName?.trim() || chargeDefinitionName;
 
     const handleAdd = () => {
         setContent(
             <AddChargeAssignmentModal
                 chargeDefinitionId={chargeDefinitionId}
-                chargeDefinitionName={chargeDefinitionName}
+                chargeDefinitionName={definitionName}
                 chargeDefinitionStatus={chargeDefinitionStatus}
             />,
         );
@@ -68,7 +70,7 @@ export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionNam
             <ToggleChargeAssignmentStatusModal
                 assignmentId={assignment.id}
                 chargeDefinitionId={chargeDefinitionId}
-                chargeDefinitionName={chargeDefinitionName}
+                chargeDefinitionName={definitionName}
                 chargeDefinitionStatus={chargeDefinitionStatus}
                 audienceLabel={describeAssignment(assignment)}
                 nextStatus={assignment.active ? "DEACTIVATE" : "ACTIVATE"}
@@ -79,6 +81,9 @@ export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionNam
 
     return (
         <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={headingId}
             className={`
                 relative flex max-h-[92dvh] w-full max-w-2xl
                 flex-col overflow-y-auto overflow-x-hidden
@@ -86,6 +91,7 @@ export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionNam
             `}
         >
             <ButtonIcon
+                aria-label="Fechar atribuições"
                 onClick={setClose}
                 className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"
             >
@@ -93,8 +99,8 @@ export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionNam
             </ButtonIcon>
 
             <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
-                <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
-                    Atribuições de {chargeDefinitionName}
+                <h2 id={headingId} className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                    Atribuições de {definitionName}
                 </h2>
                 <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
                     Defina para quem essa cobrança se aplica.
