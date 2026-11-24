@@ -7,7 +7,7 @@ import InputPassword from "@/components/common/input/input-password";
 import { loginRequestSchema,LoginRequestType } from "@/schemas/auth/login/loginRequest";
 import loginAction from '@/server/actions/auth/login';
 import { useMutation } from '@tanstack/react-query';
-import { AlertCircle,ArrowRight,LoaderCircle } from "lucide-react";
+import { AlertCircle,ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -58,31 +58,22 @@ export default function FormLogin() {
                     </div>
                 </div>
 
+                <Button
+                    id="tour-login-submit"
+                    type="submit"
+                    isLoading={isLoading}
+                    className="w-full enabled:hover:translate-y-0 active:scale-100"
+                >
+                    {isLoading ? 'Entrando' : 'Entrar'}
+                    {!isLoading && <ArrowRight size={15} strokeWidth={3} aria-hidden="true" />}
+                </Button>
+
                 {mutation.isError && (
                     <div role="alert" className="flex w-full items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-3 py-3 text-sm font-medium leading-5 text-red-800 shadow-sm">
                         <AlertCircle size={18} className="mt-0.5 shrink-0 text-red-600" aria-hidden="true" />
                         <span>{mutation.error instanceof Error ? mutation.error.message : 'CPF ou senha inválidos. Confira os dados e tente novamente.'}</span>
                     </div>
                 )}
-
-                <Button
-                    id="tour-login-submit"
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full"
-                >
-                    {isLoading ? (
-                        <>
-                            Entrando
-                            <LoaderCircle size={15} strokeWidth={3} className="animate-spin" />
-                        </>
-                    ) : (
-                        <>
-                            Entrar
-                            <ArrowRight size={15} strokeWidth={3} />
-                        </>
-                    )}
-                </Button>
             </Form>
         </div>
     );
