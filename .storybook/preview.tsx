@@ -11,6 +11,8 @@ import "./preview.css";
 // Event-charge stories seed their own QueryClient. Do not evaluate server-only auth/HTTP modules in the preview.
 sb.mock('../src/server/actions/publications/events.ts');
 sb.mock('../src/server/actions/vehicles/change-status.ts');
+sb.mock('../src/server/actions/billing/chargeDefinitions/deletionHistory.ts');
+sb.mock('../src/server/actions/billing/management.ts');
 
 // font-sans follows the app's current CSS mapping. Unmapped Google font variables
 // add a remote request during preview compilation without changing that font stack.
