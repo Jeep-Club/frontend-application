@@ -40,6 +40,7 @@ export default function VehicleManagement() {
     const permissions = useUserStore((state) => state.permissions);
 
     const canRead = hasPermission(permissions, "VEHICLES", "VEHICLE_READ");
+    const canExport = hasPermission(permissions, "VEHICLES", "VEHICLE_EXPORT");
     const canCreate = hasPermission(permissions, "VEHICLES", "VEHICLE_CREATE");
     const canUpdate = hasPermission(permissions, "VEHICLES", "VEHICLE_UPDATE");
     const canActivate = hasPermission(permissions, "VEHICLES", "VEHICLE_ACTIVATE");
@@ -128,15 +129,12 @@ export default function VehicleManagement() {
                                     <InputSearch value={search} onSubmit={(value) => { setSearch(value.trim().slice(0, 150)); setPage(0); }} isLoading={isFetching} label="Buscar veículos" placeholder="Buscar por titular, placa, modelo ou apelido..." maxLength={150} />
                                 </div>
                                 <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:flex-wrap">
-                                    <select aria-label="Situação dos veículos" value={status} onChange={event => { setStatus(event.target.value as VehicleStatus); setPage(0); }} className="h-10 cursor-pointer rounded-lg border border-input-border bg-background px-3 text-sm text-primary">
-                                        {Object.entries(VEHICLE_STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}s</option>)}
-                                    </select>
-                                    <AdminExport formats={["CSV", "PDF"]} className="w-full sm:w-auto" onExport={(format) => exportAdminVehiclesAction(format, exportFilters)} />
-                                    <Button type="button" aria-expanded={showExportFilters} aria-controls="vehicle-export-filters" onClick={() => setShowExportFilters((shown) => !shown)} className="h-10 w-full gap-2 border border-j-gray-300 bg-j-white px-3 text-xs text-j-blue-800 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700 sm:w-auto sm:text-sm"><Filter size={15} aria-hidden="true" />Filtros da exportação</Button>
+                                    {canExport && <AdminExport label="Exportar veículos" formats={["CSV", "PDF"]} className="w-full sm:w-auto" onExport={(format) => exportAdminVehiclesAction(format, exportFilters)} />}
+                                    {canExport && <Button type="button" aria-expanded={showExportFilters} aria-controls="vehicle-export-filters" onClick={() => setShowExportFilters((shown) => !shown)} className="h-10 w-full gap-2 border border-j-gray-300 bg-j-white px-3 text-xs text-j-blue-800 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700 sm:w-auto sm:text-sm"><Filter size={15} aria-hidden="true" />Filtros da exportação</Button>}
                                     {canCreate && <Button id="tour-vehicles-create-btn" onClick={handleOpenCreate} className="h-10 w-full gap-2 sm:w-auto"><Plus size={16} /><span className="hidden sm:inline">Cadastrar veículo</span><span className="sm:hidden">Cadastrar</span></Button>}
                                 </div>
                             </Table.Header>
-                            {showExportFilters && <fieldset id="vehicle-export-filters" className="grid grid-cols-1 gap-3 border-b border-j-gray-200 bg-j-gray-100/50 p-4 sm:grid-cols-2 lg:grid-cols-3">
+                            {canExport && showExportFilters && <fieldset id="vehicle-export-filters" className="grid grid-cols-1 gap-3 border-b border-j-gray-200 bg-j-gray-100/50 p-4 sm:grid-cols-2 lg:grid-cols-3">
                                 <legend className="px-1 text-sm font-bold text-j-blue-800">Filtrar o arquivo exportado</legend>
                                 <label className="min-w-0 text-xs font-semibold text-j-gray-600">ID do veículo<input type="number" min="1" value={exportFilters.vehicleId} onChange={(event) => setExportFilters((filters) => ({ ...filters, vehicleId: event.target.value }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800" /></label>
                                 <label className="min-w-0 text-xs font-semibold text-j-gray-600">ID do usuário proprietário<input type="number" min="1" value={exportFilters.ownerId} onChange={(event) => setExportFilters((filters) => ({ ...filters, ownerId: event.target.value }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800" /></label>

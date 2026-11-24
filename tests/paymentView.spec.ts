@@ -31,27 +31,27 @@ describe("controles de decisão na tela", () => {
         const fields = [...html.matchAll(/<dt[^>]*>([^<]+)<\/dt>/g)].map(([, label]) => label);
         expect(fields.slice(0, 4)).toEqual(["Cobrança", "Ciclo", "Pago em", "Vencimento"]);
         expect(html).toContain("somente à consulta");
-        expect(html).not.toMatch(/Confirmar<\/span><\/button>/);
-        expect(html).not.toMatch(/Rejeitar<\/span><\/button>/);
+        expect(html).not.toMatch(/>\s*Confirmar(?:<\/span>)?<\/button>/);
+        expect(html).not.toMatch(/>\s*Rejeitar(?:<\/span>)?<\/button>/);
     });
 
     it("mostra confirmar e oculta rejeitar quando só há permissão de confirmação", () => {
         const html = render(["PAYMENT_READ", "PAYMENT_CONFIRM"]);
-        expect(html).toMatch(/Confirmar<\/span><\/button>/);
-        expect(html).not.toMatch(/Rejeitar<\/span><\/button>/);
+        expect(html).toMatch(/>\s*Confirmar(?:<\/span>)?<\/button>/);
+        expect(html).not.toMatch(/>\s*Rejeitar(?:<\/span>)?<\/button>/);
     });
 
     it("mostra rejeitar e oculta confirmar quando só há permissão de rejeição", () => {
         const html = render(["PAYMENT_READ", "PAYMENT_REJECT"]);
-        expect(html).toMatch(/Rejeitar<\/span><\/button>/);
-        expect(html).not.toMatch(/Confirmar<\/span><\/button>/);
+        expect(html).toMatch(/>\s*Rejeitar(?:<\/span>)?<\/button>/);
+        expect(html).not.toMatch(/>\s*Confirmar(?:<\/span>)?<\/button>/);
     });
 
     it.each(["CONFIRMED", "REJECTED", "CANCELED"] as const)("oculta decisões para pagamento %s", status => {
         const html = render(["PAYMENT_READ", "PAYMENT_CONFIRM", "PAYMENT_REJECT"], status);
         expect(html).toContain("já foi analisado ou cancelado");
-        expect(html).not.toMatch(/Confirmar<\/span><\/button>/);
-        expect(html).not.toMatch(/Rejeitar<\/span><\/button>/);
+        expect(html).not.toMatch(/>\s*Confirmar(?:<\/span>)?<\/button>/);
+        expect(html).not.toMatch(/>\s*Rejeitar(?:<\/span>)?<\/button>/);
         if (status === "REJECTED") expect(html).toContain("Comprovante ilegível");
     });
 

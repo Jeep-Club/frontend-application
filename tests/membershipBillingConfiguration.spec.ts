@@ -67,11 +67,19 @@ it("rejeita enforcementEnabled que não seja booleano", async () => {
 
 it.each([true, false])("envia a escolha explícita enforcementEnabled=%s ao trocar a referência", async enforcementEnabled => {
     const saved = configuration(enforcementEnabled);
-    request.mockResolvedValueOnce({ status: 200, data: configuration(!enforcementEnabled) }).mockResolvedValueOnce({ status: 200, data: saved });
+    request.mockResolvedValueOnce({ status: 200, data: saved });
     await expect(updateMembershipBillingConfigurationAction({ chargeDefinitionId: 23, enforcementEnabled })).resolves.toEqual(saved);
     expect(request).toHaveBeenLastCalledWith(expect.objectContaining({
         method: "PUT", body: JSON.stringify({ chargeDefinitionId: 23, enforcementEnabled }),
     }));
+});
+
+it('atualiza com UPDATE sem exigir READ quando o flag é explícito', async () => {
+    permission.mockImplementation(async (_, action) => action === 'BILLING_CONFIGURATION_UPDATE');
+    request.mockResolvedValue({ status: 200, data: configuration(true) });
+    await updateMembershipBillingConfigurationAction({ chargeDefinitionId: 12, enforcementEnabled: true });
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request).toHaveBeenCalledWith(expect.objectContaining({ method: 'PUT' }));
 });
 
 it.each([true, false])("altera apenas enforcementEnabled=%s sem substituir a referência", async enforcementEnabled => {

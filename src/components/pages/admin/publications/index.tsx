@@ -1,5 +1,7 @@
 "use client";
 import { Button } from '@/components/common/button';
+import { AdminExport } from '@/components/common/admin-export/AdminExport';
+import { exportAdminPublicationsAction } from '@/server/actions/publications/export';
 import { PageHeader } from '@/components/common/page-header';
 import { TourHelpButton } from '@/components/common/tour/TourHelpButton';
 import { publicationReadError, publicationReadRetry } from '@/components/pages/feed/feedDisplay';
@@ -69,11 +71,14 @@ export default function PublicationManagement({ type = '' }: { type?: 'EVENT' | 
         <nav id="tour-publications-types" aria-label="Áreas de publicações" className="flex flex-wrap gap-2">
             {[{ type: '', title: 'Visão geral' }, ...sections].map(section => <Button key={section.type} aria-pressed={type === section.type} onClick={() => selectType(section.type)} className={type === section.type ? 'bg-button-primary-bg text-button-primary-text hover:bg-button-primary-bg-hover hover:text-button-primary-text focus-visible:text-button-primary-text' : 'border border-j-gray-300 bg-j-white text-j-gray-700 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700'}>{section.title}</Button>)}
         </nav>
-        <section id="publication-status-results" className="min-w-0 rounded-xl border border-j-gray-200 bg-j-white p-4 md:p-6">
+        <section className="min-w-0 rounded-xl border border-j-gray-200 bg-j-white p-4 md:p-6">
+            {can('EXPORT') && <div aria-label="Exportações de publicações" className="mb-4 flex flex-wrap gap-3">
+                {publicationManagementSections.filter(section => !type || section.type === type).map(section => <AdminExport key={section.type} label={`Exportar ${section.title.toLocaleLowerCase('pt-BR')}`} onExport={format => exportAdminPublicationsAction({ type: section.type, status: 'ALL', format })} />)}
+            </div>}
             <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-bold text-j-blue-800">{sections.find(section => section.type === type)?.title ?? 'Visão geral'}</h2>
                 {canCreate && <Button id="tour-publications-create-btn" onClick={() => { setContent(<CreatePublicationModal initialType={publicationCreationTypes.some(entry => entry.type === type && can(entry.action)) ? type as 'EVENT' | 'NOTICE' | 'SERVICE' : undefined} />); setOpen(); }}>Criar publicação</Button>}
             </div>
-            {!type && <PublicationOverview />}
+            {!type && sections.length > 0 && <PublicationOverview />}
             {type && <PublicationSearchFilters key={type} type={type} canReadId={canLookup} canReadList={type === 'EVENT' ? canLookup : !publicationReadError(published.error).restricted} publishedFrom={publishedFrom} publishedTo={publishedTo} onOpenId={id => router.push(publicationAdministrationHref(type, searchParams, id))} onPeriod={next => {
                 const params = new URLSearchParams(searchParams.toString());
                 let changed = false;

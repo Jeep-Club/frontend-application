@@ -33,6 +33,7 @@ type VehicleRow = {
 };
 
 async function requireVehicleRead() {
+    if (!await haveActionPermission("VEHICLES", "VEHICLE_EXPORT")) throw new ActionError("Acesso não permitido para exportar veículos.", { status: 403 });
     if (!await haveActionPermission("VEHICLES", "VEHICLE_READ")) throw new ActionError("Acesso não permitido para exportar veículos.");
 }
 
@@ -115,7 +116,7 @@ function filterLabels(filters: z.output<typeof vehicleExportFilters>) {
     return result;
 }
 
-/** Exports the vehicle registry using the existing admin read permission and paginated list/detail endpoints. */
+/** Both export and read are required: this filtered report consumes list/detail endpoints. */
 export async function exportAdminVehiclesAction(format: "CSV" | "PDF", input: VehicleExportFilters = {}) {
     await requireVehicleRead();
     z.enum(["CSV", "PDF"]).parse(format);

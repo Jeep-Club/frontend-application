@@ -81,6 +81,21 @@ Uploads, downloads e imagens têm operações próprias, por exemplo [upload-ima
 
 ## Autenticação, sessão e permissões
 
+O catálogo `GET /authorization/permissions` mantém o DTO
+`id/code/description/module`; `/authorization/me` fornece `authorities`.
+Os gates usam essas authorities, nunca o nome de uma role. O prefixo do código
+de catálogo deve corresponder ao módulo informado antes de virar uma ação local.
+Membership e permission são verificações independentes; nenhuma substitui a
+autorização final do endpoint.
+
+Exportação de publicações usa `PUBLICATIONS_EXPORT`, sem exigir leitura editorial.
+HEALTH export-only pode abrir a área para exportar, mas não consulta nem renderiza
+a listagem clínica. `PUBLICATIONS_EVENT_HEALTH_EMERGENCY_READ` não concede leitura
+geral ou exportação HEALTH. O relatório filtrado de veículos usa endpoints de
+lista/detalhe, portanto exige `VEHICLES_VEHICLE_READ` e `VEHICLES_VEHICLE_EXPORT`.
+O formulário de configuração Membership exige READ para abrir e UPDATE para salvar;
+a action de PUT com flag explícito não faz uma consulta READ adicional.
+
 [loginAction](../src/actions/auth/login.ts) normaliza CPF, chama autenticação e trata tanto tokens de sessão quanto exigência de troca de senha. Na sessão normal, grava tokens e consulta contextos de autenticação, identidade e autorização; [me](../src/utils/auth/me.ts) prepara cookies assinados. Se a composição falha, a Action limpa a sessão.
 
 [utils/auth/login](../src/utils/auth/login.ts) grava AuthAccessToken, AuthRefreshToken e AccessTokenExpiration. Refresh é HttpOnly; o access token e sua expiração são gravados com o padrão não HttpOnly. Me e Permissions são HttpOnly nos fluxos inspecionados. [cookieOptions](../src/utils/auth/cookieOptions.ts) centraliza Secure/SameSite/path; [services/token](../src/services/token) assina/verifica os dados de contexto com jose e o segredo de servidor. São cookies de contexto do frontend, distintos do token de acesso fornecido pela API.

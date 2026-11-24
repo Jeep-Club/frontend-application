@@ -28,3 +28,4 @@ it('uses the dependent ID fallback instead of inventing a global dependent looku
     await expect(getMedicalOwnerAction(1)).resolves.toEqual({ name: null, responsibleName: null });
     expect(request).toHaveBeenCalledTimes(1);
 });
+jest.mock('@/server/utils/adminExportPdf', () => ({ getAdminPdfIdentity: jest.fn() }));

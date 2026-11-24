@@ -13,7 +13,7 @@ export function httpErrorHandler(error: Error) {
         }
         return;
     }
-    if (failure?.code === 'SESSION_EXPIRED' || error.message === SESSION_EXPIRED_MESSAGE) {
+    if ((failure?.status === 401 && ['SESSION_EXPIRED', 'INVALID_ACCESS_TOKEN', 'AUTHENTICATION_REQUIRED', 'SESSION_INVALID'].includes(failure.code ?? '')) || error.message === SESSION_EXPIRED_MESSAGE) {
         toast.error(SESSION_EXPIRED_MESSAGE);
         // This is an API route that clears cookies; it requires a full navigation.
         window.location.assign(new URL('/api/auth/logout', window.location.origin));

@@ -11,6 +11,7 @@ jest.mock("@/server/actions/profile/medical-profile", () => ({ saveMedicalProfil
 jest.mock("@/server/actions/admin/users/options", () => ({ listUserOptionsAction: jest.fn() }));
 jest.mock("@/providers/ModalProvider", () => ({ useModal: () => ({ setContent: jest.fn(), setOpen: jest.fn(), setClose: jest.fn() }) }));
 jest.mock("@/stores/userStore", () => ({ useUserStore: jest.fn() }));
+jest.mock("@/components/pages/admin/medical-profiles/MedicalForm", () => ({ __esModule: true, default: () => null }));
 
 function render(actions: string[]) {
     const permissions = [{ module: "HEALTH", actions }];
@@ -31,26 +32,26 @@ describe("medical management permissions", () => {
         expect(html).not.toContain("Editar perfil");
         expect(html).not.toContain("Excluir perfil");
         expect(html).not.toContain("Cadastrar perfil");
-        expect(html).not.toContain("Exportar CSV");
+        expect(html).not.toContain("Exportar</button>");
     });
     it.each([
         ["MEDICAL_PROFILE_UPDATE", "Editar perfil 3", "Cadastrar perfil"],
         ["MEDICAL_PROFILE_DELETE", "Excluir perfil 3", "Confirm"],
-        ["MEDICAL_PROFILE_EXPORT", "Exportar CSV", "Exportar PDF"],
+        ["MEDICAL_PROFILE_EXPORT", "Exportar</button>", "Histórico de exclusões"],
     ])("shows authorized actions for %s", (permission, label, second) => {
         const html = render(["MEDICAL_PROFILE_READ", permission]);
         expect(html).toContain(label);
         if (permission !== "MEDICAL_PROFILE_DELETE") expect(html).toContain(second);
         if (permission !== "MEDICAL_PROFILE_UPDATE") expect(html).not.toContain("Editar perfil");
         if (permission !== "MEDICAL_PROFILE_DELETE") expect(html).not.toContain("Excluir perfil");
-        if (permission !== "MEDICAL_PROFILE_EXPORT") expect(html).not.toContain("Exportar CSV");
+        if (permission !== "MEDICAL_PROFILE_EXPORT") expect(html).not.toContain("Exportar</button>");
     });
     it("does not expose the listing or mutation buttons without read permission", () => {
         const html = render(["MEDICAL_PROFILE_UPDATE", "MEDICAL_PROFILE_DELETE", "MEDICAL_PROFILE_EXPORT"]);
         expect(html).toContain("Acesso não permitido");
         expect(html).not.toContain("Visualizar perfil");
         expect(html).not.toContain("Cadastrar perfil");
-        expect(html).not.toContain("Exportar CSV");
+        expect(html).toContain("Exportar</button>");
     });
 });
 

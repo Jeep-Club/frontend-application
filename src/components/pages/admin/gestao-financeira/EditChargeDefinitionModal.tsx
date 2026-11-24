@@ -33,9 +33,6 @@ export function EditChargeDefinitionModal({ chargeDefinitionId }: EditChargeDefi
             queryClient.invalidateQueries({ queryKey: ["billing", "dashboard", "Definições cadastradas"], exact: true });
             setClose();
         },
-        onError: (error) => {
-            toast.error(error instanceof Error ? error.message : "Não foi possível salvar as alterações.");
-        },
 
     });
 

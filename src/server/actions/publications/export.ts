@@ -22,7 +22,7 @@ const resource = {
 /** Downloads the API's native CSV export; it never assembles a report from paginated list data. */
 export async function exportAdminPublicationsAction(input: z.input<typeof exportTarget>) {
     const { type, status, format } = exportTarget.parse(input);
-    if (!await haveActionPermission("PUBLICATIONS", "EXPORT") || !await haveActionPermission("PUBLICATIONS", resource[type].read)) {
+    if (!await haveActionPermission("PUBLICATIONS", "EXPORT")) {
         throw new ActionError("Você não tem permissão para exportar esta publicação.");
     }
     const query = new URLSearchParams({ format: "CSV" });

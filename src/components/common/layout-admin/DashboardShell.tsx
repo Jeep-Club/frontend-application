@@ -93,9 +93,10 @@ export default function DashboardShell({ fullName, userId, initialProfilePhotoUr
                     />
                     <div id="dashboard-main" data-dashboard-scroll tabIndex={-1} className="isolate min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-j-gray-100 [-webkit-overflow-scrolling:touch] focus-visible:outline-none">
                         <div className="flex min-h-full flex-col">
-                            {checkingPage ? <MembershipPageLoading /> : (
-                                <div className="mx-auto w-full min-w-0 max-w-7xl flex-1">{children}</div>
-                            )}
+                            {checkingPage && <MembershipPageLoading />}
+                            <div hidden={checkingPage} inert={checkingPage} className={checkingPage ? "hidden" : "mx-auto w-full min-w-0 max-w-7xl flex-1"}>
+                                {children}
+                            </div>
                             <footer className="shrink-0 border-t border-j-gray-200 bg-j-white px-6 py-3 text-center text-[11px] font-normal leading-relaxed text-j-gray-600">
                                 © {new Date().getFullYear()} Desenvolvido pelo Instituto Federal de São Paulo - Câmpus Caraguatatuba
                             </footer>
