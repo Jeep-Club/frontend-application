@@ -6,7 +6,7 @@ import { listChargeDefinitionsAction } from "@/server/actions/billing/chargeDefi
 import { listBillingAction } from "@/server/actions/billing/management";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
-import { billingLabels } from "./billingDisplay";
+import { billingLabels, linkedChargeLabel } from "./billingDisplay";
 import { MembershipBilling } from "./MembershipBilling";
 import { FinancialDashboardView } from "./FinancialDashboardView";
 import type { DashboardDestination, DashboardMetric, DashboardQueueGroup, DashboardQueueItem, DashboardSegment } from "./financialDashboardModel";
@@ -73,12 +73,13 @@ export function FinancialDashboard({ onNavigate }: { onNavigate: (destination: D
     const activeQueue = availableGroups.find(group => group.id === selectedQueue) ?? availableGroups[0];
     const queueItems: DashboardQueueItem[] = activeQueue?.query.data?.content.flatMap(record => {
         if ("paymentMethod" in record) return [{
-            id: record.id, title: `Pagamento #${record.id}`, description: `Cobrança #${record.memberChargeId} · ${billingLabels[record.paymentMethod] ?? record.paymentMethod}`,
+            id: record.id, title: record.userName || `Pagamento #${record.id}`,
+            description: `${linkedChargeLabel(record)} · ${billingLabels[record.paymentMethod] ?? record.paymentMethod}`,
             amount: record.amount, date: record.createdAt ?? record.paidAt, destination: activeQueue.destination,
         }];
         if ("memberPaymentId" in record) return [{
-            id: record.id, title: `${activeQueue.id === "returns" ? "Devolução" : "Reembolso"} #${record.id}`,
-            description: `Cobrança #${record.memberChargeId}`, amount: record.amount,
+            id: record.id, title: record.userName || (activeQueue.id === "returns" ? "Devolução" : "Reembolso"),
+            description: linkedChargeLabel(record), amount: record.amount,
             date: activeQueue.id === "returns" ? record.approvedAt : record.requestedAt, destination: activeQueue.destination,
         }];
         return [];

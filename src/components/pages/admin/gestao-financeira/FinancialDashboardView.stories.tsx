@@ -23,10 +23,10 @@ const items: Record<DashboardQueueGroup, FinancialDashboardViewProps["queue"]["i
         { id: 103, title: "Pagamento #103", description: "Aguardando validação", amount: 120, date: "2026-11-08", destination: { tab: "movements", movement: "payments", status: "PENDING_VALIDATION" } },
     ],
     refunds: [
-        { id: 201, title: "Reembolso #201", description: "Solicitado pelo associado", amount: 50, date: "2026-11-08", destination: { tab: "movements", movement: "refunds", status: "REQUESTED" } },
-        { id: 202, title: "Reembolso #202", description: "Solicitado pelo associado", amount: 35, date: "2026-11-07", destination: { tab: "movements", movement: "refunds", status: "REQUESTED" } },
+        { id: 201, title: "Associado de exemplo", description: "Anuidade", amount: 50, date: "2026-11-08", destination: { tab: "movements", movement: "refunds", status: "REQUESTED" } },
+        { id: 202, title: "Reembolso", description: "Inscrição no passeio", amount: 35, date: "2026-11-07", destination: { tab: "movements", movement: "refunds", status: "REQUESTED" } },
     ],
-    returns: [{ id: 301, title: "Devolução #301", description: "Reembolso aprovado", amount: 40, date: "2026-11-07", destination: { tab: "movements", movement: "refunds", status: "APPROVED" } }],
+    returns: [{ id: 301, title: "Devolução", description: "Inscrição no passeio", amount: 40, date: "2026-11-07", destination: { tab: "movements", movement: "refunds", status: "APPROVED" } }],
 };
 
 const meta = {
@@ -64,7 +64,7 @@ export const Populado: Story = {
     play: async ({ args, canvas }) => {
         await userEvent.click(canvas.getByRole("button", { name: /^Reembolsos 2$/ }));
         await expect(args.onQueueChange).toHaveBeenCalledWith("refunds");
-        await expect(canvas.getByText("Reembolso #201")).toBeVisible();
+        await expect(canvas.getByText("Associado de exemplo")).toBeVisible();
     },
 };
 
