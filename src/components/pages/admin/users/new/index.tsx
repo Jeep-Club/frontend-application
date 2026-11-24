@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { ArrowRight,Check,Copy,LoaderCircle,Mail } from "lucide-react";
+import { ArrowRight,Check,Copy,LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useFormContext,useWatch } from "react-hook-form";
@@ -49,31 +49,38 @@ export function NewAdminUserPage({ onClose, onCreated }: { onClose?: () => void;
     if (createdUser?.activationMethod === "TEMPORARY_PASSWORD") {
         return (
             <div className="mx-auto w-full max-w-2xl p-4 sm:p-6">
-                <div className="rounded-2xl border border-j-gray-200 bg-j-white p-5 shadow-sm sm:p-8">
-                    <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-j-green-100 text-j-green-700"><Check size={24} /></div>
-                    <h1 className="text-2xl font-extrabold text-j-blue-800">Usuário criado</h1>
-                    <p className="mt-2 text-sm leading-6 text-j-gray-600">Entregue a senha provisória ao usuário por um canal seguro. No primeiro login, ele precisará criar uma senha permanente.</p>
-                    <div className="mt-6 rounded-xl border border-j-yellow-300 bg-j-yellow-50 p-4">
-                        <p className="text-xs font-bold uppercase tracking-wide text-j-gray-600">Senha provisória · usuário #{createdUser.userId}</p>
-                        <p className="mt-2 break-all font-mono text-lg font-bold text-j-blue-800">{createdUser.temporaryPassword}</p>
+                <UserWorkspace
+                    title="Usuário criado"
+                    description="Envie a senha provisória por um canal seguro. O usuário deverá trocá-la no primeiro acesso."
+                    options={[]}
+                    selected="personal"
+                    onSelect={() => {}}
+                    onBack={backToUsers}
+                    modal={Boolean(onClose)}
+                >
+                    <div className={onClose ? undefined : "p-4 sm:p-6"}>
+                        <div className="rounded-xl border border-j-yellow-300 bg-j-yellow-50 p-4">
+                            <p className="text-xs font-bold uppercase tracking-wide text-j-gray-600">Senha provisória</p>
+                            <p className="mt-2 break-all font-mono text-lg font-bold text-j-blue-800">{createdUser.temporaryPassword}</p>
+                        </div>
+                        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                            <Button type="button" onClick={async () => {
+                                try {
+                                    await navigator.clipboard.writeText(createdUser.temporaryPassword);
+                                    setCopied(true);
+                                    toast.success("Senha copiada para a área de transferência.");
+                                } catch {
+                                    toast.error("Não foi possível copiar automaticamente. Selecione e copie a senha.");
+                                }
+                            }} className="min-h-11 flex-1 gap-2">
+                                {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
+                                {copied ? "Senha copiada" : "Copiar senha provisória"}
+                            </Button>
+                            <Button type="button" onClick={backToUsers} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuários</Button>
+                        </div>
+                        <p className="mt-4 text-xs text-j-gray-500">Por segurança, esta senha será exibida somente agora.</p>
                     </div>
-                    <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                        <Button type="button" onClick={async () => {
-                            try {
-                                await navigator.clipboard.writeText(createdUser.temporaryPassword);
-                                setCopied(true);
-                                toast.success("Senha copiada para a área de transferência.");
-                            } catch {
-                                toast.error("Não foi possível copiar automaticamente. Selecione e copie a senha.");
-                            }
-                        }} className="min-h-11 flex-1 gap-2">
-                            {copied ? <Check size={16} /> : <Copy size={16} />}
-                            {copied ? "Senha copiada" : "Copiar senha provisória"}
-                        </Button>
-                        <Button type="button" onClick={backToUsers} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuários</Button>
-                    </div>
-                    <p className="mt-4 text-xs text-j-gray-500">Por segurança, esta senha será exibida somente agora.</p>
-                </div>
+                </UserWorkspace>
             </div>
         );
     }
@@ -87,27 +94,31 @@ export function NewAdminUserPage({ onClose, onCreated }: { onClose?: () => void;
 
         return (
             <div className="mx-auto w-full max-w-2xl p-4 sm:p-6">
-                <div className="rounded-2xl border border-j-gray-200 bg-j-white p-5 shadow-sm sm:p-8">
-                    <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl ${createdUser.invitationStatus === "DELIVERY_FAILED" ? "bg-j-red-100 text-j-red-600" : "bg-j-green-100 text-j-green-700"}`}>
-                        {createdUser.invitationStatus === "DELIVERY_FAILED" ? <Mail size={23} /> : <Check size={24} />}
+                <UserWorkspace
+                    title="Cadastro criado"
+                    description="O convite por e-mail contém o link para o usuário definir a senha."
+                    options={[]}
+                    selected="personal"
+                    onSelect={() => {}}
+                    onBack={backToUsers}
+                    modal={Boolean(onClose)}
+                >
+                    <div className={onClose ? undefined : "p-4 sm:p-6"}>
+                        <div className="rounded-xl border border-j-gray-200 bg-j-gray-50 p-4">
+                            <p className="text-xs font-bold uppercase tracking-wide text-j-gray-500">Status do convite</p>
+                            <p className={`mt-2 font-bold ${createdUser.invitationStatus === "DELIVERY_FAILED" ? "text-j-red-600" : "text-j-blue-800"}`}>{invitationLabel}</p>
+                        </div>
+                        {createdUser.invitationStatus === "DELIVERY_FAILED" && (
+                            <p role="status" className="mt-3 text-sm text-j-red-600">O usuário foi criado, mas o convite não foi entregue. Você poderá consultar e reenviar o convite nos detalhes do usuário.</p>
+                        )}
+                        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                            <Button type="button" onClick={() => { onClose?.(); router.push(`/admin/users/${createdUser.userId}?invitation=1`); }} className="min-h-11 flex-1 gap-2">
+                                Gerenciar convite <ArrowRight size={16} />
+                            </Button>
+                            <Button type="button" onClick={backToUsers} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuários</Button>
+                        </div>
                     </div>
-                    <h1 className="text-2xl font-extrabold text-j-blue-800">Cadastro criado</h1>
-                    <p className="mt-2 text-sm leading-6 text-j-gray-600">O usuário receberá um link para definir a própria senha. O status abaixo informa o resultado do envio pelo serviço de e-mail.</p>
-                    <div className="mt-6 rounded-xl border border-j-gray-200 bg-j-gray-50 p-4">
-                        <p className="text-xs font-bold uppercase tracking-wide text-j-gray-500">Status do convite</p>
-                        <p className={`mt-2 font-bold ${createdUser.invitationStatus === "DELIVERY_FAILED" ? "text-j-red-600" : "text-j-blue-800"}`}>{invitationLabel}</p>
-                        <p className="mt-1 text-xs text-j-gray-500">Usuário #{createdUser.userId}</p>
-                    </div>
-                    {createdUser.invitationStatus === "DELIVERY_FAILED" && (
-                        <p role="status" className="mt-3 text-sm text-j-red-600">O usuário foi criado, mas o convite não foi entregue. Você poderá consultar e reenviar o convite nos detalhes do usuário.</p>
-                    )}
-                    <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                        <Button type="button" onClick={() => { onClose?.(); router.push(`/admin/users/${createdUser.userId}?invitation=1`); }} className="min-h-11 flex-1 gap-2">
-                            Gerenciar convite <ArrowRight size={16} />
-                        </Button>
-                        <Button type="button" onClick={backToUsers} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuários</Button>
-                    </div>
-                </div>
+                </UserWorkspace>
             </div>
         );
     }
