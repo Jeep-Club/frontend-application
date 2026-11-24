@@ -7,6 +7,9 @@ interface ChargeAssignment {
     id: number;
     chargeDefinitionId: number;
     audienceType: ChargeAudienceType;
+    chargeDefinitionName: string | null;
+    userName: string | null;
+    eventTitle: string | null;
     userId: number | null;
     roleId: number | null;
     roleName: string | null;

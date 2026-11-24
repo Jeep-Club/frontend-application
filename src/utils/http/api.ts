@@ -14,6 +14,7 @@ export enum HttpAPIRoutes {
     PUBLIC_ACTIVATION_INVITATION_VALIDATION = "authentication/activation-invitations/validation",
     PUBLIC_ACCOUNT_ACTIVATION = "authentication/account-activations",
     MEMBERSHIP_APPLICATIONS = "membership-applications",
+    MEMBERSHIP_APPLICATION_ACTIVATION = "membership-applications/activate",
     ADMIN_MEMBERS = "admin/members",
     ADMIN_MEMBERSHIP_BILLING_CONFIGURATION = "admin/membership-billing-configuration",
     ADMIN_MEMBERSHIP_APPLICATIONS = "admin/membership-applications",

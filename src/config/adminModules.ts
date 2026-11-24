@@ -45,7 +45,7 @@ export const adminModules: AdminModuleConfig[] = [
         description: "Consulte e gerencie os dados médicos de usuários e dependentes.",
         href: "/admin/dados-medicos",
         icon: HeartPulse,
-        visibilityPermission: { module: "HEALTH", action: "MEDICAL_PROFILE_READ" },
+        visibilityPermission: { module: "HEALTH", action: "MEDICAL_PROFILE_READ", alternativeActions: ["MEDICAL_PROFILE_EXPORT"] },
     },
     {
         key: "publication-management",
@@ -92,6 +92,7 @@ export const adminModules: AdminModuleConfig[] = [
         visibilityPermission: {
             module: "AUTHORIZATION",
             action: "ROLE_READ",
+            alternativeActions: ["PERMISSION_READ", "USER_ROLE_READ"],
         },
     },
     {
@@ -113,7 +114,7 @@ export const adminModules: AdminModuleConfig[] = [
         description: "Defina valores e regras, gerencie atribuições e acompanhe os ciclos de cobrança.",
         href: "/admin/gestao-financeira/cobrancas",
         icon: Receipt,
-        visibilityPermission: { module: "BILLING", action: "CHARGE_DEFINITION_READ", alternativeActions: ["CHARGE_CYCLE_READ"] },
+        visibilityPermission: { module: "BILLING", action: "CHARGE_DEFINITION_READ", alternativeActions: ["CHARGE_CYCLE_READ", "CHARGE_DEFINITION_HISTORY_READ"] },
     },
     {
         key: "financial-movements",

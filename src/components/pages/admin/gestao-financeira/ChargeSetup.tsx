@@ -5,7 +5,7 @@ import { Archive,CalendarPlus,Eye,FileText,Pencil,Plus,Power,PowerOff,ShieldX,Us
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
 
-import { Button,ButtonIcon } from "@/components/common/button";
+import { Button } from "@/components/common/button";
 import { Table } from "@/components/common/table";
 import { useModal } from "@/providers/ModalProvider";
 import { listChargeDefinitionsAction } from "@/server/actions/billing/chargeDefinitions/list";
@@ -15,6 +15,7 @@ import { ArchiveChargeDefinitionModal } from "./ArchiveChargeDefinitionModal";
 import { BillingExport } from "./BillingExport";
 import { BillingOperations } from "./BillingOperations";
 import { ChargeAssignmentsModal } from "./ChargeAssignmentsModal";
+import { ChargeDefinitionDeletionHistoryModal } from "./ChargeDefinitionDeletionHistoryModal";
 import { ChargeDefinitionDetailsModal } from "./ChargeDefinitionDetailsModal";
 import {
 	CHARGE_DEFINITION_STATUS_LABEL,
@@ -33,7 +34,7 @@ import { FinancialSectionNav } from "./FinancialSectionNav";
 const PAGE_SIZE = 10;
 
 function ChargeDefinitions() {
-    const { setContent, setOpen } = useModal();
+    const { setContent, setOpen, openFromTrigger } = useModal();
     const permissions = useUserStore((state) => state.permissions);
 
     const canRead = hasPermission(permissions, "BILLING", "CHARGE_DEFINITION_READ");
@@ -46,23 +47,28 @@ function ChargeDefinitions() {
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(PAGE_SIZE);
     const [sort, setSort] = useState<string>();
+    const [status, setStatus] = useState<ChargeDefinitionStatus | "">("ACTIVE");
 
     const searchParams: ChargeDefinitionSearchParams = {
         page: String(page),
         size: String(pageSize),
         ...(sort ? { sort } : {}),
+        ...(status ? { status } : {}),
     };
 
     const { data, isLoading, isFetching, error, refetch } = useQuery({
         queryKey: ["billing", "charge-definitions", searchParams],
         queryFn: () => listChargeDefinitionsAction(searchParams),
-        placeholderData: (previous) => previous,
+        placeholderData: (previous, previousQuery) => {
+            const previousParams = previousQuery?.queryKey[2] as ChargeDefinitionSearchParams | undefined;
+            return previousParams?.status === searchParams.status ? previous : undefined;
+        },
         enabled: canRead,
     });
 
-    const handleOpenCreate = () => {
+    const handleOpenCreate = (trigger: HTMLButtonElement) => {
         setContent(<CreateChargeDefinitionModal />);
-        setOpen();
+        openFromTrigger(trigger);
     };
 
     const handleOpenEdit = (id: number) => {
@@ -114,19 +120,32 @@ function ChargeDefinitions() {
 
     const renderDefinitionActions = (definition: ChargeDefinitionSummary) => {
         const isArchived = definition.status === "ARCHIVED";
-        const iconActionClass = "flex h-10 w-10 items-center justify-center rounded-xl border border-solid border-j-gray-200 bg-j-white text-j-blue-800 transition-colors hover:border-j-blue-200 hover:bg-j-blue-50 hover:text-j-blue-800 focus-visible:text-j-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 [:root[data-theme=dark]_&]:hover:bg-j-gray-100";
-        const destructiveIconClass = "text-j-red-500 hover:border-j-red-200 hover:bg-j-red-100 hover:text-j-red-600 focus-visible:text-j-red-600 [:root[data-theme=dark]_&]:text-j-red-200 [:root[data-theme=dark]_&]:hover:text-j-red-100 [:root[data-theme=dark]_&]:focus-visible:text-j-red-100";
+        const isActive = definition.status === "ACTIVE";
+        const statusLabel = isActive ? "Desativar" : "Ativar";
+        const actionClass = "flex min-h-9 min-w-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2";
+        const standardActionClass = actionClass + " record-action bg-blue-50 text-j-blue-700 hover:bg-blue-100";
+        const dangerActionClass = actionClass + " record-action-danger bg-red-50 text-j-red-600 hover:bg-red-100";
 
         return <div className="flex w-full flex-col gap-3">
             {(canReadAssignments || canGenerate && definition.status === "ACTIVE") && <div className="grid w-full grid-cols-1 gap-2">
                 {canReadAssignments && <Button type="button" onClick={() => handleOpenAssignments(definition)} aria-label={`Associar membros a ${definition.name}`} className="h-10 w-full min-w-0 whitespace-nowrap border border-j-blue-200 bg-j-blue-50 px-2 text-xs text-j-blue-800 hover:bg-j-blue-100 hover:text-j-blue-800 focus-visible:bg-j-blue-100 sm:px-3 sm:text-sm"><Users size={16} />Associar</Button>}
                 {canGenerate && definition.status === "ACTIVE" && <Button type="button" onClick={() => handleOpenGenerateCycle(definition)} aria-label={`Gerar cobrança para ${definition.name}`} className="h-10 w-full min-w-0 whitespace-nowrap bg-j-yellow-300 px-2 text-xs text-j-blue-800 hover:bg-j-yellow-400 hover:text-j-blue-800 sm:px-3 sm:text-sm"><CalendarPlus size={16} />Gerar cobrança</Button>}
             </div>}
-            <div className="flex w-full items-center justify-end gap-2 border-t border-j-gray-200 pt-3">
-                <ButtonIcon type="button" title="Visualizar" aria-label={`Visualizar ${definition.name}`} onClick={() => { setContent(<ChargeDefinitionDetailsModal id={definition.id} />); setOpen(); }} className={iconActionClass}><Eye size={18} /></ButtonIcon>
-                {canUpdate && !isArchived && <ButtonIcon type="button" title="Editar" aria-label={`Editar ${definition.name}`} onClick={() => handleOpenEdit(definition.id)} className={iconActionClass}><Pencil size={18} /></ButtonIcon>}
-                {canUpdate && !isArchived && <ButtonIcon type="button" title={definition.status === "ACTIVE" ? "Desativar" : "Ativar"} aria-label={`${definition.status === "ACTIVE" ? "Desativar" : "Ativar"} ${definition.name}`} onClick={() => handleOpenToggleStatus(definition)} className={twMerge(iconActionClass, definition.status === "ACTIVE" ? destructiveIconClass : "text-j-green-700 hover:border-j-green-200 hover:bg-j-green-100 hover:text-j-green-700 focus-visible:text-j-green-700 [:root[data-theme=dark]_&]:text-j-green-200 [:root[data-theme=dark]_&]:hover:text-j-green-100 [:root[data-theme=dark]_&]:focus-visible:text-j-green-100")}>{definition.status === "ACTIVE" ? <PowerOff size={18} /> : <Power size={18} />}</ButtonIcon>}
-                {canUpdate && !isArchived && <ButtonIcon type="button" title="Arquivar" aria-label={`Arquivar ${definition.name}`} onClick={() => handleOpenArchive(definition)} className={twMerge(iconActionClass, destructiveIconClass)}><Archive size={18} /></ButtonIcon>}
+            <div className="grid w-full grid-cols-2 gap-2 border-t border-j-gray-200 pt-3">
+                <button type="button" aria-haspopup="dialog" aria-label={`Visualizar ${definition.name}`} onClick={() => { setContent(<ChargeDefinitionDetailsModal id={definition.id} />); setOpen(); }} className={standardActionClass}>
+                    <Eye size={15} className="shrink-0" aria-hidden="true" />Visualizar
+                </button>
+                {canUpdate && !isArchived && <>
+                    <button type="button" aria-haspopup="dialog" aria-label={`Editar ${definition.name}`} onClick={() => handleOpenEdit(definition.id)} className={actionClass + " record-action bg-yellow-50 text-j-gray-700 hover:bg-yellow-100"}>
+                        <Pencil size={15} className="shrink-0" aria-hidden="true" />Editar
+                    </button>
+                    <button type="button" aria-haspopup="dialog" aria-label={`${statusLabel} ${definition.name}`} onClick={() => handleOpenToggleStatus(definition)} className={isActive ? dangerActionClass : standardActionClass}>
+                        {isActive ? <PowerOff size={15} className="shrink-0" aria-hidden="true" /> : <Power size={15} className="shrink-0" aria-hidden="true" />}{statusLabel}
+                    </button>
+                    <button type="button" aria-haspopup="dialog" aria-label={`Arquivar ${definition.name}`} onClick={() => handleOpenArchive(definition)} className={dangerActionClass}>
+                        <Archive size={15} className="shrink-0" aria-hidden="true" />Arquivar
+                    </button>
+                </>}
             </div>
         </div>;
     };
@@ -170,17 +189,21 @@ function ChargeDefinitions() {
                             className="gap-3 lg:flex-wrap lg:items-start"
                         >
                             <div className="flex w-full flex-wrap items-center gap-2 xl:w-auto xl:justify-end">
-                                <label className="flex h-10 shrink-0 items-center rounded-lg border border-j-gray-300 bg-j-white px-2">
-                                    <select aria-label="Ordenar definições" value={sort ?? ""} onChange={(event) => { setSort(event.target.value || undefined); setPage(0); }} className="w-24 bg-transparent text-xs font-semibold text-j-blue-800 focus-visible:outline-2">
-                                        <option value="">Padrão</option>
-                                        <option value="name,asc">Nome (A–Z)</option>
-                                        <option value="name,desc">Nome (Z–A)</option>
-                                        <option value="defaultAmount,asc">Menor valor</option>
-                                        <option value="defaultAmount,desc">Maior valor</option>
-                                    </select>
-                                </label>
+                                <select aria-label="Situação das definições" value={status} onChange={(event) => { setStatus(event.target.value as ChargeDefinitionStatus | ""); setPage(0); }} className="h-10 w-full cursor-pointer rounded-lg border border-input-border bg-background px-3 text-sm font-semibold text-primary hover:bg-background-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-input-border-focus sm:w-auto [:root[data-theme=dark]_&]:scheme-dark">
+                                    <option value="ACTIVE">Ativas</option>
+                                    <option value="INACTIVE">Inativas</option>
+                                    <option value="ARCHIVED">Arquivadas</option>
+                                    <option value="">Todas as situações</option>
+                                </select>
+                                <select aria-label="Ordenar definições" value={sort ?? ""} onChange={(event) => { setSort(event.target.value || undefined); setPage(0); }} className="h-10 min-w-28 shrink-0 cursor-pointer rounded-lg border border-input-border bg-background px-3 text-xs font-semibold text-primary hover:bg-background-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-input-border-focus [:root[data-theme=dark]_&]:scheme-dark">
+                                    <option value="">Padrão</option>
+                                    <option value="name,asc">Nome (A–Z)</option>
+                                    <option value="name,desc">Nome (Z–A)</option>
+                                    <option value="defaultAmount,asc">Menor valor</option>
+                                    <option value="defaultAmount,desc">Maior valor</option>
+                                </select>
                                 {canExport && <BillingExport kind="definitions" variant="secondary" className="min-w-0" />}
-                                {canCreate && <Button type="button" onClick={handleOpenCreate} className="h-10 w-full shrink-0 whitespace-nowrap px-4 py-0 text-sm sm:w-auto"><Plus size={16} strokeWidth={3} />Criar definição</Button>}
+                                {canCreate && <Button type="button" aria-haspopup="dialog" onClick={event => handleOpenCreate(event.currentTarget)} className="h-10 w-full shrink-0 whitespace-nowrap px-4 py-0 text-sm sm:w-auto"><Plus size={16} strokeWidth={3} />Criar definição</Button>}
                             </div>
                         </Table.Header>
                         {error ? <div role="alert" className="flex flex-col items-center gap-3 px-5 py-14 text-center"><p className="text-sm text-j-red-500">{error.message}</p><Button onClick={() => { void refetch(); }}>Tentar novamente</Button></div>
@@ -201,8 +224,8 @@ function ChargeDefinitions() {
                                 </article>)}</div>
                                     : <div className="flex min-h-64 flex-col items-center justify-center px-5 py-12 text-center">
                                         <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-j-blue-800/5 text-j-blue-800"><FileText size={26} /></span>
-                                        <h3 className="text-lg font-extrabold text-j-blue-800">{canCreate ? "Nenhuma definição cadastrada" : "Nenhuma definição disponível"}</h3>
-                                        <p className="mt-2 max-w-md text-sm leading-relaxed text-j-gray-600">{canCreate ? "Crie uma definição para organizar as cobranças e os valores aplicados aos associados." : "As regras e os valores das cobranças aparecerão aqui quando forem cadastrados."}</p>
+                                        <h3 className="text-lg font-extrabold text-j-blue-800">{status ? "Nenhuma definição nesta situação" : "Nenhuma definição disponível"}</h3>
+                                        <p className="mt-2 max-w-md text-sm leading-relaxed text-j-gray-600">{status ? "Selecione outra situação para consultar as demais definições." : canCreate ? "Crie uma definição para organizar as cobranças e os valores aplicados aos associados." : "As regras e os valores das cobranças aparecerão aqui quando forem cadastrados."}</p>
                                     </div>}
                     </Table.Root>
                 )}
@@ -213,6 +236,7 @@ function ChargeDefinitions() {
 
 export default function ChargeSetup({ initialSection }: { initialSection: "definitions" | "cycles" }) {
     const permissions = useUserStore((state) => state.permissions);
+    const canReadHistory = hasPermission(permissions, "BILLING", "CHARGE_DEFINITION_HISTORY_READ");
     return (
         <FinancialPage title="Configuração de cobranças">
             <FinancialSectionNav label="Configuração de cobranças" active={initialSection} links={[
@@ -220,6 +244,7 @@ export default function ChargeSetup({ initialSection }: { initialSection: "defin
                 { key: "cycles", label: "Ciclos de cobrança", href: "?tab=cycles" },
             ]} />
             {initialSection === "definitions" ? <section id="definitions">
+                {canReadHistory && <div className="mb-3 flex justify-end"><ChargeDefinitionDeletionHistoryModal /></div>}
                 {hasPermission(permissions, "BILLING", "CHARGE_DEFINITION_READ") ? <ChargeDefinitions /> : (
                     <div className="rounded-xl border border-input-border bg-j-white p-4">
                         <h2 className="font-bold text-primary">Definições de cobrança</h2>

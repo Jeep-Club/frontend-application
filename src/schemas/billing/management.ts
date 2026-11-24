@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { adminPaymentActorsSchema, adminPaymentContextSchema, billingChargeLabelsSchema } from "@/schemas/payments";
 
 export const billingResources = ["cycles", "member-charges", "payments", "refunds"] as const;
 export type BillingResource = typeof billingResources[number];
@@ -19,6 +20,7 @@ export const cycleSchema = base.extend({
     createdAt: nullableDate, updatedAt: nullableDate,
 });
 export const chargeSchema = base.extend({
+    ...billingChargeLabelsSchema.shape,
     userId: z.number(), chargeDefinitionId: z.number(), chargeCycleId: z.number(),
     finalAmount: z.number(), originalAmount: z.number().optional(), dueDate: z.string(),
     paymentAcceptancePolicy: z.string(), paymentAllowedUntil: nullableDate,
@@ -36,6 +38,8 @@ export const paymentSchema = base.extend({
     rejectedByUserId: nullableId, rejectionReason: z.string().nullish(), canceledAt: nullableDate, notes: z.string().nullish(),
 });
 export const refundSchema = base.extend({
+    ...billingChargeLabelsSchema.shape,
+    chargeDefinitionId: nullableId,
     memberChargeId: z.number(), memberPaymentId: z.number(), chargeCycleId: z.number(), userId: z.number(),
     amount: z.number(), reason: z.string(),
     status: z.enum(["ELIGIBLE", "REQUESTED", "APPROVED", "REJECTED", "REFUNDED", "EXPIRED", "CANCELED"]),
@@ -44,6 +48,11 @@ export const refundSchema = base.extend({
     refundedAt: nullableDate, canceledAt: nullableDate, rejectionReason: z.string().nullish(),
     createdByUserId: nullableId, requestedByUserId: nullableId, approvedByUserId: nullableId,
     rejectedByUserId: nullableId, refundedByUserId: nullableId, canceledByUserId: nullableId,
+    createdByUserName: z.string().nullish(), requestedByUserName: z.string().nullish(),
+    approvedByUserName: z.string().nullish(), rejectedByUserName: z.string().nullish(),
+    refundedByUserName: z.string().nullish(), canceledByUserName: z.string().nullish(),
 });
-export const managementSchemas = { cycles: cycleSchema, "member-charges": chargeSchema, payments: paymentSchema, refunds: refundSchema };
-export type BillingRecord = z.infer<typeof cycleSchema> | z.infer<typeof chargeSchema> | z.infer<typeof paymentSchema> | z.infer<typeof refundSchema>;
+export const adminPaymentSchema = paymentSchema.extend({ ...adminPaymentContextSchema.shape, ...adminPaymentActorsSchema.shape });
+
+export const managementSchemas = { cycles: cycleSchema, "member-charges": chargeSchema, payments: adminPaymentSchema, refunds: refundSchema };
+export type BillingRecord = z.infer<(typeof managementSchemas)[BillingResource]>;

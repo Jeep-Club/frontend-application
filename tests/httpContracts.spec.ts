@@ -14,6 +14,8 @@ jest.mock('@/utils/auth/login', () => ({ login: jest.fn() }));
 jest.mock('react-hot-toast', () => ({ toast: { error: jest.fn() } }));
 
 const originalFetch = global.fetch;
+const originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+const assign = jest.fn();
 const mockFetch = jest.fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>();
 const problem = (status: number, code: string, detail = 'Corrija os dados e tente novamente.') => ({ status, code, detail });
 const response = (status: number, body: unknown, contentType = 'application/problem+json') => new Response(body === undefined ? null : JSON.stringify(body), { status, headers: { 'Content-Type': contentType } });
@@ -22,10 +24,11 @@ const request = () => actionFetchWrapper({ url: 'resource', schema: z.object({ i
 beforeEach(() => {
     jest.resetAllMocks();
     global.fetch = mockFetch;
+    Object.defineProperty(globalThis, 'window', { configurable: true, value: { location: { pathname: '/feed', origin: 'http://localhost', assign } } });
     process.env.API_URL = 'http://api.local';
     jest.mocked(getAuthCookies.SERVER).mockResolvedValue({ AuthAccessToken: 'old', AuthRefreshToken: 'refresh', AccessTokenExpiration: '2030-01-01' });
 });
-afterAll(() => { global.fetch = originalFetch; });
+afterAll(() => { global.fetch = originalFetch; if (originalWindow) Object.defineProperty(globalThis, 'window', originalWindow); else Reflect.deleteProperty(globalThis, 'window'); });
 
 it('returns 204 without reading a body or invoking a JSON schema', async () => {
     const res = response(204, undefined);
@@ -50,7 +53,13 @@ it.each([[402, 'MEMBERSHIP_PAYMENT_REQUIRED'], [403, 'ACCESS_DENIED'], [409, 'CO
     expect(error).toBeInstanceOf(ActionError);
     expect(error).toMatchObject({ status, code, errors, message: errors[0].message });
     mutationErrorHandler(error as Error);
-    expect(toast.error).toHaveBeenCalledWith(errors[0].message);
+    if (status === 402) {
+        expect(assign).toHaveBeenCalledWith(new URL('/financeiro', 'http://localhost'));
+        expect(toast.error).not.toHaveBeenCalled();
+    } else {
+        expect(toast.error).toHaveBeenCalledWith(errors[0].message);
+        expect(assign).not.toHaveBeenCalled();
+    }
     expect(refresh).not.toHaveBeenCalled();
     expect(login).not.toHaveBeenCalled();
 });

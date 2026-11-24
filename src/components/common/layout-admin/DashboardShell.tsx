@@ -1,6 +1,6 @@
 'use client';
 
-import { useRestrictedNavigation } from "./MembershipAccessGate";
+import { MembershipPageLoading, useRestrictedMembership, useRestrictedNavigation } from "./MembershipAccessGate";
 import { useEffect, useState } from "react";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
@@ -42,6 +42,7 @@ export default function DashboardShell({ fullName, userId, initialProfilePhotoUr
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { restricted, blockNavigation } = useRestrictedNavigation();
+    const { checkingPage } = useRestrictedMembership();
     const pathname = usePathname();
     const sidebarStorageKey = `dashboard-sidebar-collapsed:${userId}`;
 
@@ -68,7 +69,7 @@ export default function DashboardShell({ fullName, userId, initialProfilePhotoUr
         }
     }
 
-    if (onboardingRequired && !restricted) return <FirstAccessOnboarding />;
+    if (onboardingRequired && !restricted) return checkingPage ? <MembershipPageLoading /> : <FirstAccessOnboarding />;
 
     return (
         <GuidedTour setMobileMenuOpen={setIsMobileMenuOpen}>
@@ -92,7 +93,10 @@ export default function DashboardShell({ fullName, userId, initialProfilePhotoUr
                     />
                     <div id="dashboard-main" data-dashboard-scroll tabIndex={-1} className="isolate min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-j-gray-100 [-webkit-overflow-scrolling:touch] focus-visible:outline-none">
                         <div className="flex min-h-full flex-col">
-                            <div className="mx-auto w-full min-w-0 max-w-7xl flex-1">{children}</div>
+                            {checkingPage && <MembershipPageLoading />}
+                            <div hidden={checkingPage} inert={checkingPage} className={checkingPage ? "hidden" : "mx-auto w-full min-w-0 max-w-7xl flex-1"}>
+                                {children}
+                            </div>
                             <footer className="shrink-0 border-t border-j-gray-200 bg-j-white px-6 py-3 text-center text-[11px] font-normal leading-relaxed text-j-gray-600">
                                 © {new Date().getFullYear()} Desenvolvido pelo Instituto Federal de São Paulo - Câmpus Caraguatatuba
                             </footer>

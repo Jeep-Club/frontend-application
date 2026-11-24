@@ -51,4 +51,5 @@ interface ChargeDefinitionSearchParams {
     page?: string;
     size?: string;
     sort?: string;
+    status?: ChargeDefinitionStatus;
 }

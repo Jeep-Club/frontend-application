@@ -20,6 +20,8 @@ const configurationKey = ["membership", "billing-configuration"] as const;
 const secondaryButton = "border border-j-gray-300 bg-j-white text-j-gray-700 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700";
 
 export function MembershipBilling() {
+    const permissions = useUserStore(state => state.permissions);
+    const canRead = hasPermission(permissions, "MEMBERSHIP", "BILLING_CONFIGURATION_READ");
     const dialog = useRef<HTMLDialogElement>(null);
     const [opened, setOpened] = useState(false);
 
@@ -42,6 +44,7 @@ export function MembershipBilling() {
         );
     }
 
+    if (!canRead) return null;
     return (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-input-border bg-j-white p-3 sm:px-4">
             <div className="min-w-0">

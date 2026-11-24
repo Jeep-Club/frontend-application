@@ -16,7 +16,6 @@ interface MembershipApplicationSubmission {
 
 interface MembershipApplication {
     id: number;
-    userId?: number | null;
     name: string;
     cpf: string;
     email: string | null;
@@ -28,7 +27,7 @@ interface MembershipApplication {
     updatedAt: string;
 }
 
-interface MembershipApplicationPage extends PageResponse<MembershipApplication> {}
+type MembershipApplicationPage = PageResponse<MembershipApplication>;
 
 interface TemporaryPasswordApproval {
     userId: number;
@@ -37,4 +36,5 @@ interface TemporaryPasswordApproval {
 
 interface AccessLinkApproval {
     userId: number;
+    activationLink: string;
 }

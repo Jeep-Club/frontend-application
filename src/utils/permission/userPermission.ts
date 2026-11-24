@@ -2,10 +2,12 @@ export function mapPermissionToModule(permission: Permission[]): PermissionModul
     const permissionsByModule: Record<string, string[]> = {};
 
     permission.forEach((perm) => {
+        const prefix = `${perm.module}_`;
+        if (!perm.code.startsWith(prefix) || perm.code.length === prefix.length) return;
         if (!permissionsByModule[perm.module]) {
             permissionsByModule[perm.module] = [];
         }
-        const action = perm.code.split('_').slice(1).join('_'); // Remove o prefixo do módulo
+        const action = perm.code.slice(prefix.length);
 
         permissionsByModule[perm.module].push(action);
     });

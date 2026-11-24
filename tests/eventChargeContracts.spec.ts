@@ -32,5 +32,5 @@ it('cria evento com charges e rejeita cutoff depois do início', () => {
 it('não envia campos inline ao selecionar existente e verifica policy', () => {
     const row = { mode: 'existing' as const, chargeDefinitionId: '4', name: 'Antigo', description: '', amount: '100', billingRequired: true, requiredForParticipation: false, participationCutoff: '', financialDueDate: '2000-01-01', paymentAcceptancePolicy: 'BEFORE_DUE_DATE' };
     expect(parseEventChargeRows([row], '2099-11-15T11:00:00Z')).toEqual([{ chargeDefinitionId: 4, requiredForParticipation: false, financialDueDate: '2000-01-01' }]);
-    expect(() => parseEventChargeRows([{ ...row, requiredForParticipation: true }], '2099-11-15T11:00:00Z')).toThrow('AFTER_DUE_DATE');
+    expect(() => parseEventChargeRows([{ ...row, requiredForParticipation: true }], '2099-11-15T11:00:00Z')).toThrow('não permite essa combinação');
 });

@@ -20,11 +20,12 @@ export interface EventRegistrationFormData {
     guest?: { name: string; cpf: string };
 }
 
-export function EventRegistrationModal({ eventId, eventTitle, onSubmit, canRequestGuest }: {
+export function EventRegistrationModal({ eventId, eventTitle = 'Evento', onSubmit, canRequestGuest, onClose }: {
     eventId: number;
-    eventTitle: string;
+    eventTitle?: string;
     onSubmit: (data: EventRegistrationFormData) => Promise<unknown>;
     canRequestGuest: boolean;
+    onClose?: () => void;
 }) {
     const { setClose } = useModal();
     const [vehicleId, setVehicleId] = useState("");
@@ -76,7 +77,7 @@ export function EventRegistrationModal({ eventId, eventTitle, onSubmit, canReque
                 <p className="mt-1 text-sm font-semibold text-j-gray-600">{eventTitle}</p>
                 <p className="mt-1 text-sm text-j-gray-500">Escolha o veículo e quem vai com você.</p>
             </div>
-            <button type="button" onClick={setClose} aria-label="Fechar" className="rounded-full p-2 text-j-gray-500 hover:bg-j-gray-100"><X size={20} /></button>
+            <button type="button" onClick={onClose ?? setClose} aria-label="Fechar" className="cursor-pointer rounded-full p-2 text-j-gray-500 hover:bg-j-gray-100"><X size={20} /></button>
         </header>
 
         {loading ? <p role="status" className="p-6 text-sm text-j-gray-500">Carregando seus veículos e dependentes...</p> : loadError ? <div role="alert" className="p-6"><p className="text-sm text-red-600">Não foi possível carregar seus veículos e dependentes.</p><button type="button" onClick={() => { void vehiclesQuery.refetch(); void dependentsQuery.refetch(); }} className="mt-3 text-sm font-bold text-j-blue-700 underline">Tentar novamente</button></div> : (
@@ -95,7 +96,7 @@ export function EventRegistrationModal({ eventId, eventTitle, onSubmit, canReque
                                 <span className="min-w-0"><span className="block truncate text-sm font-extrabold text-j-blue-900">{label}</span><span className="mt-1 block truncate text-xs text-j-gray-500">{vehicle.plate} · {vehicle.modelYear}</span></span>
                             </button>;
                         })}
-                    </div></> : <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Você ainda não tem um veículo ativo cadastrado. <Link href="/profile" onClick={setClose} className="font-bold underline">Cadastrar veículo</Link></p>}
+                    </div></> : <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Você ainda não tem um veículo ativo cadastrado. <Link href="/profile" onClick={onClose ?? setClose} className="font-bold underline">Cadastrar veículo</Link></p>}
 
 
                 </fieldset>
@@ -122,7 +123,7 @@ export function EventRegistrationModal({ eventId, eventTitle, onSubmit, canReque
                 </fieldset>}
 
                 <footer className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                    <button type="button" onClick={setClose} disabled={isSubmitting} className="min-h-11 rounded-xl border border-j-gray-300 px-5 text-sm font-bold text-j-gray-600 hover:bg-j-gray-100 disabled:opacity-50">Voltar</button>
+                    <button type="button" onClick={onClose ?? setClose} disabled={isSubmitting} className="cursor-pointer min-h-11 rounded-xl border border-j-gray-300 px-5 text-sm font-bold text-j-gray-600 hover:bg-j-gray-100 disabled:opacity-50">Voltar</button>
                     <button type="submit" disabled={!vehicles.length || !vehicleId || isSubmitting} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-extrabold bg-green-700 text-white border-green-700 hover:bg-green-800 hover:text-white hover:border-green-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-green-800 focus-visible:text-white cursor-pointer">
                         {isSubmitting ? <><LoaderCircle size={16} className="animate-spin" />Confirmando...</> : <><CalendarCheck size={17} />Confirmar participação</>}
                     </button>

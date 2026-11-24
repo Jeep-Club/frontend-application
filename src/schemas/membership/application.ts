@@ -43,7 +43,6 @@ export const membershipApplicationSubmissionSchema: z.ZodType<MembershipApplicat
 
 export const membershipApplicationSchema: z.ZodType<MembershipApplication> = z.object({
     id: z.number(),
-    userId: z.number().nullable().optional(),
     name: z.string(),
     cpf: z.string(),
     email: z.string().nullable(),
@@ -72,4 +71,7 @@ export const temporaryPasswordApprovalSchema: z.ZodType<TemporaryPasswordApprova
     temporaryPassword: z.string().min(1),
 });
 
-export const accessLinkApprovalSchema: z.ZodType<AccessLinkApproval> = z.object({ userId: z.number() });
+export const accessLinkApprovalSchema: z.ZodType<AccessLinkApproval> = z.object({
+    userId: z.number(),
+    activationLink: z.url(),
+});

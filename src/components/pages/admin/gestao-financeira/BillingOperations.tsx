@@ -11,20 +11,19 @@ import { listBillingAction } from "@/server/actions/billing/management";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { useQuery } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import { BillingExport } from "./BillingExport";
 import { BillingRecordModal } from "./BillingRecordModal";
 import { GenerateChargeCycleModal } from "./GenerateChargeCycleModal";
-import { CircleDollarSign, LoaderCircle, Plus } from "lucide-react";
-import { billingLabels,displayBillingValue } from "./billingDisplay";
+import { Check, CircleDollarSign, Eye, LoaderCircle, Plus, X } from "lucide-react";
+import { billingLabels, displayBillingValue, linkedChargeLabel } from "./billingDisplay";
 
 
 const config = {
-    cycles: { title: "Ciclos de cobrança", read: "CHARGE_CYCLE_READ", statuses: ["GENERATED", "CANCELED", "FINISHED", "ARCHIVED"], fields: ["code", "chargeDefinitionNameSnapshot", "dueDate", "status"], labels: ["Referência", "Definição", "Vencimento", "Situação"] },
-    "member-charges": { title: "Cobranças dos associados", read: "MEMBER_CHARGE_READ", statuses: ["PENDING", "PAID", "CANCELED"], fields: ["chargeCycleId", "finalAmount", "dueDate", "effectiveStatus"], labels: ["Ciclo", "Valor", "Vencimento", "Situação atual"] },
-    payments: { title: "Pagamentos", read: "PAYMENT_READ", statuses: ["PENDING_VALIDATION", "CONFIRMED", "REJECTED", "CANCELED"], fields: ["memberChargeId", "amount", "paymentMethod", "paidAt", "status"], labels: ["Cobrança", "Valor", "Forma", "Pago em", "Situação"] },
-    refunds: { title: "Reembolsos", read: "REFUND_READ", statuses: ["ELIGIBLE", "REQUESTED", "APPROVED", "REJECTED", "REFUNDED", "EXPIRED", "CANCELED"], fields: ["memberPaymentId", "chargeCycleId", "amount", "eligibleUntil", "status"], labels: ["Pagamento", "Ciclo", "Valor", "Elegível até", "Situação"] },
+    cycles: { title: "Ciclos de cobrança", read: "CHARGE_CYCLE_READ", statuses: ["GENERATED", "CANCELED", "FINISHED", "ARCHIVED"] },
+    "member-charges": { title: "Cobranças dos associados", read: "MEMBER_CHARGE_READ", statuses: ["PENDING", "PAID", "CANCELED"] },
+    payments: { title: "Pagamentos", read: "PAYMENT_READ", statuses: ["PENDING_VALIDATION", "CONFIRMED", "REJECTED", "CANCELED"] },
+    refunds: { title: "Reembolsos", read: "REFUND_READ", statuses: ["ELIGIBLE", "REQUESTED", "APPROVED", "REJECTED", "REFUNDED", "EXPIRED", "CANCELED"] },
 };
 
 const paymentStatusColors = {
@@ -53,7 +52,7 @@ const paymentStatusColors = {
 export function BillingOperations({ resource, initialStatus }: { resource: BillingResource; initialStatus?: string }) {
     const permissions = useUserStore((state) => state.permissions);
     const can = (action: string) => hasPermission(permissions, "BILLING", action);
-    const { setContent, setOpen } = useModal();
+    const { setContent, setOpen, openFromTrigger } = useModal();
     const [openedAt] = useState(() => Date.now());
     const [page, setPage] = useState(0);
     const [size, setSize] = useState(resource === "member-charges" ? 12 : 10);
@@ -81,7 +80,10 @@ export function BillingOperations({ resource, initialStatus }: { resource: Billi
     const filters = { page, size, ...(resource === "cycles" && definitionId ? { definitionId: Number(definitionId) } : {}), ...(resource === "member-charges" && userId ? { userId } : {}), ...(resource === "refunds" && cycleId ? { cycleId: Number(cycleId) } : {}), ...(status ? { status } : {}) };
     const validFilters = (!membershipNumber || userId !== undefined) && (!cycleId || Number(cycleId) > 0) && (!definitionId || Number(definitionId) > 0);
     const records = useQuery({ queryKey: ["billing", resource, filters], queryFn: () => listBillingAction(resource, filters), enabled: can(settings.read) && validFilters && (resource !== "cycles" || Number(definitionId) > 0), placeholderData: membershipNumber ? undefined : (previous) => previous });
-    function open(id: number, title: string, operation?: string, explanation?: string) { setContent(<BillingRecordModal resource={resource} id={id} title={title} operation={operation} explanation={explanation} />); setOpen(); }
+    function open(trigger: HTMLButtonElement, id: number, title: string, operation?: string, explanation?: string) {
+        setContent(<BillingRecordModal resource={resource} id={id} title={title} operation={operation} explanation={explanation} />);
+        openFromTrigger(trigger);
+    }
     function renderActions(item: BillingRecord) {
         const actions: { title: string; operation: string; explanation: string }[] = [];
         const add = (allowed: boolean, permission: string, title: string, operation: string, explanation: string) => { if (allowed && can(permission)) actions.push({ title, operation, explanation }); };
@@ -104,15 +106,34 @@ export function BillingOperations({ resource, initialStatus }: { resource: Billi
             add(item.status === "ELIGIBLE" && expired, "REFUND_EXPIRE", "Expirar elegibilidade", "expire", "Registra o encerramento da janela de elegibilidade.");
             add(["ELIGIBLE", "REQUESTED", "APPROVED"].includes(item.status), "REFUND_CANCEL", "Cancelar reembolso", "cancel", "Encerra este processo de reembolso.");
         }
-        return <div className={resource === "payments"
-            ? "flex w-max min-w-full justify-end gap-1 whitespace-nowrap px-0.5 py-0.5 [&>button]:min-h-10 [&>button]:px-1.5"
-            : "flex flex-wrap justify-end gap-2"}><button type="button" className="cursor-pointer rounded-lg border border-input-border px-3 py-2 text-xs font-bold text-primary hover:bg-background-tertiary" onClick={() => open(item.id, "Detalhes")}>Detalhes</button>{resource === "payments" && "receiptUrl" in item && item.receiptUrl && <PaymentReceiptDialog paymentId={item.id} />}{actions.map((action) => <button key={action.operation} type="button" className={action.operation === "reject" ? "cursor-pointer rounded-lg border border-input-border px-3 py-2 text-xs font-bold text-j-red-700 hover:bg-background-tertiary [:root[data-theme=dark]_&]:text-red-300 [:root[data-theme=dark]_&]:hover:bg-background-tertiary" : "cursor-pointer rounded-lg bg-j-blue-800 px-3 py-2 text-xs font-bold text-white hover:bg-j-blue-900 [:root[data-theme=dark]_&]:bg-j-yellow-300 [:root[data-theme=dark]_&]:text-[#061e50] [:root[data-theme=dark]_&]:hover:bg-yellow-200"} onClick={() => open(item.id, action.title, action.operation, action.explanation)} aria-label={action.title}>{resource === "payments" ? action.title.replace(" pagamento", "") : action.title}</button>)}</div>;
+        const isPayment = resource === "payments";
+        const isRefund = resource === "refunds";
+        const actionClass = "flex min-h-10 min-w-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2";
+        const neutralClass = actionClass + " border border-input-border hover:bg-background-tertiary";
+        return <div className={isPayment || isRefund ? `grid w-full grid-cols-2 gap-2 ${isRefund ? "[&>button:first-child]:col-span-2" : ""}` : "flex flex-wrap justify-end gap-2"}>
+            <button type="button" aria-haspopup="dialog" className={neutralClass + " text-primary"} onClick={event => open(event.currentTarget, item.id, "Detalhes")}>
+                {(isPayment || isRefund) && <Eye size={15} className="shrink-0" aria-hidden="true" />}Detalhes
+            </button>
+            {isPayment && "receiptUrl" in item && item.receiptUrl && <PaymentReceiptDialog paymentId={item.id} />}
+            {actions.map(action => {
+                const isDestructive = action.operation === "reject" || (isRefund && action.operation === "cancel");
+                const Icon = isDestructive ? X : Check;
+                return <button
+                    key={action.operation}
+                    type="button"
+                    aria-haspopup="dialog"
+                    aria-label={action.title}
+                    className={isDestructive
+                        ? neutralClass + " text-j-red-700 [:root[data-theme=dark]_&]:text-red-300"
+                        : actionClass + " bg-j-blue-800 text-white hover:bg-j-blue-900 [:root[data-theme=dark]_&]:bg-j-yellow-300 [:root[data-theme=dark]_&]:text-[#061e50] [:root[data-theme=dark]_&]:hover:bg-yellow-200"}
+                    onClick={event => open(event.currentTarget, item.id, action.title, action.operation, action.explanation)}
+                >
+                    {(isPayment || isRefund) && <Icon size={15} className="shrink-0" aria-hidden="true" />}
+                    {isPayment ? action.title.replace(" pagamento", "") : isRefund ? action.title.replace(" reembolso", "") : action.title}
+                </button>;
+            })}
+        </div>;
     }
-    const columns: ColumnDef<BillingRecord, unknown>[] = [
-        { accessorKey: "id", header: "Código" },
-        ...settings.fields.map((field, index): ColumnDef<BillingRecord, unknown> => ({ id: field, header: settings.labels[index], accessorFn: (row) => (row as Record<string, unknown>)[field], cell: ({ getValue, row }) => <span className={field.toLowerCase().includes("status") ? "rounded-full bg-j-gray-100 px-2 py-1 text-xs font-bold" : ""}>{(row.original as Record<string, unknown>)[`${field}Label`] as string || displayBillingValue(field, getValue())}</span> })),
-        { id: "actions", header: "Ações", cell: ({ row }) => renderActions(row.original) },
-    ];
     const change = (setter: (value: string) => void, value: string) => { setter(value); setPage(0); };
     if (!can(settings.read)) return <p className="rounded-xl bg-j-white p-6">Seu usuário não possui permissão para consultar {settings.title.toLowerCase()}.</p>;
     const exportFilters: Record<string, string> = {};
@@ -151,44 +172,46 @@ export function BillingOperations({ resource, initialStatus }: { resource: Billi
                     pagination={{ pageIndex: page, pageSize: size, pageCount: records.data?.totalPages ?? 0, rowCount: records.data?.totalElements, pageSizeOptions: [12, 24, 36, 48], onChange: (next) => { setPage(next.pageIndex); setSize(next.pageSize); } }}
                     footer={<Table.Pagination itemLabel="cobrança" />}
                 >
-                    {records.isLoading ? <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: size }, (_, index) => <div key={index} className="h-64 animate-pulse rounded-2xl border border-j-gray-200 bg-j-gray-100" />)}</div>
+                    {records.isLoading ? <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: size }, (_, index) => <div key={index} className="h-64 animate-pulse rounded-2xl border border-j-gray-200 bg-j-gray-100" />)}</div>
                         : records.error ? <div role="alert" className="p-6 text-sm text-j-red-500">{records.error.message}</div>
-                            : records.data?.content.length ? <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-4">
+                            : records.data?.content.length ? <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-3">
                                 {records.data.content.map((record) => {
                                     if (!("finalAmount" in record)) return null;
                                     const charge = record;
                                     const statusClass = charge.effectiveStatus === "PAID"
-                                        ? "bg-j-green-100 text-j-green-800"
+                                        ? "financeiro-status-paid bg-j-green-100 text-j-green-700"
                                         : charge.effectiveStatus === "OVERDUE" || charge.effectiveStatus === "EXPIRED"
                                             ? "bg-j-red-100 text-j-red-700"
                                             : "bg-j-gray-100 text-j-gray-700";
                                     const canAdjust = charge.status === "PENDING" && charge.effectiveStatus !== "EXPIRED" && can("MEMBER_CHARGE_UPDATE");
                                     const canCancel = charge.status === "PENDING" && can("MEMBER_CHARGE_CANCEL");
-                                    return <article key={charge.id} className="flex min-w-0 flex-col rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm transition-colors hover:border-j-blue-200">
-                                        <header className="flex items-start justify-between gap-3 border-b border-j-gray-100 pb-3">
-                                            <div className="min-w-0">
-                                                <span className="text-[10px] font-bold uppercase tracking-wide text-j-gray-500">Cobrança</span>
-                                                <h3 className="mt-1 text-lg font-extrabold text-j-blue-800">#{charge.id}</h3>
-                                            </div>
+                                    return <article key={charge.id} className="flex min-w-0 flex-col gap-4 rounded-2xl border border-input-border bg-background-secondary p-4 sm:p-5">
+                                        <header className="flex flex-wrap items-start justify-between gap-2">
+                                            <h3 className="min-w-0 break-words text-lg font-extrabold text-primary">{charge.chargeDefinitionNameSnapshot || `Cobrança #${charge.id}`}</h3>
                                             <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${statusClass}`}>{billingLabels[charge.effectiveStatus]}</span>
                                         </header>
-                                        <dl className="grid flex-1 grid-cols-2 gap-x-3 gap-y-4 py-4">
-                                            {member.data?.content[0]?.membershipNumber && userId === charge.userId && <div className="min-w-0"><dt className="text-[10px] font-bold uppercase tracking-wide text-j-gray-500">Matrícula</dt><dd className="mt-1 text-sm font-semibold text-j-gray-800">{member.data?.content[0]?.membershipNumber}</dd></div>}
-                                            <div className="min-w-0"><dt className="text-[10px] font-bold uppercase tracking-wide text-j-gray-500">Ciclo</dt><dd className="mt-1 truncate text-sm font-semibold text-j-gray-800">{charge.chargeCycleId}</dd></div>
-                                            <div className="min-w-0"><dt className="text-[10px] font-bold uppercase tracking-wide text-j-gray-500">Valor</dt><dd className="mt-1 truncate text-sm font-bold text-j-blue-800">{displayBillingValue("finalAmount", charge.finalAmount)}</dd></div>
-                                            <div className="min-w-0"><dt className="text-[10px] font-bold uppercase tracking-wide text-j-gray-500">Vencimento</dt><dd className="mt-1 truncate text-sm font-semibold text-j-gray-800">{displayBillingValue("dueDate", charge.dueDate)}</dd></div>
-                                        </dl>
-                                        <footer className="flex flex-wrap gap-2 border-t border-j-gray-100 pt-3">
-                                            <button className="min-h-9 flex-1 rounded-lg border border-j-gray-200 px-3 py-2 text-xs font-bold text-j-blue-800 transition-colors hover:border-j-blue-200 hover:bg-j-blue-50" onClick={() => open(charge.id, "Detalhes")}>Detalhes</button>
-                                            {canAdjust && <button className="min-h-9 flex-1 rounded-lg bg-j-blue-800 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-j-blue-900" onClick={() => open(charge.id, "Ajustar valor", "final-amount", "Altera somente o valor desta cobrança.")}>Ajustar valor</button>}
-                                            {canCancel && <button type="button" aria-haspopup="dialog" className="min-h-9 flex-1 rounded-lg border px-3 py-2 text-xs font-bold transition-colors bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white cursor-pointer" onClick={() => open(charge.id, "Isentar cobrança", "cancel")}>Isentar</button>}
+                                        <div className="flex flex-1 flex-col gap-4 rounded-xl bg-background px-4 py-3.5 text-sm">
+                                            <dl className="grid gap-y-3">
+                                                {charge.userName && <div className="grid gap-0.5"><dt className="text-xs text-secondary">Titular</dt><dd className="break-words font-semibold text-primary">{charge.userName}</dd></div>}
+                                                {charge.membershipNumber && <div className="flex flex-wrap items-baseline gap-x-2"><dt className="text-xs text-secondary">Matrícula</dt><dd className="break-all font-semibold text-primary">{charge.membershipNumber}</dd></div>}
+                                                <div className="grid gap-0.5"><dt className="text-xs text-secondary">Ciclo</dt><dd className="break-words font-semibold text-primary">{charge.chargeCycleCode || `#${charge.chargeCycleId}`}</dd></div>
+                                            </dl>
+                                            <dl className="mt-auto grid grid-cols-2 gap-3 border-t border-input-border pt-3">
+                                                <div className="min-w-0"><dt className="text-xs text-secondary">Valor</dt><dd className="break-words font-extrabold text-primary">{displayBillingValue("finalAmount", charge.finalAmount)}</dd></div>
+                                                <div className="min-w-0"><dt className="text-xs text-secondary">Vencimento</dt><dd className="break-words font-semibold text-primary">{displayBillingValue("dueDate", charge.dueDate)}</dd></div>
+                                            </dl>
+                                        </div>
+                                        <footer className="flex flex-wrap gap-2">
+                                            <button type="button" aria-haspopup="dialog" className="flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-input-border px-3 py-2 text-xs font-bold text-primary hover:bg-background-tertiary focus-visible:outline-2 focus-visible:outline-offset-2" onClick={event => open(event.currentTarget, charge.id, "Detalhes")}><Eye size={15} aria-hidden="true" />Detalhes</button>
+                                            {canAdjust && <button className="min-h-9 flex-1 rounded-lg bg-j-blue-800 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-j-blue-900" onClick={event => open(event.currentTarget, charge.id, "Ajustar valor", "final-amount", "Altera somente o valor desta cobrança.")}>Ajustar valor</button>}
+                                            {canCancel && <button type="button" aria-haspopup="dialog" className="min-h-9 flex-1 rounded-lg border px-3 py-2 text-xs font-bold transition-colors bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white cursor-pointer" onClick={event => open(event.currentTarget, charge.id, "Isentar cobrança", "cancel")}>Isentar</button>}
                                         </footer>
                                     </article>;
                                 })}
                             </div>
                                 : <p className="p-8 text-center text-sm text-j-gray-600">Nenhuma cobrança encontrada para os filtros informados.</p>}
                 </Table.Root>
-                    : <Table.Root data={records.data?.content ?? []} columns={columns} getRowId={(row) => String(row.id)} isLoading={records.isLoading} isFetching={records.isFetching} error={records.error?.message} emptyState={resource === "payments" ? "Nenhum pagamento registrado. As cobranças aparecem na aba Cobrança; depois que o associado enviar o comprovante pela Gestão de débitos, o pagamento será listado aqui." : "Nenhum registro encontrado para os filtros informados."} pagination={{ pageIndex: page, pageSize: size, pageCount: records.data?.totalPages ?? 0, rowCount: records.data?.totalElements, pageSizeOptions: [5, 10, 20, 50], onChange: (next) => { setPage(next.pageIndex); setSize(next.pageSize); } }} footer={<Table.Pagination itemLabel={resource === "payments" ? "pagamento" : "registro"} />}>{resource === "cycles" && <Table.Header title={settings.title} />}{resource === "payments" ? (
+                    : <Table.Root data={records.data?.content ?? []} columns={[]} getRowId={(row) => String(row.id)} isLoading={records.isLoading} isFetching={records.isFetching} pagination={{ pageIndex: page, pageSize: size, pageCount: records.data?.totalPages ?? 0, rowCount: records.data?.totalElements, pageSizeOptions: [5, 10, 20, 50], onChange: (next) => { setPage(next.pageIndex); setSize(next.pageSize); } }} footer={<Table.Pagination itemLabel={resource === "payments" ? "pagamento" : "registro"} />}>{resource === "cycles" && <Table.Header title={settings.title} />}{resource === "payments" ? (
                         <div className="p-4 md:px-6" aria-busy={records.isFetching}>
                             {records.isLoading ? <p role="status" className="flex items-center gap-2 py-6 text-sm text-secondary"><LoaderCircle size={17} aria-hidden="true" className="motion-safe:animate-spin" />Carregando pagamentos...</p>
                                 : records.error ? <div role="alert" className="space-y-3 py-4 text-sm text-input-error-text"><p>{records.error.message}</p><Button type="button" onClick={() => void records.refetch()}>Tentar novamente</Button></div>
@@ -205,17 +228,81 @@ export function BillingOperations({ resource, initialStatus }: { resource: Billi
                                                         </div>
                                                         <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${colors.badge}`}>{displayBillingValue("status", payment.status)}</span>
                                                     </header>
-                                                    <dl className="grid flex-1 grid-cols-2 gap-3 rounded-xl bg-background p-3 text-sm sm:grid-cols-3">
-                                                        <div><dt className="text-xs text-secondary">Cobrança</dt><dd className="font-semibold text-primary">#{payment.memberChargeId}</dd></div>
-                                                        <div><dt className="text-xs text-secondary">Forma</dt><dd className="font-semibold text-primary">{displayBillingValue("paymentMethod", payment.paymentMethod)}</dd></div>
-                                                        <div className="col-span-2 sm:col-span-1"><dt className="text-xs text-secondary">Pago em</dt><dd className="font-semibold text-primary">{displayBillingValue("paidAt", payment.paidAt)}</dd></div>
-                                                    </dl>
-                                                    <footer className="overflow-x-auto border-t border-input-border pt-3">{renderActions(payment)}</footer>
+                                                    <div className="flex flex-1 flex-col gap-4 rounded-xl bg-background px-4 py-3.5 text-sm">
+                                                        <dl className="grid gap-y-3">
+                                                            <div className="grid min-w-0 gap-0.5"><dt className="text-xs text-secondary">Cobrança</dt><dd className="break-words font-semibold text-primary">{linkedChargeLabel(payment)}</dd></div>
+                                                            {payment.userName && <div className="grid min-w-0 gap-0.5"><dt className="text-xs text-secondary">Titular</dt><dd className="break-words font-semibold text-primary">{payment.userName}</dd></div>}
+                                                            {payment.membershipNumber && <div className="flex flex-wrap items-baseline gap-x-2"><dt className="text-xs text-secondary">Matrícula</dt><dd className="break-all font-semibold text-primary">{payment.membershipNumber}</dd></div>}
+                                                            {(payment.chargeCycleCode || payment.chargeCycleId) && <div className="grid min-w-0 gap-0.5"><dt className="text-xs text-secondary">Ciclo</dt><dd className="break-words font-semibold text-primary">{payment.chargeCycleCode || `#${payment.chargeCycleId}`}</dd></div>}
+                                                        </dl>
+                                                        <dl className="mt-auto grid grid-cols-2 gap-3 border-t border-input-border pt-3">
+                                                            <div className="min-w-0"><dt className="text-xs text-secondary">Forma</dt><dd className="break-words font-semibold text-primary">{displayBillingValue("paymentMethod", payment.paymentMethod)}</dd></div>
+                                                            {payment.dueDate && <div className="min-w-0"><dt className="text-xs text-secondary">Vencimento</dt><dd className="font-semibold text-primary">{displayBillingValue("dueDate", payment.dueDate)}</dd></div>}
+                                                            <div className="col-span-2"><dt className="text-xs text-secondary">Pago em</dt><dd className="font-semibold text-primary">{displayBillingValue("paidAt", payment.paidAt)}</dd></div>
+                                                        </dl>
+                                                    </div>
+                                                    <footer className="border-t border-input-border pt-3">{renderActions(payment)}</footer>
                                                 </article>
                                             </li>;
                                         })}
                                     </ul> : <p className="rounded-xl border border-dashed border-input-border p-6 text-center text-sm text-secondary">{status ? "Nenhum pagamento encontrado para esta situação." : "Nenhum pagamento registrado. Os comprovantes enviados pelos associados aparecerão aqui."}</p>}
                         </div>
-                    ) : <Table.Content loadingRows={size} />}</Table.Root>}
+                    ) : resource === "refunds" ? (
+                        <div className="p-4 md:px-6" aria-busy={records.isFetching}>
+                            {records.isLoading ? <p role="status" className="flex items-center gap-2 py-6 text-sm text-secondary"><LoaderCircle size={17} aria-hidden="true" className="motion-safe:animate-spin" />Carregando reembolsos...</p>
+                                : records.error ? <div role="alert" className="space-y-3 py-4 text-sm text-input-error-text"><p>{records.error.message}</p><Button type="button" onClick={() => void records.refetch()}>Tentar novamente</Button></div>
+                                    : records.data?.content.length ? <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                                        {records.data.content.map(refund => {
+                                            if (!("memberPaymentId" in refund)) return null;
+                                            return <li key={refund.id} className="min-w-0">
+                                                <article className="flex h-full flex-col gap-4 rounded-2xl border border-input-border bg-background-secondary p-4">
+                                                    <header className="flex flex-wrap items-start justify-between gap-2">
+                                                        <div className="min-w-0">
+                                                            <h3 className="break-words text-base font-bold text-primary">{refund.chargeDefinitionNameSnapshot || "Reembolso"}</h3>
+                                                            <p className="mt-1 text-xl font-extrabold text-primary">{displayBillingValue("amount", refund.amount)}</p>
+                                                        </div>
+                                                        <span className="rounded-full border border-input-border bg-background px-2.5 py-1 text-xs font-semibold text-primary">{displayBillingValue("status", refund.status)}</span>
+                                                    </header>
+                                                    <dl className="grid flex-1 grid-cols-2 gap-3 rounded-xl bg-background px-4 py-3.5 text-sm">
+                                                        {!refund.chargeDefinitionNameSnapshot && <div className="col-span-2 min-w-0"><dt className="text-xs text-secondary">Cobrança</dt><dd className="font-semibold text-primary">#{refund.memberChargeId}</dd></div>}
+                                                        {refund.userName && <div className="col-span-2 min-w-0"><dt className="text-xs text-secondary">Beneficiário</dt><dd className="break-words font-semibold text-primary">{refund.userName}</dd></div>}
+                                                        {refund.membershipNumber && <div className="col-span-2 flex flex-wrap items-baseline gap-x-2"><dt className="text-xs text-secondary">Matrícula</dt><dd className="break-all font-semibold text-primary">{refund.membershipNumber}</dd></div>}
+                                                        {refund.chargeCycleCode && <div className="col-span-2 min-w-0"><dt className="text-xs text-secondary">Ciclo</dt><dd className="break-words font-semibold text-primary">{refund.chargeCycleCode}</dd></div>}
+                                                        <div className="border-t border-input-border pt-3"><dt className="text-xs text-secondary">Pagamento</dt><dd className="font-semibold text-primary">#{refund.memberPaymentId}</dd></div>
+                                                        {refund.eligibleUntil && <div className="min-w-0 border-t border-input-border pt-3"><dt className="text-xs text-secondary">Elegível até</dt><dd className="font-semibold text-primary">{displayBillingValue("eligibleUntil", refund.eligibleUntil)}</dd></div>}
+                                                    </dl>
+                                                    <footer className="border-t border-input-border pt-3">{renderActions(refund)}</footer>
+                                                </article>
+                                            </li>;
+                                        })}
+                                    </ul> : <p className="rounded-xl border border-dashed border-input-border p-6 text-center text-sm text-secondary">Nenhum reembolso encontrado para os filtros informados.</p>}
+                        </div>
+                    ) : (
+                        <div className="p-4 md:px-6" aria-busy={records.isFetching}>
+                            {records.isLoading ? <p role="status" className="flex items-center gap-2 py-6 text-sm text-secondary"><LoaderCircle size={17} aria-hidden="true" className="motion-safe:animate-spin" />Carregando ciclos...</p>
+                                : records.error ? <div role="alert" className="space-y-3 py-4 text-sm text-input-error-text"><p>{records.error.message}</p><Button type="button" onClick={() => void records.refetch()}>Tentar novamente</Button></div>
+                                    : records.data?.content.length ? <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                                        {records.data.content.map(cycle => {
+                                            if (!("code" in cycle)) return null;
+                                            return <li key={cycle.id} className="min-w-0">
+                                                <article className="flex h-full flex-col gap-4 rounded-2xl border border-input-border bg-background-secondary p-4">
+                                                    <header className="flex flex-wrap items-start justify-between gap-2">
+                                                        <div className="min-w-0">
+                                                            <p className="text-xs font-semibold text-secondary">Ciclo #{cycle.id}</p>
+                                                            <h3 className="mt-1 break-words text-lg font-extrabold text-primary">{cycle.code}</h3>
+                                                        </div>
+                                                        <span className="rounded-full border border-input-border bg-background px-2.5 py-1 text-xs font-semibold text-primary">{displayBillingValue("status", cycle.status)}</span>
+                                                    </header>
+                                                    <dl className="grid flex-1 grid-cols-2 gap-3 rounded-xl bg-background p-3 text-sm">
+                                                        <div className="min-w-0"><dt className="text-xs text-secondary">Definição</dt><dd className="break-words font-semibold text-primary">{cycle.chargeDefinitionNameSnapshot}</dd></div>
+                                                        <div><dt className="text-xs text-secondary">Vencimento</dt><dd className="font-semibold text-primary">{displayBillingValue("dueDate", cycle.dueDate)}</dd></div>
+                                                    </dl>
+                                                    <footer className="border-t border-input-border pt-3">{renderActions(cycle)}</footer>
+                                                </article>
+                                            </li>;
+                                        })}
+                                    </ul> : <p className="rounded-xl border border-dashed border-input-border p-6 text-center text-sm text-secondary">Nenhum ciclo gerado para esta cobrança.</p>}
+                        </div>
+                    )}</Table.Root>}
     </section>;
 }

@@ -4,6 +4,25 @@ export const paymentStatusSchema = z.enum(["PENDING_VALIDATION", "CONFIRMED", "R
 export const paymentMethodSchema = z.enum(["PIX", "CASH", "BANK_TRANSFER", "CREDIT_CARD", "DEBIT_CARD", "OTHER"]);
 export const paymentIdSchema = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 
+export const billingChargeLabelsSchema = z.object({
+    userName: z.string().nullish(),
+    membershipNumber: z.string().nullish(),
+    chargeDefinitionNameSnapshot: z.string().nullish(),
+    chargeCycleCode: z.string().nullish(),
+});
+
+export const adminPaymentContextSchema = billingChargeLabelsSchema.extend({
+    userId: paymentIdSchema.nullish(),
+    chargeDefinitionId: paymentIdSchema.nullish(),
+    chargeCycleId: paymentIdSchema.nullish(),
+    dueDate: z.iso.date().nullish(),
+});
+
+export const adminPaymentActorsSchema = z.object({
+    confirmedByUserName: z.string().nullish(),
+    rejectedByUserName: z.string().nullish(),
+});
+
 export const paymentFiltersSchema = z.object({
     status: paymentStatusSchema.optional(),
     page: z.number().int().min(0).default(0),
@@ -15,6 +34,7 @@ export const rejectPaymentSchema = z.object({
 });
 
 export const paymentSummarySchema = z.object({
+    ...adminPaymentContextSchema.shape,
     id: paymentIdSchema,
     memberChargeId: paymentIdSchema,
     amount: z.number(),
@@ -26,6 +46,7 @@ export const paymentSummarySchema = z.object({
 });
 
 export const paymentDetailSchema = paymentSummarySchema.extend({
+    ...adminPaymentActorsSchema.shape,
     confirmedAt: z.string().nullable(),
     confirmedByUserId: paymentIdSchema.nullable(),
     rejectedAt: z.string().nullable(),

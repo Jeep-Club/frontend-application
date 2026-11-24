@@ -33,7 +33,7 @@ export async function updateMembershipBillingConfigurationAction(input: UpdateMe
     if (!parsed.success) throw new ActionError("Selecione uma cobrança válida.", { status: 400 });
 
     // Legacy callers preserve the current flag; the configuration form explicitly submits it.
-    const current = await getMembershipBillingConfigurationAction();
+    const current = parsed.data.enforcementEnabled === undefined ? await getMembershipBillingConfigurationAction() : null;
     const response = await actionFetchWrapper({
         url: HttpAPIRoutes.ADMIN_MEMBERSHIP_BILLING_CONFIGURATION,
         method: "PUT",

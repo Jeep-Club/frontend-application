@@ -28,6 +28,12 @@ beforeEach(() => {
     jest.mocked(actionFetchWrapper).mockImplementation(async ({ url }) => ({ status: 200, data: String(url).includes("list/admin") ? page : detail } as never));
 });
 
+it('denies export to a reader without the dedicated export authority', async () => {
+    jest.mocked(haveActionPermission).mockImplementation(async (_, action) => action === 'VEHICLE_READ');
+    await expect(exportAdminVehiclesAction('CSV')).rejects.toThrow('exportar');
+    expect(actionFetchWrapper).not.toHaveBeenCalled();
+});
+
 it("filters exact vehicle/user IDs, partial model and normalized plate", () => {
     expect(filterAdminVehicleRecords(vehicles, { ...emptyFilters, vehicleId: "1" }).map((vehicle) => vehicle.id)).toEqual([1]);
     expect(filterAdminVehicleRecords(vehicles, { ...emptyFilters, ownerId: "21", model: "jeep ren", plate: "abc-1d23" }).map((vehicle) => vehicle.id)).toEqual([1]);

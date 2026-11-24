@@ -63,6 +63,7 @@ export function MembershipApplicationsTab() {
         mutationFn: approveMembershipApplicationWithTemporaryPasswordAction,
         onSuccess: async (result, applicationId) => {
             const applicant = query.data?.content.find((item) => item.id === applicationId);
+            setApprovedUserIds((current) => ({ ...current, [applicationId]: result.userId }));
             setTemporaryPassword({ ...result, name: applicant?.name ?? 'associado', phoneNumber: applicant?.phoneNumber ?? '' });
             toast.success('Solicitação aprovada e usuário criado.');
             await refreshList();
@@ -73,7 +74,7 @@ export function MembershipApplicationsTab() {
         mutationFn: approveMembershipApplicationWithLinkAction,
         onSuccess: async (result, applicationId) => {
             setApprovedUserIds((current) => ({ ...current, [applicationId]: result.userId }));
-            toast.success('Solicitação aprovada e convite enviado por e-mail.');
+            toast.success('Solicitação aprovada. Envio do convite por e-mail solicitado.');
             await refreshList();
         },
 
@@ -90,7 +91,7 @@ export function MembershipApplicationsTab() {
     });
     const resend = useMutation({
         mutationFn: resendMembershipActivationLinkAction,
-        onSuccess: async () => { toast.success('Convite reenviado.'); await refreshList(); },
+        onSuccess: async () => { toast.success('Reenvio do convite solicitado.'); await refreshList(); },
 
     });
     const generatePassword = useMutation({
@@ -111,7 +112,7 @@ export function MembershipApplicationsTab() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <h2 className="text-lg font-extrabold text-j-blue-800">Solicitações de associação</h2>
-                    <p className="mt-1 text-sm text-j-gray-600">Analise os dados e a apresentação antes de aprovar ou rejeitar.</p>
+                    <p className="mt-1 text-sm text-j-gray-600">Analise os dados e a apresentação antes de aprovar ou rejeitar. A solicitação só fica concluída após o primeiro acesso do associado.</p>
                 </div>
                 <label id="tour-applications-status-filter" className="flex flex-col gap-1 text-xs font-bold text-j-gray-600">Status
                     <select value={status} onChange={(event) => { setStatus(event.target.value as MembershipApplicationStatus | ''); setPage(0); }} className="h-10 min-w-44 rounded-lg border border-j-gray-300 bg-input-bg px-3 text-sm font-normal text-input-text">
@@ -146,7 +147,7 @@ export function MembershipApplicationsTab() {
                 const reason = reasons[application.id] ?? '';
                 const isPending = application.status === 'PENDING';
                 const phone = applicationPhone(application.phoneNumber);
-                const userId = application.userId ?? approvedUserIds[application.id];
+                const userId = approvedUserIds[application.id];
                 return (
                     <article key={application.id} className="min-w-0 rounded-xl border border-input-border bg-background p-3 shadow-sm">
                         <header className="flex flex-wrap items-center justify-between gap-2">

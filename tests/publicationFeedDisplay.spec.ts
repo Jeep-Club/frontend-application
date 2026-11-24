@@ -8,7 +8,7 @@ import { publicationFeedItemSchema } from '@/schemas/publications/feed';
 it('exibe início, fim e status retornado sem recalculá-lo', () => {
     const publication = publicationFeedItemSchema.parse({ id: 1, authorUserId: 7, title: 'Evento', content: 'Texto', type: 'EVENT', primaryImage: null, publishedAt: '2026-10-29T12:00:00Z', likeCount: 0, commentCount: 0, likedByMe: false, details: { startsAt: '2026-10-30T12:00:00Z', endsAt: '2026-10-30T13:00:00Z', status: 'CANCELLED' } });
     const html = renderToStaticMarkup(createElement(FeedMetadata, { publication }));
-    expect(html).toContain('Fim:');
+    expect(html).toContain('Término');
     expect(html).toContain('Cancelado');
     expect(html).toContain('2026-10-30T13:00:00Z');
     expect(feedDate(publication.publishedAt)).toContain('São Paulo');
