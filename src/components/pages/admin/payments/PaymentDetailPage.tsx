@@ -13,6 +13,7 @@ import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import PaymentReceipt from "./PaymentReceipt";
 import { formatAmount, formatDate, methodLabels, paymentKeys, PaymentStatusBadge } from "./presentation";
+import { displayBillingValue, linkedChargeLabel } from "../gestao-financeira/billingDisplay";
 
 export default function PaymentDetailPage({ id }: { id: number }) {
     const queryClient = useQueryClient();
@@ -63,13 +64,15 @@ export default function PaymentDetailPage({ id }: { id: number }) {
                 <h2 className="mb-4 text-lg font-black text-j-blue-800">Dados do pagamento</h2>
                 <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                     {[
-                        ["Cobrança", `#${payment.memberChargeId}`], ["Valor informado", formatAmount(payment.amount)],
-                        ["Método", methodLabels[payment.paymentMethod]], ["Pago em", formatDate(payment.paidAt)],
+                        ["Cobrança", linkedChargeLabel(payment)], ["Ciclo", payment.chargeCycleCode || (payment.chargeCycleId ? `#${payment.chargeCycleId}` : null)],
+                        ["Pago em", formatDate(payment.paidAt)], ["Vencimento", payment.dueDate && displayBillingValue("dueDate", payment.dueDate)],
+                        ["Valor informado", formatAmount(payment.amount)], ["Método", methodLabels[payment.paymentMethod]],
+                        ["Titular", payment.userName], ["Matrícula", payment.membershipNumber],
                         ["Enviado em", formatDate(payment.createdAt)], ["Atualizado em", formatDate(payment.updatedAt)],
-                        ["Confirmado em", formatDate(payment.confirmedAt)], ["Confirmado por", payment.confirmedByUserId ? `Usuário #${payment.confirmedByUserId}` : "—"],
-                        ["Rejeitado em", formatDate(payment.rejectedAt)], ["Rejeitado por", payment.rejectedByUserId ? `Usuário #${payment.rejectedByUserId}` : "—"],
+                        ["Confirmado em", formatDate(payment.confirmedAt)], ["Confirmado por", payment.confirmedByUserName || (payment.confirmedByUserId ? `Usuário #${payment.confirmedByUserId}` : "—")],
+                        ["Rejeitado em", formatDate(payment.rejectedAt)], ["Rejeitado por", payment.rejectedByUserName || (payment.rejectedByUserId ? `Usuário #${payment.rejectedByUserId}` : "—")],
                         ["Cancelado em", formatDate(payment.canceledAt)],
-                    ].map(([label, value]) => <div key={label}><dt className="text-j-gray-500">{label}</dt><dd className="mt-1 font-bold text-j-blue-800">{value}</dd></div>)}
+                    ].filter(([, value]) => Boolean(value)).map(([label, value]) => <div key={label} className="min-w-0"><dt className="text-j-gray-500">{label}</dt><dd className="mt-1 break-words font-bold text-j-blue-800">{value}</dd></div>)}
                     <div className="sm:col-span-2"><dt className="text-j-gray-500">Observações</dt><dd className="mt-1 whitespace-pre-wrap break-words text-j-gray-700">{payment.notes || "Sem observações."}</dd></div>
                     {payment.rejectionReason && <div className="sm:col-span-2"><dt className="text-j-gray-500">Motivo da rejeição</dt><dd className="mt-1 whitespace-pre-wrap break-words text-red-700">{payment.rejectionReason}</dd></div>}
                 </dl>
@@ -81,7 +84,7 @@ export default function PaymentDetailPage({ id }: { id: number }) {
                 {!isReviewable ? <p role="status" className="text-sm text-j-gray-600">Este pagamento já foi analisado ou cancelado.</p>
                     : !canConfirm && !canReject ? <p className="text-sm text-j-gray-600">Você possui acesso somente à consulta deste pagamento.</p>
                         : decision ? <form onSubmit={event => { event.preventDefault(); if (canSubmit && decision) mutation.mutate(decision); }} className="flex flex-col gap-4">
-                            <p className="text-sm text-j-gray-700">{decision === "confirm" ? `Confirmar o pagamento de ${formatAmount(payment.amount)} da cobrança #${payment.memberChargeId}?` : "Informe por que o comprovante foi rejeitado."}</p>
+                            <p className="text-sm text-j-gray-700">{decision === "confirm" ? `Confirmar o pagamento de ${formatAmount(payment.amount)} referente a ${linkedChargeLabel(payment)}?` : "Informe por que o comprovante foi rejeitado."}</p>
                             {decision === "reject" && <label className="flex flex-col gap-2 text-sm font-bold text-j-blue-800">
                                 Motivo da rejeição
                                 <textarea autoFocus required maxLength={500} rows={4} value={reason} onChange={event => setReason(event.target.value)} disabled={mutation.isPending} aria-describedby="reason-help" className="rounded-lg border border-j-gray-200 p-3 font-normal" />

@@ -114,7 +114,7 @@ export const adminModules: AdminModuleConfig[] = [
         description: "Defina valores e regras, gerencie atribuições e acompanhe os ciclos de cobrança.",
         href: "/admin/gestao-financeira/cobrancas",
         icon: Receipt,
-        visibilityPermission: { module: "BILLING", action: "CHARGE_DEFINITION_READ", alternativeActions: ["CHARGE_CYCLE_READ"] },
+        visibilityPermission: { module: "BILLING", action: "CHARGE_DEFINITION_READ", alternativeActions: ["CHARGE_CYCLE_READ", "CHARGE_DEFINITION_HISTORY_READ"] },
     },
     {
         key: "financial-movements",

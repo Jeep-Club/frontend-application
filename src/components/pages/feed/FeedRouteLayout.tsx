@@ -10,15 +10,15 @@ export function FeedRouteLayout({ children, modal }: { children: React.ReactNode
     const [active, setActive] = useState(false);
     const childSegment = useSelectedLayoutSegment();
     const pathname = usePathname();
-    const { checking } = useRestrictedMembership();
+    const { checkingPage } = useRestrictedMembership();
     const trigger = useRef<{ href: string; label: string | null } | null>(null);
     useEffect(() => {
-        if (pathname !== '/feed' || active || checking || !trigger.current) return;
+        if (pathname !== '/feed' || active || checkingPage || !trigger.current) return;
         // The stable layout remembers the trigger even when RSC replaces the list.
         const previous = trigger.current;
         const link = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[href]')).find(item => item.href === previous.href && item.getAttribute('aria-label') === previous.label);
         if (link) { link.focus({ preventScroll: true }); if (document.activeElement === link) trigger.current = null; }
-    }, [pathname, active, checking, children]);
+    }, [pathname, active, checkingPage, children]);
     return <ModalContext.Provider value={setActive}><div className="contents" onClickCapture={event => {
         if (pathname !== '/feed') return;
         const link = (event.target as Element).closest<HTMLAnchorElement>('a[href]');

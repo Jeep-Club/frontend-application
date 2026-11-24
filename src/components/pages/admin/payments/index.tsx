@@ -17,6 +17,7 @@ import type { PaymentFilters, PaymentStatus } from "@/schemas/payments";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { formatAmount, formatDate, methodLabels, paymentKeys, PaymentStatusBadge, statusLabels } from "./presentation";
+import { linkedChargeLabel } from "../gestao-financeira/billingDisplay";
 
 export default function PaymentsPage({
     filters,
@@ -108,7 +109,11 @@ export default function PaymentsPage({
                                                 <tbody className="divide-y divide-j-gray-100">
                                                     {data.content.map((payment, index) => <tr key={payment.id} className="transition-colors hover:bg-blue-50/30">
                                                         <td className="px-4 py-4 font-bold text-j-blue-800">#{payment.id}</td>
-                                                        <td className="px-4 py-4">#{payment.memberChargeId}</td>
+                                                        <td className="min-w-40 px-4 py-4">
+                                                            <p className="break-words font-semibold text-primary">{linkedChargeLabel(payment)}</p>
+                                                            {payment.userName && <p className="break-words text-xs text-secondary">{payment.userName}</p>}
+                                                            {payment.membershipNumber && <p className="text-xs text-secondary">Matrícula {payment.membershipNumber}</p>}
+                                                        </td>
                                                         <td className="whitespace-nowrap px-4 py-4">{formatAmount(payment.amount)}</td>
                                                         <td className="px-4 py-4">{methodLabels[payment.paymentMethod]}</td>
                                                         <td className="whitespace-nowrap px-4 py-4">{formatDate(payment.paidAt)}</td>

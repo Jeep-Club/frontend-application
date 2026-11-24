@@ -13,6 +13,7 @@ function render(actions: string[], status: PaymentDetail["status"] = "PENDING_VA
     jest.mocked(useUserStore).mockReturnValue([{ module: "BILLING", actions }]);
     const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false, gcTime: Infinity } } });
     client.setQueryData(["billing", "payments", "detail", 12], {
+        chargeDefinitionNameSnapshot: "Anuidade", chargeCycleCode: "Anuidade 2026", dueDate: "2026-11-23",
         id: 12, memberChargeId: 7, amount: 250, paymentMethod: "PIX", status,
         paidAt: "2026-10-15T12:00:00Z", receiptUrl: "/billing/member-payments/12/receipt", createdAt: "2026-10-15T12:05:00Z",
         confirmedAt: null, confirmedByUserId: null, rejectedAt: null, rejectedByUserId: null,
@@ -27,6 +28,8 @@ describe("controles de decisão na tela", () => {
     it("mostra os detalhes, sem decisões, para o usuário somente com leitura", () => {
         const html = render(["PAYMENT_READ"]);
         expect(html).toContain("Dados do pagamento");
+        const fields = [...html.matchAll(/<dt[^>]*>([^<]+)<\/dt>/g)].map(([, label]) => label);
+        expect(fields.slice(0, 4)).toEqual(["Cobrança", "Ciclo", "Pago em", "Vencimento"]);
         expect(html).toContain("somente à consulta");
         expect(html).not.toMatch(/>\s*Confirmar(?:<\/span>)?<\/button>/);
         expect(html).not.toMatch(/>\s*Rejeitar(?:<\/span>)?<\/button>/);
