@@ -283,7 +283,7 @@ export function UserManagementView({
             }
         >
             <Table.Header className="items-stretch border-b-0">
-                <div className="grid w-full min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(16rem,1fr)_auto] lg:items-start">
+                <div className="grid w-full min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(16rem,1fr)_auto] lg:items-center">
                     <div id="tour-users-search" className="flex w-full min-w-0 items-end">
                         <Table.Search
                             value={
@@ -360,7 +360,7 @@ export function UserManagementView({
                                 type="button"
                                 id="tour-users-create-btn"
                                 onClick={onCreateUser}
-                                className="flex w-full shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg bg-button-primary-bg p-2.5 text-sm font-bold text-button-primary-text transition-colors duration-300 hover:bg-button-primary-bg-hover hover:text-button-primary-text-hover focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-button-outline-border md:text-base lg:w-auto"
+                                className="flex min-h-10 w-full shrink-0 cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg bg-button-primary-bg px-2.5 py-2 text-sm font-bold text-button-primary-text transition-colors duration-300 hover:bg-button-primary-bg-hover hover:text-button-primary-text-hover focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-button-outline-border md:text-base lg:w-auto"
                             >
                                 Novo usuário
                                 <Plus size={16} strokeWidth={3} />

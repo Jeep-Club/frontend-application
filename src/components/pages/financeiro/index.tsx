@@ -89,7 +89,7 @@ export default async function Financeiro({
             <div className="flex w-full flex-col gap-5">
                 <PageHeader
                     id="tour-member-financial-header"
-                    title="Histórico financeiro"
+                    title="Gestão de débitos"
 
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },

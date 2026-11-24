@@ -4,11 +4,27 @@ import { includeVehicleMemberAction } from '@/server/actions/vehicles/include-me
 import { includeVehicleAdminAction } from '@/server/actions/admin/vehicles/include';
 import { editVehicleMemberAction } from '@/server/actions/vehicles/edit-member';
 import { editVehicleAdminAction } from '@/server/actions/admin/vehicles/edit';
+import { changeVehicleStatusAction } from '@/server/actions/vehicles/change-status';
+import { haveActionPermission } from '@/utils/permission/actionPermissions';
 import { createVehicleMultipart, appendVehicleGalleryMultipart } from '@/utils/media/vehicleGallery';
 
 jest.mock('@/services/fetchWrapper/actionFetchWrapper', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('next/navigation', () => ({ unstable_rethrow: jest.fn() }));
+jest.mock('@/utils/permission/actionPermissions', () => ({ haveActionPermission: jest.fn() }));
 beforeEach(() => jest.resetAllMocks());
+
+it('inactivates a member vehicle and requires separate permission for administration', async () => {
+    jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 200, data: { status: 'INACTIVE' } });
+    await changeVehicleStatusAction(7, 'deactivate', 'member');
+    await expect(changeVehicleStatusAction(7, 'deactivate', 'admin')).rejects.toThrow('Acesso não permitido');
+    expect(actionFetchWrapper).toHaveBeenCalledTimes(1);
+    expect(actionFetchWrapper).toHaveBeenCalledWith(expect.objectContaining({ url: 'vehicles/deactivate/member/7', method: 'PATCH' }));
+
+    jest.mocked(haveActionPermission).mockResolvedValue(true);
+    await changeVehicleStatusAction(7, 'activate', 'admin');
+    expect(haveActionPermission).toHaveBeenLastCalledWith('VEHICLES', 'VEHICLE_ACTIVATE');
+    expect(actionFetchWrapper).toHaveBeenLastCalledWith(expect.objectContaining({ url: 'vehicles/activate/admin/7', method: 'PATCH' }));
+});
 
 it.each(['member', 'admin'])('sends vehicle creation as multipart for %s', async (scope) => {
     jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 201, data: '' });

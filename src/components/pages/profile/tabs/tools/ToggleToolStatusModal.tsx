@@ -6,7 +6,7 @@ import { useModal } from "@/providers/ModalProvider";
 import { activateToolAction } from "@/server/actions/tools/activate";
 import { deactivateToolAction } from "@/server/actions/tools/deactivate";
 import { useMutation,useQueryClient } from "@tanstack/react-query";
-import { Power,X } from "lucide-react";
+import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface ToggleToolStatusModalProps {
@@ -48,20 +48,13 @@ export function ToggleToolStatusModal({ toolId, toolName, nextStatus }: ToggleTo
             </ButtonIcon>
 
             <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
-                <div className="flex items-start gap-4">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
-                        <Power size={20} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
-                            {isDeactivating ? "Desativar ferramenta?" : "Ativar ferramenta?"}
-                        </h2>
-                        <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            Tem certeza que deseja {isDeactivating ? "desativar" : "ativar"}{" "}
-                            <span className="font-bold text-j-blue-800">{toolName}</span>?
-                        </p>
-                    </div>
-                </div>
+                <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                    {isDeactivating ? "Inativar ferramenta?" : "Ativar ferramenta?"}
+                </h2>
+                <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
+                    Tem certeza que deseja {isDeactivating ? "inativar" : "ativar"}{" "}
+                    <span className="font-bold text-j-blue-800">{toolName}</span>?
+                </p>
             </header>
 
             <div className="flex w-full gap-3 px-5 py-5 md:px-8 md:py-6">
@@ -81,7 +74,7 @@ export function ToggleToolStatusModal({ toolId, toolName, nextStatus }: ToggleTo
                 >
                     {mutation.isPending
                         ? (isDeactivating ? "Desativando..." : "Ativando...")
-                        : (isDeactivating ? "Desativar" : "Ativar")}
+                        : (isDeactivating ? "Inativar" : "Ativar")}
                 </ConfirmButton>
             </div>
         </div>

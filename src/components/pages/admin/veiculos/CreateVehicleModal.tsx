@@ -1,5 +1,6 @@
 'use client';
 
+import { MIN_VEHICLE_SEATS, MAX_VEHICLE_SEATS, vehicleSeatingCapacitySchema } from "@/schemas/vehicles/seating-capacity";
 import { vehicleYearSchema } from "@/schemas/vehicles/year";
 
 import { Button,ButtonIcon } from "@/components/common/button";
@@ -49,10 +50,7 @@ export const createVehicleAdminFormSchema = z.object({
     manufacturingYear: vehicleYearSchema,
     modelYear: vehicleYearSchema,
     color: z.string().trim().min(1, { message: "A cor é obrigatória" }).max(30, { message: "A cor deve ter no máximo 30 caracteres" }).refine((value) => !/\d/.test(value), { message: "A cor não pode conter números" }),
-    seatingCapacity: z.string()
-        .min(1, { message: "O nº assentos é obrigatório" })
-        .transform((value) => Number(value))
-        .pipe(z.number().int().min(1, { message: "O nº de assentos deve ser maior que zero" }).max(50, { message: "A capacidade máxima é 50 assentos" })),
+    seatingCapacity: vehicleSeatingCapacitySchema,
     fuelType: z.string()
         .min(1, { message: "O combustível é obrigatório" })
         .transform((value) => value as FuelType),
@@ -235,8 +233,8 @@ function CreateVehicleSteps({ currentStep, onNext, onBack, onStepChange }: Creat
                     <div className="grid w-full gap-4 sm:grid-cols-2">
                         <InputRegister
                             type="number"
-                            min={1}
-                            max={50}
+                            min={MIN_VEHICLE_SEATS}
+                            max={MAX_VEHICLE_SEATS}
                             label="Assentos"
                             name="seatingCapacity"
                             placeholder="5"

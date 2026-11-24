@@ -118,7 +118,7 @@ export const adminModules: AdminModuleConfig[] = [
     },
     {
         key: "financial-movements",
-        title: "Movimentações financeiras",
+        title: "Movimentos",
         description: "Consulte cobranças dos associados, pagamentos, análises e reembolsos.",
         href: "/admin/gestao-financeira/movimentacoes",
         icon: WalletCards,

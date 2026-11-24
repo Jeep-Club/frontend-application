@@ -37,6 +37,16 @@ it('still lists tools if a compatibility detail read fails', async () => {
     expect((await listToolsAction()).content).toHaveLength(1);
 });
 
+it('filters tools across API pages before paginating the selected status', async () => {
+    request.mockResolvedValueOnce({ status: 200, data: { totalPages: 2, content: [{ id: 1, name: 'Macaco', status: 'ACTIVE' }, { id: 2, name: 'Cinta', status: 'INACTIVE', photoStorageKey: null }] } });
+    request.mockResolvedValueOnce({ status: 200, data: { totalPages: 2, content: [{ id: 3, name: 'Chave', status: 'INACTIVE', photoStorageKey: null }] } });
+
+    const result = await listToolsAction({ status: 'INACTIVE', page: 1, size: 1 });
+    expect(result).toMatchObject({ content: [{ id: 3 }], totalElements: 2, totalPages: 2, number: 1, last: true });
+    expect(request).toHaveBeenNthCalledWith(2, expect.objectContaining({ url: `${HttpAPIRoutes.TOOLS}?page=1&size=50` }));
+    expect(detail).not.toHaveBeenCalled();
+});
+
 it('keeps photo errors serializable and exposes their message to the client adapter', async () => {
     const rawData = { code: 'ACCESS_DENIED', status: 403, detail: 'Você não pode alterar esta foto.' };
     request.mockRejectedValue(toActionError({ rawData, status: 403 }));

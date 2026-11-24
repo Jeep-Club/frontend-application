@@ -28,11 +28,9 @@ const owner = (profile: MedicalProfileSummary) => `${profile.ownerType === "DEPE
 
 function ExportButtons({ profileId }: { profileId?: number }) {
     const permissions = useUserStore(state => state.permissions);
-    const [history, setHistory] = useState(false);
     if (!hasPermission(permissions, permissionsConfig.module, permissionsConfig.export)) return null;
     return <div id={!profileId ? "tour-medical-export" : undefined} className="flex flex-wrap items-center gap-2">
-        {!profileId && <label className="flex items-center gap-2 text-sm text-j-gray-600"><input type="checkbox" checked={history} onChange={event => setHistory(event.target.checked)} />Histórico de exclusões</label>}
-        <AdminExport onExport={(format) => exportMedicalProfilesAction(format, profileId, history)} />
+        <AdminExport onExport={(format) => exportMedicalProfilesAction(format, profileId)} />
     </div>;
 }
 

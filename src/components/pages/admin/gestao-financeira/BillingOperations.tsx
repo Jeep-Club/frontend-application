@@ -5,19 +5,20 @@ import { useModal } from "@/providers/ModalProvider";
 import type { BillingRecord,BillingResource } from "@/schemas/billing/management";
 import { listChargeDefinitionsAction } from "@/server/actions/billing/chargeDefinitions/list";
 import { getChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/get";
-import { downloadBillingAction } from "@/server/actions/billing/download";
+import PaymentReceiptDialog from "@/components/pages/admin/payments/PaymentReceiptDialog";
 import { listAdminUsersAction } from "@/server/actions/admin/users/list";
 import { listBillingAction } from "@/server/actions/billing/management";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
-import { useMutation,useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import { BillingExport } from "./BillingExport";
 import { BillingRecordModal } from "./BillingRecordModal";
 import { GenerateChargeCycleModal } from "./GenerateChargeCycleModal";
 import { CircleDollarSign, LoaderCircle, Plus } from "lucide-react";
-import { billingLabels,displayBillingValue,saveBillingFile } from "./billingDisplay";
+import { billingLabels,displayBillingValue } from "./billingDisplay";
+
 
 const config = {
     cycles: { title: "Ciclos de cobrança", read: "CHARGE_CYCLE_READ", statuses: ["GENERATED", "CANCELED", "FINISHED", "ARCHIVED"], fields: ["code", "chargeDefinitionNameSnapshot", "dueDate", "status"], labels: ["Referência", "Definição", "Vencimento", "Situação"] },
@@ -26,13 +27,36 @@ const config = {
     refunds: { title: "Reembolsos", read: "REFUND_READ", statuses: ["ELIGIBLE", "REQUESTED", "APPROVED", "REJECTED", "REFUNDED", "EXPIRED", "CANCELED"], fields: ["memberPaymentId", "chargeCycleId", "amount", "eligibleUntil", "status"], labels: ["Pagamento", "Ciclo", "Valor", "Elegível até", "Situação"] },
 };
 
+const paymentStatusColors = {
+    CONFIRMED: {
+        card: "border-(--success-border) bg-(--success-surface)",
+        badge: "border-(--success-border) bg-background text-(--success-text)",
+        icon: "bg-emerald-500 text-emerald-950",
+    },
+    PENDING_VALIDATION: {
+        card: "border-amber-300 bg-amber-50 [:root[data-theme=dark]_&]:border-amber-300/40 [:root[data-theme=dark]_&]:bg-amber-300/10",
+        badge: "border-amber-300 bg-amber-100 text-amber-900 [:root[data-theme=dark]_&]:border-amber-300/40 [:root[data-theme=dark]_&]:bg-amber-300/10 [:root[data-theme=dark]_&]:text-amber-200",
+        icon: "bg-amber-400 text-amber-950",
+    },
+    REJECTED: {
+        card: "border-red-200 bg-red-50 [:root[data-theme=dark]_&]:border-red-300/40 [:root[data-theme=dark]_&]:bg-red-300/10",
+        badge: "border-red-200 bg-red-100 text-red-900 [:root[data-theme=dark]_&]:border-red-300/40 [:root[data-theme=dark]_&]:bg-red-300/10 [:root[data-theme=dark]_&]:text-red-200",
+        icon: "bg-red-400 text-red-950",
+    },
+    CANCELED: {
+        card: "border-input-border bg-background-secondary",
+        badge: "border-input-border bg-background text-secondary",
+        icon: "bg-sky-400 text-sky-950",
+    },
+};
+
 export function BillingOperations({ resource, initialStatus }: { resource: BillingResource; initialStatus?: string }) {
     const permissions = useUserStore((state) => state.permissions);
     const can = (action: string) => hasPermission(permissions, "BILLING", action);
     const { setContent, setOpen } = useModal();
     const [openedAt] = useState(() => Date.now());
     const [page, setPage] = useState(0);
-    const [size, setSize] = useState(10);
+    const [size, setSize] = useState(resource === "member-charges" ? 12 : 10);
     const [status, setStatus] = useState(initialStatus && config[resource].statuses.includes(initialStatus) ? initialStatus : "");
     const [definitionId, setDefinitionId] = useState("");
     const [membershipNumber, setMembershipNumber] = useState("");
@@ -57,7 +81,6 @@ export function BillingOperations({ resource, initialStatus }: { resource: Billi
     const filters = { page, size, ...(resource === "cycles" && definitionId ? { definitionId: Number(definitionId) } : {}), ...(resource === "member-charges" && userId ? { userId } : {}), ...(resource === "refunds" && cycleId ? { cycleId: Number(cycleId) } : {}), ...(status ? { status } : {}) };
     const validFilters = (!membershipNumber || userId !== undefined) && (!cycleId || Number(cycleId) > 0) && (!definitionId || Number(definitionId) > 0);
     const records = useQuery({ queryKey: ["billing", resource, filters], queryFn: () => listBillingAction(resource, filters), enabled: can(settings.read) && validFilters && (resource !== "cycles" || Number(definitionId) > 0), placeholderData: membershipNumber ? undefined : (previous) => previous });
-    const receipt = useMutation({ mutationFn: async (id: number) => saveBillingFile(await downloadBillingAction("receipt", "PDF", {}, id)) });
     function open(id: number, title: string, operation?: string, explanation?: string) { setContent(<BillingRecordModal resource={resource} id={id} title={title} operation={operation} explanation={explanation} />); setOpen(); }
     function renderActions(item: BillingRecord) {
         const actions: { title: string; operation: string; explanation: string }[] = [];
@@ -68,7 +91,7 @@ export function BillingOperations({ resource, initialStatus }: { resource: Billi
             add(["FINISHED", "CANCELED"].includes(item.status), "CHARGE_CYCLE_ARCHIVE", "Arquivar ciclo", "archive", "Arquiva o histórico do ciclo. Não altera os pagamentos.");
         } else if (resource === "member-charges") {
             add(item.status === "PENDING" && "effectiveStatus" in item && item.effectiveStatus !== "EXPIRED", "MEMBER_CHARGE_UPDATE", "Ajustar valor", "final-amount", "Altera somente o valor desta cobrança.");
-            add(item.status === "PENDING", "MEMBER_CHARGE_CANCEL", "Cancelar cobrança", "cancel", "Cancela esta cobrança ainda não paga.");
+            add(item.status === "PENDING", "MEMBER_CHARGE_CANCEL", "Isentar cobrança", "cancel", "");
         } else if (resource === "payments") {
             add(item.status === "PENDING_VALIDATION", "PAYMENT_CONFIRM", "Confirmar pagamento", "confirm", "Confirme após conferir o comprovante e o recebimento. A cobrança será quitada; ciclos cancelados seguem as regras de reembolso.");
             add(item.status === "PENDING_VALIDATION", "PAYMENT_REJECT", "Rejeitar pagamento", "reject", "Informe o motivo para permitir que o associado corrija o pagamento.");
@@ -81,7 +104,9 @@ export function BillingOperations({ resource, initialStatus }: { resource: Billi
             add(item.status === "ELIGIBLE" && expired, "REFUND_EXPIRE", "Expirar elegibilidade", "expire", "Registra o encerramento da janela de elegibilidade.");
             add(["ELIGIBLE", "REQUESTED", "APPROVED"].includes(item.status), "REFUND_CANCEL", "Cancelar reembolso", "cancel", "Encerra este processo de reembolso.");
         }
-        return <div className="flex flex-wrap justify-end gap-2"><button type="button" className="cursor-pointer rounded-lg border border-input-border px-3 py-2 text-xs font-bold text-primary hover:bg-background-tertiary" onClick={() => open(item.id, "Detalhes")}>Detalhes</button>{resource === "payments" && "receiptUrl" in item && item.receiptUrl && <button type="button" className="cursor-pointer rounded-lg border border-input-border px-3 py-2 text-xs font-bold text-primary hover:bg-background-tertiary disabled:cursor-not-allowed disabled:opacity-50" disabled={receipt.isPending} onClick={() => receipt.mutate(item.id)}>Comprovante</button>}{actions.map((action) => <button key={action.operation} type="button" className={action.operation === "reject" ? "cursor-pointer rounded-lg border border-input-border px-3 py-2 text-xs font-bold text-j-red-700 hover:bg-background-tertiary [:root[data-theme=dark]_&]:text-red-300 [:root[data-theme=dark]_&]:hover:bg-background-tertiary" : "cursor-pointer rounded-lg bg-j-blue-800 px-3 py-2 text-xs font-bold text-white hover:bg-j-blue-900 [:root[data-theme=dark]_&]:bg-j-yellow-300 [:root[data-theme=dark]_&]:text-[#061e50] [:root[data-theme=dark]_&]:hover:bg-yellow-200"} onClick={() => open(item.id, action.title, action.operation, action.explanation)}>{action.title}</button>)}</div>;
+        return <div className={resource === "payments"
+            ? "flex w-max min-w-full justify-end gap-1 whitespace-nowrap px-0.5 py-0.5 [&>button]:min-h-10 [&>button]:px-1.5"
+            : "flex flex-wrap justify-end gap-2"}><button type="button" className="cursor-pointer rounded-lg border border-input-border px-3 py-2 text-xs font-bold text-primary hover:bg-background-tertiary" onClick={() => open(item.id, "Detalhes")}>Detalhes</button>{resource === "payments" && "receiptUrl" in item && item.receiptUrl && <PaymentReceiptDialog paymentId={item.id} />}{actions.map((action) => <button key={action.operation} type="button" className={action.operation === "reject" ? "cursor-pointer rounded-lg border border-input-border px-3 py-2 text-xs font-bold text-j-red-700 hover:bg-background-tertiary [:root[data-theme=dark]_&]:text-red-300 [:root[data-theme=dark]_&]:hover:bg-background-tertiary" : "cursor-pointer rounded-lg bg-j-blue-800 px-3 py-2 text-xs font-bold text-white hover:bg-j-blue-900 [:root[data-theme=dark]_&]:bg-j-yellow-300 [:root[data-theme=dark]_&]:text-[#061e50] [:root[data-theme=dark]_&]:hover:bg-yellow-200"} onClick={() => open(item.id, action.title, action.operation, action.explanation)} aria-label={action.title}>{resource === "payments" ? action.title.replace(" pagamento", "") : action.title}</button>)}</div>;
     }
     const columns: ColumnDef<BillingRecord, unknown>[] = [
         { accessorKey: "id", header: "Código" },
@@ -123,7 +148,7 @@ export function BillingOperations({ resource, initialStatus }: { resource: Billi
                     getRowId={(row) => String(row.id)}
                     isLoading={records.isLoading}
                     isFetching={records.isFetching}
-                    pagination={{ pageIndex: page, pageSize: size, pageCount: records.data?.totalPages ?? 0, rowCount: records.data?.totalElements, pageSizeOptions: [5, 10, 20, 50], onChange: (next) => { setPage(next.pageIndex); setSize(next.pageSize); } }}
+                    pagination={{ pageIndex: page, pageSize: size, pageCount: records.data?.totalPages ?? 0, rowCount: records.data?.totalElements, pageSizeOptions: [12, 24, 36, 48], onChange: (next) => { setPage(next.pageIndex); setSize(next.pageSize); } }}
                     footer={<Table.Pagination itemLabel="cobrança" />}
                 >
                     {records.isLoading ? <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: size }, (_, index) => <div key={index} className="h-64 animate-pulse rounded-2xl border border-j-gray-200 bg-j-gray-100" />)}</div>
@@ -156,7 +181,7 @@ export function BillingOperations({ resource, initialStatus }: { resource: Billi
                                         <footer className="flex flex-wrap gap-2 border-t border-j-gray-100 pt-3">
                                             <button className="min-h-9 flex-1 rounded-lg border border-j-gray-200 px-3 py-2 text-xs font-bold text-j-blue-800 transition-colors hover:border-j-blue-200 hover:bg-j-blue-50" onClick={() => open(charge.id, "Detalhes")}>Detalhes</button>
                                             {canAdjust && <button className="min-h-9 flex-1 rounded-lg bg-j-blue-800 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-j-blue-900" onClick={() => open(charge.id, "Ajustar valor", "final-amount", "Altera somente o valor desta cobrança.")}>Ajustar valor</button>}
-                                            {canCancel && <button className="min-h-9 flex-1 rounded-lg border px-3 py-2 text-xs font-bold transition-colors bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white cursor-pointer" onClick={() => open(charge.id, "Cancelar cobrança", "cancel", "Cancela esta cobrança ainda não paga.")}>Cancelar</button>}
+                                            {canCancel && <button type="button" aria-haspopup="dialog" className="min-h-9 flex-1 rounded-lg border px-3 py-2 text-xs font-bold transition-colors bg-red-700 text-white border-red-700 hover:bg-red-800 hover:text-white hover:border-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:bg-red-800 focus-visible:text-white cursor-pointer" onClick={() => open(charge.id, "Isentar cobrança", "cancel")}>Isentar</button>}
                                         </footer>
                                     </article>;
                                 })}
@@ -167,24 +192,25 @@ export function BillingOperations({ resource, initialStatus }: { resource: Billi
                         <div className="p-4 md:px-6" aria-busy={records.isFetching}>
                             {records.isLoading ? <p role="status" className="flex items-center gap-2 py-6 text-sm text-secondary"><LoaderCircle size={17} aria-hidden="true" className="motion-safe:animate-spin" />Carregando pagamentos...</p>
                                 : records.error ? <div role="alert" className="space-y-3 py-4 text-sm text-input-error-text"><p>{records.error.message}</p><Button type="button" onClick={() => void records.refetch()}>Tentar novamente</Button></div>
-                                    : records.data?.content.length ? <ul className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+                                    : records.data?.content.length ? <ul className="grid auto-rows-fr gap-4 lg:grid-cols-2 2xl:grid-cols-3">
                                         {records.data.content.map((payment) => {
                                             if (!("paymentMethod" in payment)) return null;
+                                            const colors = paymentStatusColors[payment.status];
                                             return <li key={payment.id} className="min-w-0">
-                                                <article className="flex h-full flex-col gap-4 rounded-2xl border border-input-border bg-background-secondary p-4">
+                                                <article className={`flex h-full flex-col gap-4 rounded-2xl border p-4 ${colors.card}`}>
                                                     <header className="flex flex-wrap items-center justify-between gap-3">
                                                         <div className="flex items-center gap-3">
-                                                            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-background-tertiary text-primary"><CircleDollarSign size={21} aria-hidden="true" /></span>
+                                                            <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${colors.icon}`}><CircleDollarSign size={21} aria-hidden="true" /></span>
                                                             <p className="text-xl font-extrabold text-primary">{displayBillingValue("amount", payment.amount)}</p>
                                                         </div>
-                                                        <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${payment.status === "PENDING_VALIDATION" ? "border-amber-300 bg-amber-50 text-amber-900 [:root[data-theme=dark]_&]:border-amber-300/40 [:root[data-theme=dark]_&]:bg-amber-300/10 [:root[data-theme=dark]_&]:text-amber-200" : "border-input-border bg-background text-primary"}`}>{displayBillingValue("status", payment.status)}</span>
+                                                        <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${colors.badge}`}>{displayBillingValue("status", payment.status)}</span>
                                                     </header>
                                                     <dl className="grid flex-1 grid-cols-2 gap-3 rounded-xl bg-background p-3 text-sm sm:grid-cols-3">
                                                         <div><dt className="text-xs text-secondary">Cobrança</dt><dd className="font-semibold text-primary">#{payment.memberChargeId}</dd></div>
                                                         <div><dt className="text-xs text-secondary">Forma</dt><dd className="font-semibold text-primary">{displayBillingValue("paymentMethod", payment.paymentMethod)}</dd></div>
                                                         <div className="col-span-2 sm:col-span-1"><dt className="text-xs text-secondary">Pago em</dt><dd className="font-semibold text-primary">{displayBillingValue("paidAt", payment.paidAt)}</dd></div>
                                                     </dl>
-                                                    <footer className="border-t border-input-border pt-3">{renderActions(payment)}</footer>
+                                                    <footer className="overflow-x-auto border-t border-input-border pt-3">{renderActions(payment)}</footer>
                                                 </article>
                                             </li>;
                                         })}

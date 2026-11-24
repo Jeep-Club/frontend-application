@@ -39,9 +39,9 @@ const ACTION_CONFIG: Record<
         successMessage: "Dependente ativado com sucesso!",
     },
     DISABLE: {
-        title: "Desativar dependente?",
-        verb: "desativar",
-        buttonText: "Desativar",
+        title: "Inativar dependente?",
+        verb: "inativar",
+        buttonText: "Inativar",
         pendingText: "Desativando...",
         successMessage: "Dependente desativado com sucesso!",
         note: "O dependente permanecerá no cadastro operacional com o CPF reservado, mas não poderá ser editado pelo titular enquanto estiver inativo.",

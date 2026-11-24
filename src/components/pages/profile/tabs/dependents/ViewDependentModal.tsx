@@ -23,8 +23,16 @@ export function ViewDependentModal({ dependent }: { dependent: MemberDependent }
   const { setClose } = useModal();
   const { data: medicalProfile, isLoading, isError } = useQuery({ queryKey: ['dependent-medical-profile', dependent.id], queryFn: () => getDependentMedicalProfileAction(dependent.id) });
   return <div className="relative flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-y-auto rounded-3xl bg-j-white shadow-2xl">
-    <ButtonIcon type="button" onClick={setClose} className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 md:right-6 md:top-6"><X size={21} /></ButtonIcon>
-    <header className="border-b border-j-gray-200 bg-gradient-to-r from-blue-50 to-j-white px-5 py-6 pr-16 md:px-8"><div className="flex gap-4"><DependentPhoto dependent={dependent} className="h-20 w-20 rounded-2xl text-xl" /><div className="min-w-0"><h2 className="truncate text-xl font-extrabold text-j-blue-800">{dependent.name}</h2><span className="mt-1 inline-flex rounded-full bg-j-white px-2.5 py-1 text-xs font-bold text-j-blue-700 shadow-sm">{RELATIONSHIP_LABELS[dependent.relationshipType]}</span></div></div></header>
+    <ButtonIcon type="button" aria-label="Fechar" onClick={setClose} className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 md:right-6 md:top-6"><X size={21} aria-hidden="true" /></ButtonIcon>
+    <header className="border-b border-j-gray-200 bg-gradient-to-r from-blue-50 to-j-white px-4 py-6 pr-16 md:pl-8 md:pr-20">
+      <div className="flex items-start gap-3 sm:gap-4">
+        <DependentPhoto dependent={dependent} className="size-14 rounded-xl text-base sm:size-20 sm:rounded-2xl sm:text-xl" />
+        <div className="min-w-0 flex-1">
+          <h2 className="text-base font-extrabold leading-snug text-j-blue-800 [overflow-wrap:anywhere] sm:text-xl">{dependent.name}</h2>
+          <span className="mt-1 inline-flex rounded-full bg-j-white px-2.5 py-1 text-xs font-bold text-j-blue-700 shadow-sm">{RELATIONSHIP_LABELS[dependent.relationshipType]}</span>
+        </div>
+      </div>
+    </header>
     <div className="flex flex-col gap-5 p-5 md:p-8">
       <section><h3 className="mb-3 font-extrabold text-j-blue-800">Dados pessoais</h3><div className="grid gap-3 sm:grid-cols-2"><Detail icon={IdCard} label="CPF" value={maskCPF(dependent.cpf)} /><Detail icon={CalendarDays} label="Nascimento" value={maskDate(dependent.birthDate)} /><Detail icon={Phone} label="Telefone" value={dependent.phoneNumber ? maskPhoneNumber(dependent.phoneNumber) : 'Não informado'} /></div></section>
       <section className="border-t border-j-gray-200 pt-5"><div className="mb-3 flex items-center gap-2"><HeartPulse size={18} className="text-red-500" /><h3 className="font-extrabold text-j-blue-800">Perfil médico</h3></div>
