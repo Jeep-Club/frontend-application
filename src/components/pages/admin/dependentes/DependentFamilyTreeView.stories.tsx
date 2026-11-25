@@ -9,7 +9,11 @@ const meta = {
     parameters: {
         docs: {
             description: {
-                component: "Apresenta o titular e seus dependentes administrativos em cartões responsivos. O contrato atual informa o parentesco de cada dependente com o titular, mas não liga dependentes entre si para representar gerações adicionais.",
+
+
+                component: "Agrupa pais acima do titular, cônjuge e irmãos na mesma geração, e filhos abaixo. O cadastro não liga dependentes entre si nem diferencia pai de mãe.",
+
+
             },
         },
     },
@@ -19,9 +23,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const relatives: AdminDependentItem[] = [
+
+
+    { id: 10, userId: 7, ownerName: "Caique Silva", name: "Helena Silva", cpf: "00000000000", birthDate: "1960-02-12", relationshipType: "PARENT", phoneNumber: null, status: "ACTIVE", createdAt: "2026-01-10T12:00:00Z", updatedAt: null },
+    { id: 15, userId: 7, ownerName: "Caique Silva", name: "Roberto Silva", cpf: "00000000000", birthDate: "1958-07-20", relationshipType: "PARENT", phoneNumber: null, status: "ACTIVE", createdAt: "2026-01-10T12:00:00Z", updatedAt: null },
     { id: 11, userId: 7, ownerName: "Caique Silva", name: "Luana Silva", cpf: "00000000000", birthDate: "1990-04-12", relationshipType: "SPOUSE", phoneNumber: null, status: "ACTIVE", createdAt: "2026-01-10T12:00:00Z", updatedAt: null },
     { id: 12, userId: 7, ownerName: "Caique Silva", name: "Gabriel Silva", cpf: "00000000000", birthDate: "2010-08-02", relationshipType: "CHILD", phoneNumber: null, status: "ACTIVE", createdAt: "2026-01-10T12:00:00Z", updatedAt: null },
     { id: 13, userId: 7, ownerName: "Caique Silva", name: "Ana Silva", cpf: "00000000000", birthDate: "2013-05-19", relationshipType: "CHILD", phoneNumber: null, status: "ACTIVE", createdAt: "2026-01-10T12:00:00Z", updatedAt: null },
+    { id: 14, userId: 7, ownerName: "Caique Silva", name: "Marcelo Silva", cpf: "00000000000", birthDate: "1986-09-16", relationshipType: "SIBLING", phoneNumber: null, status: "ACTIVE", createdAt: "2026-01-10T12:00:00Z", updatedAt: null },
+
+
 ];
 
 export const FamiliaDoTitular = {
@@ -38,7 +49,11 @@ export const FamiliaPequena = {
     args: {
         ownerName: "Caique Silva",
         ownerId: 7,
-        relatives: [relatives[1]],
+
+
+        relatives: [relatives[3]],
+
+
         selectedDependentId: 12,
         onOpenDependent: fn(),
     },
