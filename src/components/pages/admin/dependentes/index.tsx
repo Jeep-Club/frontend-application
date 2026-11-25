@@ -421,7 +421,7 @@ export default function DependentManagement() {
                                                                     ? "tour-dependents-actions"
                                                                     : undefined
                                                             }
-                                                            className="grid grid-cols-3 gap-2"
+                                                            className="flex flex-wrap items-center justify-center gap-2"
                                                         >
                                                             <button
                                                                 type="button"
