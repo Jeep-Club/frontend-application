@@ -2,6 +2,7 @@ import { Eye, UserRound, Users } from "lucide-react";
 import { Avatar } from "@/components/common/avatar";
 import { getAdminDependentPhotoUrl, formatDependentBirthDate, DEPENDENT_RELATIONSHIP_LABEL, DEPENDENT_STATUS_BADGE_CLASS, DEPENDENT_STATUS_LABEL } from "./dependentDisplay";
 
+
 function FamilyMemberCard({
     relative,
     selected,
@@ -34,6 +35,7 @@ function FamilyMemberCard({
     </li>;
 }
 
+
 export function DependentFamilyTreeView({
     ownerName,
     ownerPhotoUrl,
@@ -50,6 +52,7 @@ export function DependentFamilyTreeView({
     onOpenDependent: (dependent: AdminDependentItem) => void;
 }) {
     const displayOwner = ownerName?.trim() || `Titular #${ownerId}`;
+
     const parents = relatives.filter((relative) => relative.relationshipType === "PARENT");
     const sameGeneration = relatives.filter((relative) => relative.relationshipType === "SIBLING" || relative.relationshipType === "SPOUSE");
     const children = relatives.filter((relative) => relative.relationshipType === "CHILD");
@@ -96,5 +99,6 @@ export function DependentFamilyTreeView({
         {relatives.length === 0 && <p className="rounded-xl border border-dashed border-j-gray-300 p-5 text-sm text-j-gray-600">Nenhum familiar encontrado para este titular.</p>}
 
         <p className="rounded-xl bg-j-gray-100 p-3 text-xs leading-relaxed text-j-gray-600">A posição dos cards usa o parentesco cadastrado em relação ao titular. O sistema não registra vínculos diretos entre dependentes nem diferencia pai de mãe, então não presume relações mais específicas do que as informadas no cadastro.</p>
+
     </div>;
 }
