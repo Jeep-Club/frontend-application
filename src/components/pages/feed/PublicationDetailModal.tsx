@@ -6,10 +6,11 @@ import { useModal } from "@/providers/ModalProvider";
 import { getPublicationFeedDetailAction } from "@/server/actions/publications/feed";
 import { useUserStore } from "@/stores/userStore";
 import { useQuery } from "@tanstack/react-query";
-import { X, Share2 } from "lucide-react";
+import { X } from "lucide-react";
 import { isValidElement, useEffect, useRef } from "react";
 import { feedTypes, publicationReadError, publicationReadRetry } from "./feedDisplay";
 import { PublicationPhotoCarousel } from "./PublicationPhotoCarousel";
+import { PublicationShare } from "./PublicationShare";
 import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
 import { PublicationComments } from "./PublicationComments";
@@ -18,14 +19,10 @@ import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
 
 
-export function PublicationDetailModal({ publicationId, onClose, routedRegistration = false }: { publicationId: number; onClose?: () => void; routedRegistration?: boolean }) {
+export function PublicationDetailModal({ publicationId, onClose }: { publicationId: number; onClose?: () => void }) {
     const { setClose, content: overlayContent } = useModal();
     const permissions = useUserStore((state) => state.permissions);
     const dialogRef = useRef<HTMLDialogElement>(null);
-    const close = () => {
-        dialogRef.current?.close();
-        (onClose ?? setClose)();
-    };
     useEffect(() => {
         const dialog = dialogRef.current;
         const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -62,18 +59,12 @@ export function PublicationDetailModal({ publicationId, onClose, routedRegistrat
         const last = controls.at(-1);
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
-    }} onCancel={event => { event.preventDefault(); close(); }} aria-modal="true" aria-labelledby="feed-detail-title" className="m-auto border-0 p-0 text-j-gray-700 backdrop:bg-black/60 relative hidden open:flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-y-auto rounded-3xl bg-j-white shadow-2xl">
+    }} onCancel={event => { event.preventDefault(); (onClose ?? setClose)(); }} aria-modal="true" aria-labelledby="feed-detail-title" className="m-auto border-0 p-0 text-j-gray-700 backdrop:bg-black/60 relative hidden open:flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-y-auto rounded-3xl bg-j-white shadow-2xl">
         <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
-            {publication?.type === "EVENT" && <a
-                href={typeof window === "undefined" ? "https://wa.me/" : `https://wa.me/?text=${encodeURIComponent(`Vamos nesse evento do Jeep Clube Tamoios? ${publication.title}\n${new URL("/feed/" + publication.id, window.location.origin).toString()}`)}`}
-                target="_blank"
-                rel="noreferrer noopener"
-                aria-label={`Compartilhar evento ${publication.title} no WhatsApp`}
-                className="inline-flex h-10 items-center gap-2 rounded-full bg-[#25D366]/10 px-3 text-sm font-bold text-j-blue-800 hover:bg-[#25D366]/20 focus-visible:outline-2 focus-visible:outline-j-blue-800"
-            ><Share2 size={16} aria-hidden="true" /><span className="hidden sm:inline">Compartilhar</span></a>}
-            <ButtonIcon aria-label="Fechar publicação" onClick={close} className="rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200"><X size={20} /></ButtonIcon>
+            {publication && <PublicationShare id={publication.id} title={publication.title} compact />}
+            <ButtonIcon aria-label="Fechar publicação" onClick={onClose ?? setClose} className="rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200"><X size={20} /></ButtonIcon>
         </div>
-        <header className={`border-b border-j-gray-200 py-6 pl-5 md:pl-8 ${publication?.type === 'EVENT' ? 'pr-28 md:pr-56' : 'pr-16'}`}><h2 id="feed-detail-title" className="break-words text-xl font-extrabold text-j-blue-800">{publication?.title ?? "Publicação"}</h2>
+        <header className={`border-b border-j-gray-200 py-6 pl-5 md:pl-8 ${publication ? 'pr-28 md:pr-56' : 'pr-16'}`}><h2 id="feed-detail-title" className="break-words text-xl font-extrabold text-j-blue-800">{publication?.title ?? "Publicação"}</h2>
             {publication && <p className="mt-2 text-xs text-j-gray-500">{feedTypes[publication.type].label} · <RelativeTime value={publication.publishedAt} /></p>}
             {publication && <Button className="mt-3" disabled={query.isFetching} aria-busy={query.isFetching} onClick={() => void query.refetch()}>Atualizar publicação</Button>}
         </header>
@@ -84,12 +75,12 @@ export function PublicationDetailModal({ publicationId, onClose, routedRegistrat
                 <PublicationPhotoCarousel key={publication.id} images={publication.images} title={publication.title} />
                 <FeedMetadata publication={publication} />
                 {publication.type === "EVENT" && <EventParticipants details={publication.details} />}
-                {publication.type === "EVENT" && <EventParticipation routedRegistration={routedRegistration} eventId={publication.id} eventStatus={publication.details.status} />}
+                {publication.type === "EVENT" && <EventParticipation eventId={publication.id} eventTitle={publication.title} eventStatus={publication.details.status} />}
                 <p className="text-sm text-j-gray-600">Autor — identificação #{publication.authorUserId}</p>
                 <RichTextContent content={publication.content} />
-                {publication.type !== "SERVICE" && <FeedInteractions publication={publication} />}
+                <FeedInteractions publication={publication} />
             </div>
-            {publication.type !== "SERVICE" && <PublicationComments publicationId={publication.id} />}
+            <PublicationComments publicationId={publication.id} />
         </>}
     </dialog>;
 }
