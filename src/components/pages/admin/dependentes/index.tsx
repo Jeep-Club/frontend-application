@@ -29,7 +29,7 @@ import { hasPermission } from "@/utils/permission/hasPermission";
 import { listDependentsAdminAction } from "@/server/actions/admin/dependents/list";
 import { exportAdminDependentsAction } from "@/server/actions/admin/dependents/export";
 
-import { DependentFamilyTreeModal } from "./DependentFamilyTreeModal";
+import { DependentDetailModal } from "./DependentDetailModal";
 import { LifecycleAdminDependentModal } from "./LifecycleAdminDependentModal";
 import { DeleteAdminDependentModal } from "./DeleteAdminDependentModal";
 import {
@@ -47,7 +47,7 @@ import {
 const DEFAULT_PAGE_SIZE = 10;
 
 export default function DependentManagement() {
-    const { setContent, setOpen, openFromTrigger } = useModal();
+    const { setContent, setOpen } = useModal();
     const permissions = useUserStore((state) => state.permissions);
 
     const canRead = hasPermission(permissions, "DEPENDENTS", "DEPENDENT_READ");
@@ -121,11 +121,15 @@ export default function DependentManagement() {
         setPage(0);
     };
 
-    const handleOpenDetail = (dependent: AdminDependentItem, trigger: HTMLElement) => {
+    const handleOpenDetail = (dependent: AdminDependentItem) => {
         setContent(
-            <DependentFamilyTreeModal dependent={dependent} returnFocus={trigger} />,
+            <DependentDetailModal
+                dependentId={dependent.id}
+                userId={dependent.userId}
+                initialOwnerName={dependent.ownerName}
+            />,
         );
-        openFromTrigger(trigger);
+        setOpen();
     };
 
     const handleOpenLifecycle = (
@@ -421,11 +425,11 @@ export default function DependentManagement() {
                                                                     ? "tour-dependents-actions"
                                                                     : undefined
                                                             }
-                                                            className="flex flex-wrap items-center justify-center gap-2"
+                                                            className="grid grid-cols-3 gap-2"
                                                         >
                                                             <button
                                                                 type="button"
-                                                                onClick={(event) => handleOpenDetail(dependent, event.currentTarget)}
+                                                                onClick={() => handleOpenDetail(dependent)}
                                                                 aria-label={`Visualizar ${dependent.name}`}
                                                                 title="Visualizar"
                                                                 className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 transition-colors hover:bg-blue-100 record-action"

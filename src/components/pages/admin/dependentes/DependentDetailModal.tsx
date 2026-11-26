@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
@@ -49,23 +49,17 @@ interface DependentDetailModalProps {
     dependentId: number;
     userId: number;
     initialOwnerName?: string | null;
-    returnFocus?: HTMLElement;
 }
 
 export function DependentDetailModal({
     dependentId,
     userId,
     initialOwnerName,
-    returnFocus,
 }: DependentDetailModalProps) {
     const { setClose } = useModal();
     const queryClient = useQueryClient();
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const permissions = useUserStore((state) => state.permissions);
-
-    useEffect(() => () => {
-        if (returnFocus?.isConnected) returnFocus.focus({ preventScroll: true });
-    }, [returnFocus]);
 
     const canUpdatePhoto = hasPermission(
         permissions,
