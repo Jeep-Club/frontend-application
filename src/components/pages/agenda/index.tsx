@@ -131,13 +131,6 @@ export default function AgendaPage() {
         for (const group of grouped.values()) group.sort((a, b) => Date.parse(a.details.startsAt) - Date.parse(b.details.startsAt));
         return grouped;
     }, [events]);
-    const mobileAgendaDays = useMemo(() => days.flatMap((date) => {
-        if (date.getMonth() !== month.getMonth()) return [];
-        const key = calendarDateKey(date);
-        const dayEvents = eventsByDate.get(key) ?? [];
-        const dayBirthdays = getBirthdaysOnDate(birthdaysQuery.data ?? [], date);
-        return dayEvents.length || dayBirthdays.length ? [{ date, dayEvents, dayBirthdays }] : [];
-    }), [birthdaysQuery.data, days, eventsByDate, month]);
 
     useEffect(() => {
         if (!hasNextPage || isFetchingNextPage || isError) return;
@@ -190,28 +183,10 @@ export default function AgendaPage() {
                     </div>
                 </div>
             </header>
-            <section aria-label="Eventos e aniversariantes do mÃªs" className="md:hidden">
-                {query.isLoading || birthdaysQuery.isPending ? <p role="status" className="rounded-2xl border border-j-gray-200 bg-j-white p-5 text-center text-sm text-j-gray-500">Carregando agendaâ€¦</p>
-                    : mobileAgendaDays.length > 0 ? <ul className="space-y-2">
-                        {mobileAgendaDays.map(({ date, dayEvents, dayBirthdays }) => <li key={calendarDateKey(date)}>
-                            <button type="button" onClick={() => openDayEvents(dayEvents, dayBirthdays, date)} aria-label={`${longDateLabel(date)}${dayEvents.length ? `, ${dayEvents.length} ${dayEvents.length === 1 ? "evento" : "eventos"}` : ""}${dayBirthdays.length ? `, ${dayBirthdays.length} ${dayBirthdays.length === 1 ? "aniversariante" : "aniversariantes"}` : ""}`} className="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-2xl border border-j-gray-200 bg-j-white p-3 text-left shadow-sm transition-colors hover:border-j-yellow-400 hover:bg-j-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800">
-                                <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-j-blue-50 text-lg font-extrabold text-j-blue-800">{date.getDate()}</span>
-                                <span className="min-w-0 flex-1">
-                                    <span className="block break-words text-sm font-bold capitalize text-j-blue-800">{new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" }).format(date)}</span>
-                                    {dayEvents.length > 0 && <span className="mt-0.5 block break-words text-xs text-j-gray-600">{dayEvents[0].title}{dayEvents.length > 1 ? ` e mais ${dayEvents.length - 1}` : ""}</span>}
-                                    {dayBirthdays.length > 0 && <span className="mt-0.5 block break-words text-xs text-j-gray-600">{dayBirthdays.length === 1 ? `AniversÃ¡rio de ${dayBirthdays[0].name}` : `${dayBirthdays.length} aniversariantes`}</span>}
-                                </span>
-                                <ChevronRight size={18} className="shrink-0 text-j-gray-400" aria-hidden="true" />
-                            </button>
-                        </li>)}
-                    </ul>
-                    : <p className="rounded-2xl border border-j-gray-200 bg-j-white p-5 text-center text-sm text-j-gray-500">NÃ£o hÃ¡ eventos ou aniversariantes neste mÃªs.</p>}
-                {query.isError && <div role="alert" className="mt-3 rounded-2xl border border-j-gray-200 bg-j-white p-4 text-center"><p className="text-sm text-red-600">{failure.message}</p><Button className="mt-2" onClick={() => void query.refetch()}>Tentar novamente</Button></div>}
-            </section>
             {birthdaysQuery.isError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-j-gray-200 bg-j-white px-4 py-3 text-sm text-j-gray-600"><span>Não foi possível carregar os aniversariantes deste mês.</span><Button onClick={() => void birthdaysQuery.refetch()}>Tentar novamente</Button></div>}
 
-            {query.isLoading ? <div id="tour-agenda-calendar" role="status" aria-label="Carregando agenda" className="hidden h-[32rem] animate-pulse rounded-3xl bg-j-gray-200 md:block" />
-                        : <section id="tour-agenda-calendar" aria-label="Calendário mensal" className="hidden overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm md:block">
+            {query.isLoading ? <div id="tour-agenda-calendar" role="status" aria-label="Carregando agenda" className="h-[32rem] animate-pulse rounded-3xl bg-j-gray-200" />
+                        : <section id="tour-agenda-calendar" aria-label="Calendário mensal" className="overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm">
                             <div className="grid grid-cols-7 border-b border-j-gray-200 bg-j-gray-100/70">
                                 {WEEKDAYS.map((day) => <div key={day} className="py-3 text-center text-[11px] font-extrabold uppercase tracking-wide text-j-gray-500 sm:text-xs">{day}</div>)}
                             </div>
