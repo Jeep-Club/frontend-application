@@ -18,10 +18,10 @@ Exige build de produção atualizado, backend isolado ativo e navegadores instal
 Não é necessário instalar biblioteca
 de planilhas: CSV UTF-8 com BOM, separador `;` e campos escapados abre no Excel.
 
-Exemplo focado nos erros do feed, mantendo **todo o Jest**:
+Exemplo focado nos fluxos do feed, mantendo **todo o Jest**:
 
 ```powershell
-npm run test:docs -- --pw-config=playwright.feed-local.config.ts --project=chromium-desktop --pw-file=tests/browser/feed/errors.spec.ts
+npm run test:docs -- --pw-config=playwright.feed-local.config.ts --project=chromium-desktop --pw-file=tests/browser/feed/feed.spec.ts
 ```
 
 `--jest-pattern=expressão`, `--pw-file=arquivo` e `--project=nome` são repetíveis;
@@ -57,11 +57,6 @@ guardam todos os testes executados, além das linhas de ações exibidas na plan
 Os pilotos de feed/publicações usam API sintética; os novos E2E de interface usam
 API local real com proxy de falhas controladas. Nenhum deles comprova produção.
 
-`ERR-FOCUS` também verifica o retorno de foco após a revalidação de Membership:
-o shell já autorizado fica oculto/inert durante a espera, preservando a rota
-interceptada; uma negação definitiva continua removendo seu conteúdo. `ERR-MEMBERSHIP`
-comprova o redirecionamento aos débitos sem exibir o feed quando a API retorna 402.
-
 O normalizador de relatórios é validado por
 `node --test tests/scripts/test-docs.test.mjs`, com sucesso/falha/skip,
 expected-fail, infraestrutura e proteção contra fórmulas em células de CSV.
@@ -85,18 +80,7 @@ expected-fail, infraestrutura e proteção contra fórmulas em células de CSV.
 
 ## Feed e detalhe de publicações (WEB-224)
 
-O feed usa leitura no servidor e filtros/paginação na URL. As rotas `/feed/new`,
-`/feed/[id]`, `/feed/[id]/edit` e `/feed/[id]/register` também possuem entradas
-interceptadas em `@modal`; os botões de fechar têm destinos explícitos.
-`routing.spec.ts` cobre essas entradas e permissões. `social.spec.ts` cobre
-POST 200/DELETE 204 idempotentes, releitura dos totais, recuperação após falha
-da releitura e comentários com texto/imagens, paginação e permissões independentes.
-O 404 `EVENT_REGISTRATION_NOT_FOUND` é ausência de inscrição; outros 404 continuam
-como erro. A fixture permite essas escritas somente na API HTTP sintética local.
-
-A sidebar interrompe paginação automática em erro, não repete por foco/reconexão
-e oferece recuperação explícita. Queries com `meta.handlesError` apresentam erros
-na própria tela, sem toast global adicional; expiração de sessão continua global.
+O feed abre o detalhe em modal por `/feed?publication=<id>`.
 `playwright.feed-local.config.ts` executa os testes da aplicação com Chrome instalado
 e somente o servidor Next, sem Storybook ou controle interativo do computador.
 

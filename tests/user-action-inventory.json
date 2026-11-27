@@ -2870,10 +2870,6 @@
     "consumers": [
       "/src/app/(auth)/(dashboard)/admin/veiculos/page.tsx",
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/register/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/register/page.tsx",
       "/src/app/(auth)/(dashboard)/feed/page.tsx",
       "/src/app/(auth)/(dashboard)/layout.tsx",
       "/src/app/(auth)/(dashboard)/profile/page.tsx",
@@ -2885,8 +2881,6 @@
       "/src/components/pages/agenda/index.tsx",
       "/src/components/pages/feed/EventParticipation.tsx",
       "/src/components/pages/feed/EventRegistrationModal.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
-      "/src/components/pages/feed/FeedRegistrationRoute.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/feed/index.tsx",
       "/src/components/pages/first-access/Onboarding.tsx",
@@ -6348,10 +6342,6 @@
     ],
     "consumers": [
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/register/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/register/page.tsx",
       "/src/app/(auth)/(dashboard)/feed/page.tsx",
       "/src/app/(auth)/(dashboard)/layout.tsx",
       "/src/app/(auth)/(dashboard)/profile/page.tsx",
@@ -6360,8 +6350,6 @@
       "/src/components/pages/agenda/index.tsx",
       "/src/components/pages/feed/EventParticipation.tsx",
       "/src/components/pages/feed/EventRegistrationModal.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
-      "/src/components/pages/feed/FeedRegistrationRoute.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/feed/index.tsx",
       "/src/components/pages/first-access/Onboarding.tsx",
@@ -6685,12 +6673,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/tools/page.tsx",
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/app/(auth)/(dashboard)/layout.tsx",
       "/src/app/(auth)/(dashboard)/profile/page.tsx",
       "/src/app/(auth)/(dashboard)/servicos/page.tsx",
@@ -6709,8 +6691,6 @@
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
       "/src/components/pages/admin/publications/index.tsx",
       "/src/components/pages/agenda/index.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx",
       "/src/components/pages/feed/PublicationComments.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/first-access/Onboarding.tsx",
@@ -6753,20 +6733,15 @@
       },
       {
         "error": "Pagamento pendente bloqueia o acesso (402)",
-        "response": "Encaminha para a página de débitos e oculta o conteúdo do feed.",
-        "match": "ERR-MEMBERSHIP negação definitiva remove o feed e encaminha aos débitos"
+        "response": "Encaminha para a página de débitos e oculta o conteúdo do feed."
       }
     ],
     "consumers": [
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/layout.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/layout.tsx",
-      "/src/app/(auth)/(dashboard)/feed/layout.tsx",
       "/src/app/(auth)/(dashboard)/layout.tsx",
       "/src/components/common/layout-admin/DashboardShell.tsx",
       "/src/components/common/layout-admin/MembershipAccessGate.tsx",
       "/src/components/common/layout-admin/Sidebar.tsx",
-      "/src/components/common/layout-admin/Topbar.tsx",
-      "/src/components/pages/feed/FeedRouteLayout.tsx"
+      "/src/components/common/layout-admin/Topbar.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -7286,13 +7261,8 @@
       "/src/app/(auth)/(dashboard)/admin/publications/notice/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/CreatePublicationModal.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -7336,13 +7306,8 @@
       "/src/app/(auth)/(dashboard)/admin/publications/notice/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/CreatePublicationModal.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -7385,13 +7350,8 @@
       "/src/app/(auth)/(dashboard)/admin/publications/notice/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/CreatePublicationModal.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -7437,10 +7397,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/CreatePublicationModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
@@ -7451,8 +7407,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -7502,10 +7457,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/CreatePublicationModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
@@ -7516,8 +7467,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -7569,10 +7519,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/CreatePublicationModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
@@ -7583,8 +7529,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -7630,10 +7575,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/CreatePublicationModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
@@ -7644,8 +7585,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -7695,10 +7635,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/CreatePublicationModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
@@ -7709,8 +7645,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -7761,10 +7696,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/CreatePublicationModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
@@ -7775,8 +7706,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -7815,16 +7745,10 @@
     ],
     "consumers": [
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/register/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/register/page.tsx",
       "/src/app/(auth)/(dashboard)/feed/page.tsx",
       "/src/app/(auth)/(dashboard)/servicos/page.tsx",
       "/src/components/pages/agenda/index.tsx",
       "/src/components/pages/feed/EventParticipation.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
-      "/src/components/pages/feed/FeedRegistrationRoute.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/feed/index.tsx",
       "/src/components/pages/servicos/index.tsx"
@@ -7858,8 +7782,7 @@
       },
       {
         "error": "Recurso não encontrado (404)",
-        "response": "Exibe o estado de recurso não encontrado, sem apresentar dados de outro registro.",
-        "match": "404 de evento na inscrição continua sendo erro recuperável"
+        "response": "Exibe o estado de recurso não encontrado, sem apresentar dados de outro registro."
       },
       {
         "error": "Serviço indisponível (503)",
@@ -7868,16 +7791,10 @@
     ],
     "consumers": [
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/register/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/register/page.tsx",
       "/src/app/(auth)/(dashboard)/feed/page.tsx",
       "/src/app/(auth)/(dashboard)/servicos/page.tsx",
       "/src/components/pages/agenda/index.tsx",
       "/src/components/pages/feed/EventParticipation.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
-      "/src/components/pages/feed/FeedRegistrationRoute.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/feed/index.tsx",
       "/src/components/pages/servicos/index.tsx"
@@ -7920,16 +7837,10 @@
     ],
     "consumers": [
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/register/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/register/page.tsx",
       "/src/app/(auth)/(dashboard)/feed/page.tsx",
       "/src/app/(auth)/(dashboard)/servicos/page.tsx",
       "/src/components/pages/agenda/index.tsx",
       "/src/components/pages/feed/EventParticipation.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
-      "/src/components/pages/feed/FeedRegistrationRoute.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/feed/index.tsx",
       "/src/components/pages/servicos/index.tsx"
@@ -7971,16 +7882,10 @@
     ],
     "consumers": [
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/register/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/register/page.tsx",
       "/src/app/(auth)/(dashboard)/feed/page.tsx",
       "/src/app/(auth)/(dashboard)/servicos/page.tsx",
       "/src/components/pages/agenda/index.tsx",
       "/src/components/pages/feed/EventParticipation.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
-      "/src/components/pages/feed/FeedRegistrationRoute.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/feed/index.tsx",
       "/src/components/pages/servicos/index.tsx"
@@ -8029,10 +7934,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
       "/src/components/pages/admin/publications/NoticeAdminDetails.tsx",
@@ -8041,8 +7942,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -8183,10 +8083,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/CreatePublicationModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
@@ -8198,8 +8094,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -8254,10 +8149,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
@@ -8267,8 +8158,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -8516,8 +8406,7 @@
     "scenarios": [
       {
         "error": "Sem erro",
-        "response": "Confirma a operação na interface e atualiza os dados exibidos.",
-        "match": "comentários bloqueiam vazio e aceitam texto, imagens e ambos com storageKey e ordem contínua"
+        "response": "Confirma a operação na interface e atualiza os dados exibidos."
       },
       {
         "error": "Falha de rede",
@@ -8541,17 +8430,13 @@
       },
       {
         "error": "Erro ao enviar comentário (500)",
-        "response": "Mantém o texto digitado, permite reenviar e cria um único comentário após recuperação.",
-        "match": "ERR-COMMENT falha de envio mantém rascunho e reenvio cria um único comentário"
+        "response": "Mantém o texto digitado, permite reenviar e cria um único comentário após recuperação."
       }
     ],
     "consumers": [
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/servicos/page.tsx",
       "/src/components/pages/agenda/index.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
       "/src/components/pages/feed/PublicationComments.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/servicos/index.tsx"
@@ -8597,8 +8482,7 @@
       },
       {
         "error": "Falha ao atualizar contadores da publicação (500)",
-        "response": "Mantém a curtida confirmada e oferece atualizar contadores; a nova tentativa relê os totais sem repetir a escrita.",
-        "match": "curtida confirmada permite recuperar contadores sem repetir a escrita"
+        "response": "Mantém a curtida confirmada e oferece atualizar contadores; a nova tentativa relê os totais sem repetir a escrita."
       },
       {
         "error": "Acesso à publicação restrito pela Membership (402)",
@@ -8613,21 +8497,10 @@
     ],
     "consumers": [
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/register/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/register/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/app/(auth)/(dashboard)/feed/page.tsx",
       "/src/app/(auth)/(dashboard)/servicos/page.tsx",
       "/src/components/pages/agenda/index.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx",
       "/src/components/pages/feed/FeedInteractions.tsx",
-      "/src/components/pages/feed/FeedRegistrationRoute.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/feed/index.tsx",
       "/src/components/pages/servicos/index.tsx"
@@ -8644,8 +8517,7 @@
     "scenarios": [
       {
         "error": "Sem erro",
-        "response": "Exibe os dados solicitados na tela, respeitando paginação e filtros aplicáveis.",
-        "match": "comentários paginam autoria, texto e imagens e apresentam carregamento, erro recuperável e vazio"
+        "response": "Exibe os dados solicitados na tela, respeitando paginação e filtros aplicáveis."
       },
       {
         "error": "Falha de rede",
@@ -8665,18 +8537,14 @@
       },
       {
         "error": "Erro ao carregar comentários (500)",
-        "response": "Exibe estado de erro e permite nova tentativa sem confundir falha com lista vazia.",
-        "match": "comentários paginam autoria, texto e imagens e apresentam carregamento, erro recuperável e vazio"
+        "response": "Exibe estado de erro e permite nova tentativa sem confundir falha com lista vazia."
       }
     ],
     "consumers": [
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/feed/page.tsx",
       "/src/app/(auth)/(dashboard)/servicos/page.tsx",
       "/src/components/pages/agenda/index.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
       "/src/components/pages/feed/PublicationCommentPreview.tsx",
       "/src/components/pages/feed/PublicationComments.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
@@ -8783,19 +8651,15 @@
       },
       {
         "error": "Erro ao curtir publicação (500)",
-        "response": "Exibe aviso de falha, preserva a curtida e o contador anteriores e permite tentar novamente.",
-        "match": "ERR-LIKE falha de escrita não altera curtida e permite recuperar"
+        "response": "Exibe aviso de falha, preserva a curtida e o contador anteriores e permite tentar novamente."
       }
     ],
     "variant": "like",
     "consumers": [
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/feed/page.tsx",
       "/src/app/(auth)/(dashboard)/servicos/page.tsx",
       "/src/components/pages/agenda/index.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
       "/src/components/pages/feed/FeedInteractions.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/feed/index.tsx",
@@ -8840,12 +8704,9 @@
     "variant": "unlike",
     "consumers": [
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/feed/page.tsx",
       "/src/app/(auth)/(dashboard)/servicos/page.tsx",
       "/src/components/pages/agenda/index.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
       "/src/components/pages/feed/FeedInteractions.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/feed/index.tsx",
@@ -8936,10 +8797,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
       "/src/components/pages/admin/publications/NoticeAdminDetails.tsx",
@@ -8948,8 +8805,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -9000,10 +8856,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
@@ -9013,8 +8865,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -9060,10 +8911,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
@@ -9073,8 +8920,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -9121,10 +8967,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
@@ -9134,8 +8976,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -9185,10 +9026,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
@@ -9198,8 +9035,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -9246,10 +9082,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
@@ -9259,8 +9091,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -9307,10 +9138,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
@@ -9320,8 +9147,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -9368,10 +9194,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
@@ -9381,8 +9203,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -9432,10 +9253,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
@@ -9445,8 +9262,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -9492,10 +9308,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
@@ -9505,8 +9317,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -9556,10 +9367,6 @@
       "/src/app/(auth)/(dashboard)/admin/publications/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/[id]/page.tsx",
       "/src/app/(auth)/(dashboard)/admin/publications/service/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)new/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/edit/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/new/page.tsx",
       "/src/components/pages/admin/publications/DraftPublicationActionModal.tsx",
       "/src/components/pages/admin/publications/DraftPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/EventAdminDetails.tsx",
@@ -9569,8 +9376,7 @@
       "/src/components/pages/admin/publications/PublicationOverview.tsx",
       "/src/components/pages/admin/publications/PublishedPublicationCardActions.tsx",
       "/src/components/pages/admin/publications/ServiceAdminDetails.tsx",
-      "/src/components/pages/admin/publications/index.tsx",
-      "/src/components/pages/feed/FeedFormRoute.tsx"
+      "/src/components/pages/admin/publications/index.tsx"
     ],
     "evidenceStatus": "Inventário estático; exige execução E2E para comprovar cada resposta."
   },
@@ -10141,10 +9947,6 @@
     "consumers": [
       "/src/app/(auth)/(dashboard)/admin/veiculos/page.tsx",
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/register/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/register/page.tsx",
       "/src/app/(auth)/(dashboard)/feed/page.tsx",
       "/src/app/(auth)/(dashboard)/layout.tsx",
       "/src/app/(auth)/(dashboard)/profile/page.tsx",
@@ -10156,8 +9958,6 @@
       "/src/components/pages/agenda/index.tsx",
       "/src/components/pages/feed/EventParticipation.tsx",
       "/src/components/pages/feed/EventRegistrationModal.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
-      "/src/components/pages/feed/FeedRegistrationRoute.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/feed/index.tsx",
       "/src/components/pages/first-access/Onboarding.tsx",
@@ -10293,10 +10093,6 @@
     ],
     "consumers": [
       "/src/app/(auth)/(dashboard)/agenda/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/@modal/(.)[id]/register/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/page.tsx",
-      "/src/app/(auth)/(dashboard)/feed/[id]/register/page.tsx",
       "/src/app/(auth)/(dashboard)/feed/page.tsx",
       "/src/app/(auth)/(dashboard)/layout.tsx",
       "/src/app/(auth)/(dashboard)/profile/page.tsx",
@@ -10305,8 +10101,6 @@
       "/src/components/pages/agenda/index.tsx",
       "/src/components/pages/feed/EventParticipation.tsx",
       "/src/components/pages/feed/EventRegistrationModal.tsx",
-      "/src/components/pages/feed/FeedDetailRoute.tsx",
-      "/src/components/pages/feed/FeedRegistrationRoute.tsx",
       "/src/components/pages/feed/PublicationDetailModal.tsx",
       "/src/components/pages/feed/index.tsx",
       "/src/components/pages/first-access/Onboarding.tsx",
